@@ -13,16 +13,16 @@
       <pCCUsed>5060300::V5.06 update 3 (build 300)::ARMCC</pCCUsed>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32F103VC</Device>
+          <Device>STM32F103ZE</Device>
           <Vendor>STMicroelectronics</Vendor>
           <PackID>Keil.STM32F1xx_DFP.2.1.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
-          <Cpu>IRAM(0x20000000,0xC000) IROM(0x08000000,0x40000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
+          <Cpu>IRAM(0x20000000,0x10000) IROM(0x08000000,0x80000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
-          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_512 -FS08000000 -FL080000 -FP0($$Device:STM32F103VC$Flash\STM32F10x_512.FLM))</FlashDriverDll>
+          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_512 -FS08000000 -FL080000 -FP0($$Device:STM32F103ZE$Flash\STM32F10x_512.FLM))</FlashDriverDll>
           <DeviceId>0</DeviceId>
-          <RegisterFile>$$Device:STM32F103VC$Device\Include\stm32f10x.h</RegisterFile>
+          <RegisterFile>$$Device:STM32F103ZE$Device\Include\stm32f10x.h</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
@@ -32,7 +32,7 @@
           <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32F103VC$SVD\STM32F103xx.svd</SFDFile>
+          <SFDFile>$$Device:STM32F103ZE$SVD\STM32F103xx.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -114,8 +114,8 @@
           <SimDlgDllArguments>-pCM3</SimDlgDllArguments>
           <TargetDllName>SARMCM3.DLL</TargetDllName>
           <TargetDllArguments></TargetDllArguments>
-          <TargetDlgDll>TARMSTM.DLL</TargetDlgDll>
-          <TargetDlgDllArguments>-pSTM32F103ZE</TargetDlgDllArguments>
+          <TargetDlgDll>TCM.DLL</TargetDlgDll>
+          <TargetDlgDllArguments>-pCM3</TargetDlgDllArguments>
         </DllOption>
         <DebugOption>
           <OPTHX>
@@ -243,12 +243,12 @@
               <IRAM>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0xc000</Size>
+                <Size>0x10000</Size>
               </IRAM>
               <IROM>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x40000</Size>
+                <Size>0x80000</Size>
               </IROM>
               <XRAM>
                 <Type>0</Type>
@@ -273,7 +273,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x40000</Size>
+                <Size>0x80000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -298,7 +298,7 @@
               <OCR_RVCT9>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0xc000</Size>
+                <Size>0x10000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -332,7 +332,7 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER, STM32F10X_HD,</Define>
               <Undefine></Undefine>
               <IncludePath>..\inc;..\..\..\Libraries\CMSIS\CM3\CoreSupport;..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x;..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc;..\..\..\Libraries\STM32_USB-FS-Device_Driver\inc;..\..\..\Utilities\lvgl;..\..\..\Utilities\lvgl\lvgl;..\..\..\Utilities\lvgl\lvgl\lv_core;..\..\..\Utilities\lvgl\lvgl\lv_draw;..\..\..\Utilities\lvgl\lvgl\lv_hal;..\..\..\Utilities\lvgl\lvgl\lv_misc;..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts;..\..\..\Utilities\lvgl\lvgl\lv_objx;..\..\..\Utilities\lvgl\lvgl\lv_themes;..\..\..\Utilities\lvgl\lvgl\lv_hal</IncludePath>
@@ -467,7 +467,7 @@
                     <vShortEn>2</vShortEn>
                     <vShortWch>2</vShortWch>
                     <v6Lto>0</v6Lto>
-                    <v6WtE>0</v6WtE>
+                    <v6WtE>2</v6WtE>
                     <v6Rtti>2</v6Rtti>
                     <VariousControls>
                       <MiscControls></MiscControls>
@@ -759,6 +759,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_ufs.c</FilePath>
             </File>
+            <File>
+              <FileName>lv_math.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_math.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -935,244 +940,84 @@
           <GroupName>lv_fonts</GroupName>
           <Files>
             <File>
-              <FileName>dejavu_10.c</FileName>
+              <FileName>lv_font_dejavu_10.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_10.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_10.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_10_cyrillic.c</FileName>
+              <FileName>lv_font_dejavu_10_cyrillic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_10_cyrillic.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_10_cyrillic.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_10_latin_ext_a.c</FileName>
+              <FileName>lv_font_dejavu_10_latin_sup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_10_latin_ext_a.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_10_latin_sup.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_10_latin_ext_b.c</FileName>
+              <FileName>lv_font_dejavu_20.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_10_latin_ext_b.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_20.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_10_sup.c</FileName>
+              <FileName>lv_font_dejavu_20_cyrillic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_10_sup.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_20_cyrillic.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20.c</FileName>
+              <FileName>lv_font_dejavu_20_latin_sup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_20.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_20_latin_sup.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20_cyrillic.c</FileName>
+              <FileName>lv_font_dejavu_30.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_20_cyrillic.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_30.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20_latin_ext_a.c</FileName>
+              <FileName>lv_font_dejavu_30_cyrillic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_20_latin_ext_a.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_30_cyrillic.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20_latin_ext_b.c</FileName>
+              <FileName>lv_font_dejavu_30_latin_sup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_20_latin_ext_b.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_30_latin_sup.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20_sup.c</FileName>
+              <FileName>lv_font_dejavu_40.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_20_sup.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_40.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30.c</FileName>
+              <FileName>lv_font_dejavu_40_cyrillic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_30.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_40_cyrillic.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30_cyrillic.c</FileName>
+              <FileName>lv_font_dejavu_40_latin_sup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_30_cyrillic.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_dejavu_40_latin_sup.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30_latin_ext_a.c</FileName>
+              <FileName>lv_font_symbol_10.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_30_latin_ext_a.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_symbol_10.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30_latin_ext_b.c</FileName>
+              <FileName>lv_font_symbol_20.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_30_latin_ext_b.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_symbol_20.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30_sup.c</FileName>
+              <FileName>lv_font_symbol_30.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_30_sup.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_symbol_30.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_40.c</FileName>
+              <FileName>lv_font_symbol_40.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_40.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_40_cyrillic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_40_cyrillic.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_40_latin_ext_a.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_40_latin_ext_a.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_40_latin_ext_b.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_40_latin_ext_b.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_40_sup.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_40_sup.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_60.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60_cyrillic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_60_cyrillic.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60_latin_ext_a.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_60_latin_ext_a.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60_latin_ext_b.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_60_latin_ext_b.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60_sup.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_60_sup.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_80.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80_cyrillic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_80_cyrillic.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80_latin_ext_a.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_80_latin_ext_a.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80_latin_ext_b.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_80_latin_ext_b.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80_sup.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\dejavu_80_sup.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_10_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_10_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_10_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_10_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_10_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_10_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_20_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_20_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_20_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_20_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_20_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_20_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_30_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_30_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_30_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_30_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_30_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_30_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_40_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_40_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_40_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_40_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_40_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_40_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_60_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_60_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_60_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_60_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_60_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_60_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_80_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_80_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_80_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_80_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_80_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\symbol_80_file.c</FilePath>
+              <FilePath>..\..\..\Utilities\lvgl\lvgl\lv_misc\lv_fonts\lv_font_symbol_40.c</FilePath>
             </File>
           </Files>
         </Group>

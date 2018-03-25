@@ -159,10 +159,8 @@ static void ex_disp_flush(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const 
 	LCDSetCursor(x1, y1);	//设置光标位置 
 	LCDSetXEnd(x2);
 	LCDWriteRAMPrepare();     //开始写入GRAM	 	  
-	//LCDDMAWriteSameValue(u16Color, u32Pix);
 	LCDDMAWrite((const uint16_t *)color_p, s32Length);
 
-	//LCDSetXEnd(LCD_WIDTH - 1);
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing*/
     lv_flush_ready();
@@ -184,6 +182,7 @@ static void ex_disp_map(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv
             color_p++;
         }
     }
+
 }
 
 
