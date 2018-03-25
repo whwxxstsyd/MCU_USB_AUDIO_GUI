@@ -1,0 +1,15 @@
+
+*.dbgconf
+*.lst
+*.map
+*.crf
+*.d
+*.o
+*.axf
+*.htm
+*.lnp
+*.sct
+*.dep
+RTE_Components.h
+*.iex
+*.hex
