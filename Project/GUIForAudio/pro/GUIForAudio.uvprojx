@@ -484,6 +484,16 @@
               <FileType>1</FileType>
               <FilePath>..\src\gt9147.c</FilePath>
             </File>
+            <File>
+              <FileName>gui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\gui.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_font_chs_24.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\lv_font_chs_24.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

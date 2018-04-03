@@ -448,7 +448,11 @@ void lv_draw_img(const lv_area_t * coords, const lv_area_t * mask,
 
             lv_coord_t row;
             uint32_t act_pos;
+#if (defined _WIN32) || 1
+			lv_color_t *buf = lv_mem_alloc(lv_area_get_width(&mask_com) * sizeof(lv_color_t));
+#else
             lv_color_t buf[lv_area_get_width(&mask_com)];
+#endif
             for(row = mask_com.y1; row <= mask_com.y2; row ++) {
                 res = lv_fs_read(&file, buf, useful_data, &br);
 
@@ -460,7 +464,9 @@ void lv_draw_img(const lv_area_t * coords, const lv_area_t * mask,
                 line.y1++;    /*Go down a line*/
                 line.y2++;
             }
-
+#if (defined _WIN32) || 1
+			lv_mem_free(buf);
+#endif
             lv_fs_close(&file);
 
             if(res != LV_FS_RES_OK) {
@@ -1713,9 +1719,14 @@ static void lv_draw_shadow_full(const lv_area_t * coords, const lv_area_t * mask
     if(radius != 0) radius -= LV_ANTIALIAS;
     swidth += LV_ANTIALIAS;
 
+#if (defined _WIN32) || 1
+	lv_coord_t *curve_x  = lv_mem_alloc((radius + swidth + 1) * sizeof(lv_coord_t));
+	memset(curve_x, 0, sizeof(lv_coord_t) * (radius + swidth + 1));
+#else
+	lv_coord_t curve_x[radius + swidth + 1];     /*Stores the 'x' coordinates of a quarter circle.*/
+	memset(curve_x, 0, sizeof(curve_x));
+#endif
 
-    lv_coord_t curve_x[radius + swidth + 1];     /*Stores the 'x' coordinates of a quarter circle.*/
-    memset(curve_x, 0, sizeof(curve_x));
     lv_point_t circ;
     lv_coord_t circ_tmp;
     lv_circ_init(&circ, &circ_tmp, radius);
@@ -1727,15 +1738,23 @@ static void lv_draw_shadow_full(const lv_area_t * coords, const lv_area_t * mask
     int16_t line;
 
     int16_t filter_width = 2 * swidth + 1;
-    uint32_t line_1d_blur[filter_width];
 
+#if (defined _WIN32) || 1
+	uint32_t *line_1d_blur = lv_mem_alloc(filter_width * sizeof(uint32_t));
+#else
+	uint32_t line_1d_blur[filter_width];
+#endif
     /*1D Blur horizontally*/
     for(line = 0; line < filter_width; line++) {
         line_1d_blur[line] = (uint32_t)((uint32_t)(filter_width - line) * (style->body.opa * 2)  << SHADOW_OPA_EXTRA_PRECISION) / (filter_width * filter_width);
     }
 
     uint16_t col;
-    lv_opa_t line_2d_blur[radius + swidth];
+#if (defined _WIN32) || 1
+	lv_opa_t *line_2d_blur = lv_mem_alloc((radius + swidth + 32) * sizeof(lv_opa_t));
+#else
+	lv_opa_t line_2d_blur[radius + swidth + 32];	/* what the fuck */
+#endif
 
     lv_point_t point_rt;
     lv_point_t point_rb;
@@ -1832,6 +1851,12 @@ static void lv_draw_shadow_full(const lv_area_t * coords, const lv_area_t * mask
          * but is is simple, fast and gives a good enough result*/
         if(line == 1) lv_draw_shadow_full_straight(coords, mask, style, line_2d_blur);
     }
+#if (defined _WIN32) || 1
+	lv_mem_free(line_2d_blur);
+	lv_mem_free(line_1d_blur);
+	lv_mem_free(curve_x);
+#endif
+
 }
 
 
@@ -1846,8 +1871,12 @@ static void lv_draw_shadow_bottom(const lv_area_t * coords, const lv_area_t * ma
     radius += LV_ANTIALIAS * SHADOW_BOTTOM_AA_EXTRA_RADIUS;
     swidth += LV_ANTIALIAS;
 
+#if (defined _WIN32) || 1
+	lv_coord_t *curve_x = lv_mem_alloc((radius + 1) * sizeof(lv_coord_t));             /*Stores the 'x' coordinates of a quarter circle.*/
+#else
     lv_coord_t curve_x[radius + 1];             /*Stores the 'x' coordinates of a quarter circle.*/
-    lv_point_t circ;
+#endif
+	lv_point_t circ;
     lv_coord_t circ_tmp;
     lv_circ_init(&circ, &circ_tmp, radius);
     while(lv_circ_cont(&circ)) {
@@ -1857,7 +1886,11 @@ static void lv_draw_shadow_bottom(const lv_area_t * coords, const lv_area_t * ma
     }
 
     int16_t col;
-    lv_opa_t line_1d_blur[swidth];
+#if (defined _WIN32) || 1
+	lv_opa_t *line_1d_blur = lv_mem_alloc(swidth * sizeof(uint32_t));
+#else
+	lv_opa_t line_1d_blur[swidth];
+#endif
 
     for(col = 0; col < swidth; col++) {
         line_1d_blur[col] = (uint32_t)((uint32_t)(swidth - col) * style->body.opa / 2) / (swidth);
@@ -1915,6 +1948,11 @@ static void lv_draw_shadow_bottom(const lv_area_t * coords, const lv_area_t * ma
         area_mid.y1 ++;
         area_mid.y2 ++;
     }
+#if (defined _WIN32) || 1
+	lv_mem_free(line_1d_blur);
+	lv_mem_free(curve_x);
+#endif
+
 }
 
 static void lv_draw_shadow_full_straight(const lv_area_t * coords, const lv_area_t * mask, const lv_style_t * style, const lv_opa_t * map)

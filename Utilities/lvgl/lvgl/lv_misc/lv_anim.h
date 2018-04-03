@@ -93,6 +93,17 @@ void lv_anim_create(lv_anim_t * anim_p);
 bool lv_anim_del(void * var, lv_anim_fp_t fp);
 
 /**
+* reflash an animation for a variable with a given animator function
+* @param var pointer to variable
+* @param fp a function pointer which is animating 'var',
+*           or NULL for all animations of 'var'
+* @param act_time new act_time
+* @param val the new val for the fp
+* @return true: at least 1 animation is found, false: no animation is found
+*/
+bool lv_anim_reflash(void * var, lv_anim_fp_t fp, int16_t act_time, int16_t val);
+
+/**
  * Calculate the time of an animation with a given speed and the start and end values
  * @param speed speed of animation in unit/sec
  * @param start start value of the animation

@@ -17,6 +17,34 @@ extern "C" {
 
 #include <stdint.h>
 
+	
+/* The most simple macro to create a color from R,G and B values
+ * The order of bit field is different on Big-endian and Little-endian machines*/
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#if LV_COLOR_DEPTH == 1
+#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){(b8 >> 7 | g8 >> 7 | r8 >> 7)})
+#elif LV_COLOR_DEPTH == 8
+#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{b8 >> 6, g8 >> 5, r8 >> 5}})
+#elif LV_COLOR_DEPTH == 16
+#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{b8 >> 3, g8 >> 2, r8 >> 3}})
+#if defined _WIN32
+#define LV_COLOR_MAKE_WIN32(r8, g8, b8)	{b8 >> 3, g8 >> 2, r8 >> 3}
+#endif
+#elif LV_COLOR_DEPTH == 24
+#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{b8, g8, r8, 0xff}})            /*Fix 0xff alpha*/
+#endif
+#else
+#if LV_COLOR_DEPTH == 1
+#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){(r8 >> 7 | g8 >> 7 | b8 >> 7)})
+#elif LV_COLOR_DEPTH == 8
+#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{r8 >> 6, g8 >> 5, b8 >> 5}})
+#elif LV_COLOR_DEPTH == 16
+#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{r8 >> 3, g8 >> 2, b8 >> 3}})
+#elif LV_COLOR_DEPTH == 24
+#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{0xff, r8, g8, b8}})            /*Fix 0xff alpha*/
+#endif
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -246,9 +274,9 @@ static inline lv_color_t lv_color_mix(lv_color_t c1, lv_color_t c2, uint8_t mix)
 {
     lv_color_t ret;
 #if LV_COLOR_DEPTH != 1
-    ret.red =   (uint16_t)((uint16_t) c1.red * mix + (c2.red * (255 - mix))) >> 8;
-    ret.green = (uint16_t)((uint16_t) c1.green * mix + (c2.green * (255 - mix))) >> 8;
-    ret.blue =  (uint16_t)((uint16_t) c1.blue * mix + (c2.blue * (255 - mix))) >> 8;
+    ret.red =   (uint16_t)((uint16_t) c1.red * mix + (c2.red * (255 - mix))) / 255;
+    ret.green = (uint16_t)((uint16_t) c1.green * mix + (c2.green * (255 - mix))) / 255;
+    ret.blue =  (uint16_t)((uint16_t) c1.blue * mix + (c2.blue * (255 - mix))) / 255;
 # if LV_COLOR_DEPTH == 24
     ret.alpha = 0xFF;
 # endif
@@ -271,30 +299,6 @@ static inline uint8_t lv_color_brightness(lv_color_t color)
     uint16_t bright = 3 * c24.red + c24.blue + 4 * c24.green;
     return (uint16_t) bright >> 3;
 }
-
-/* The most simple macro to create a color from R,G and B values
- * The order of bit field is different on Big-endian and Little-endian machines*/
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#if LV_COLOR_DEPTH == 1
-#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){(b8 >> 7 | g8 >> 7 | r8 >> 7)})
-#elif LV_COLOR_DEPTH == 8
-#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{b8 >> 6, g8 >> 5, r8 >> 5}})
-#elif LV_COLOR_DEPTH == 16
-#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{b8 >> 3, g8 >> 2, r8 >> 3}})
-#elif LV_COLOR_DEPTH == 24
-#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{b8, g8, r8, 0xff}})            /*Fix 0xff alpha*/
-#endif
-#else
-#if LV_COLOR_DEPTH == 1
-#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){(r8 >> 7 | g8 >> 7 | b8 >> 7)})
-#elif LV_COLOR_DEPTH == 8
-#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{r8 >> 6, g8 >> 5, b8 >> 5}})
-#elif LV_COLOR_DEPTH == 16
-#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{r8 >> 3, g8 >> 2, b8 >> 3}})
-#elif LV_COLOR_DEPTH == 24
-#define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{0xff, r8, g8, b8}})            /*Fix 0xff alpha*/
-#endif
-#endif
 
 #define LV_COLOR_HEX(c) LV_COLOR_MAKE(((uint32_t)((uint32_t)c >> 16) & 0xFF), \
                                 ((uint32_t)((uint32_t)c >> 8) & 0xFF), \

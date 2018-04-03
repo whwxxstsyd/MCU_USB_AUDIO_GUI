@@ -150,8 +150,15 @@ void lv_style_copy(lv_style_t * dest, const lv_style_t * src);
 /**
  * Create an animation from a pre-configured 'lv_style_anim_t' variable
  * @param anim pointer to a pre-configured 'lv_style_anim_t' variable (will be copied)
+ * @param free_p the new free pinter
+ * return pointer to the new style anim
  */
-void lv_style_anim_create(lv_style_anim_t * anim);
+void* lv_style_anim_create(lv_style_anim_t * anim, void *free_p);
+/**
+* get the free_p from the style anim
+* @param dsc pointer to the return value of lv_style_anim_create
+*/
+void* lv_style_anim_get_free_ptr(void *dsc);
 #endif
 
 /*************************

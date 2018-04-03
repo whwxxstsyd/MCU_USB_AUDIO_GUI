@@ -28,7 +28,11 @@
 /**********************
  *  STATIC VARIABLES
  **********************/
+#if defined _WIN32
+static lv_color_t letter_bg_color = LV_COLOR_MAKE_WIN32(0xFF, 0xFF, 0xFF);
+#else
 static lv_color_t letter_bg_color = LV_COLOR_WHITE;
+#endif
 
 /**********************
  *      MACROS

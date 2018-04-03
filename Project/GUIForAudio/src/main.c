@@ -47,6 +47,7 @@ static void hal_init(void);
 int main (void)
 {
 	u32 u32Time = 0;
+	u32 u32LvglHandlerTime = 0;
 	//lv_theme_t *pTheme = NULL;
     /*Initialize LittlevGL*/
     lv_init();
@@ -69,37 +70,41 @@ int main (void)
     //lv_test_theme_1(pTheme);
 
     /*Load a demo*/
-    demo_create();
+    //demo_create();
+	
+	if (1)
+	{
+
+		int32_t CreateTableView(void);
+		CreateTableView();
+	}
+
 #if 1
 	
 		/*Create a Label on the currently active screen*/
 		lv_obj_t * label1 =  lv_label_create(lv_scr_act(), NULL);
 
 		/*Modify the Label's text*/
-		lv_label_set_text(label1, "Hello world!");
+		lv_label_set_text(label1, "Hello world**********************!");
 
 		/* Align the Label to the center
 		 * NULL means align on parent (which is the screen now)
 		 * 0, 0 at the end means an x, y offset after alignment*/
-		lv_obj_align(label1, NULL, LV_ALIGN_CENTER, 0, 0);
+		lv_obj_align(label1, NULL, LV_ALIGN_CENTER, 0, -50);
 		
-		/*Create a Label on the currently active screen*/
-		lv_obj_t * label2 =  lv_label_create(lv_scr_act(), NULL);
-
-		/* Align the Label to the center
-		 * NULL means align on parent (which is the screen now)
-		 * 0, 0 at the end means an x, y offset after alignment*/
-		lv_obj_align(label2, label1, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
-
 	
 #endif
 
     while(1) {
         /* Periodically call the lv_task handler.
          * It could be done in a timer interrupt or an OS task too.*/
-        lv_task_handler();
-        Delay(1);       /*Just to let the system breath*/
-		if (SysTimeDiff(u32Time, g_u32SysTickCnt) > 500)
+		if (SysTimeDiff(u32LvglHandlerTime, g_u32SysTickCnt) != 0)
+		{		
+			lv_task_handler();
+			u32LvglHandlerTime = g_u32SysTickCnt;
+		}
+
+		if (SysTimeDiff(u32Time, g_u32SysTickCnt) > 100)
 		{
 			LEDToggle();
 			u32Time = g_u32SysTickCnt;
@@ -108,24 +113,10 @@ int main (void)
 				lv_mem_monitor(&stMemMonitor);
 				stMemMonitor.total_size = stMemMonitor.total_size;
 				char c8Buf[64];
-				sprintf(c8Buf, "Total: %d, free: %d, using: %d%%", 
-					stMemMonitor.total_size, stMemMonitor.free_size, stMemMonitor.used_pct);
+				sprintf(c8Buf, "Total: %d, free: %d%%, using: %d",
+					stMemMonitor.total_size, stMemMonitor.free_size * 100 / stMemMonitor.total_size,
+					stMemMonitor.total_size - stMemMonitor.free_size);
 				lv_label_set_text(label1, c8Buf);
-			}
-			{
-				char c8Buf[64];
-				StPoint stPoint[GT9147_MAX_TOUCH];
-				uint8_t u8Cnt = 0;
-				GT9147Scan(stPoint, &u8Cnt);
-				if (u8Cnt == 0)
-				{
-					sprintf(c8Buf, "Got no point");					
-				}
-				else
-				{
-					sprintf(c8Buf, "Got point(%d, %d)", stPoint[0].u16X, stPoint[0].u16Y);
-				}
-				lv_label_set_text(label2, c8Buf);
 			}
 		}
     }
@@ -211,19 +202,22 @@ static bool ex_tp_read(lv_indev_data_t *data)
     /* data->state = LV_INDEV_STATE_REL or LV_INDEV_STATE_PR */
     /* data->point.x = tp_x; */
     /* data->point.y = tp_y; */
+	static StPoint stLastPoint = {0, 0};
 	
 	StPoint stPoint[GT9147_MAX_TOUCH];
 	uint8_t u8Cnt = 0;
 	GT9147Scan(stPoint, &u8Cnt);
 	if (u8Cnt == 0)
 	{
+		data->point.x = stLastPoint.u16X;
+		data->point.y = stLastPoint.u16Y;
 		data->state = LV_INDEV_STATE_REL;					
 	}
 	else
 	{
 		data->state = LV_INDEV_STATE_PR;
-		data->point.x = stPoint[0].u16X;
-		data->point.y = stPoint[0].u16Y;
+		data->point.x = stLastPoint.u16X = stPoint[0].u16X;
+		data->point.y = stLastPoint.u16Y = stPoint[0].u16Y;
 	}
 	
 

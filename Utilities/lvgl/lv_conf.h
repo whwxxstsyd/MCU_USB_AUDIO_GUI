@@ -6,7 +6,6 @@
 #ifndef LV_CONF_H
 #define LV_CONF_H
 
-//#pragma anon_unions
 /*----------------
  * Dynamic memory
  *----------------*/
@@ -49,7 +48,7 @@
 #define LV_ANTIALIAS        1       /*1: Enable anti-aliasing*/
 
 /*Screen refresh settings*/
-#define LV_REFR_PERIOD      50    /*Screen refresh period in milliseconds*/
+#define LV_REFR_PERIOD      25    /*Screen refresh period in milliseconds*/
 #define LV_INV_FIFO_SIZE    32    /*The average count of objects on a screen */
 
 /*=================
@@ -73,8 +72,8 @@
 #define LV_TXT_BREAK_CHARS     " ,.;:-_"         /*Can break texts on these chars*/
 
 /*Graphics feature usage*/
-#define USE_LV_ANIMATION        0               /*1: Enable all animations*/
-#define USE_LV_SHADOW           0               /*1: Enable shadows*/
+#define USE_LV_ANIMATION        1               /*1: Enable all animations*/
+#define USE_LV_SHADOW           1               /*1: Enable shadows*/
 #define USE_LV_GROUP            1               /*1: Enable object groups (for keyboards)*/
 #define USE_LV_GPU              0               /*1: Enable GPU interface*/
 #define USE_LV_REAL_DRAW        1               /*1: Enable function which draw directly to the frame buffer instead of VDB (required if LV_VDB_SIZE = 0)*/
@@ -88,9 +87,9 @@
  *  THEME USAGE
  *================*/
 #define USE_LV_THEME_TEMPL      0       /*Just for test*/
-#define USE_LV_THEME_DEFAULT    0       /*Built mainly from the built-in styles. Consumes very few RAM*/
-#define USE_LV_THEME_ALIEN      0       /*Dark futuristic theme*/
-#define USE_LV_THEME_NIGHT      0       /*Dark elegant theme*/
+#define USE_LV_THEME_DEFAULT    1       /*Built mainly from the built-in styles. Consumes very few RAM*/
+#define USE_LV_THEME_ALIEN      1       /*Dark futuristic theme*/
+#define USE_LV_THEME_NIGHT      1       /*Dark elegant theme*/
 #define USE_LV_THEME_MONO       0       /*Mono color theme for monochrome displays*/
 #define USE_LV_THEME_MATERIAL   0       /*Flat theme with bold colors and light shadows*/
 #define USE_LV_THEME_ZEN        0       /*Peaceful, mainly light theme */
@@ -169,7 +168,7 @@
 /*Tab (dependencies: lv_page, lv_btnm)*/
 #define USE_LV_TABVIEW      1
 #if USE_LV_TABVIEW != 0
-#define LV_TABVIEW_ANIM_TIME    300     /*Time of slide animation [ms] (0: no animation)*/
+#define LV_TABVIEW_ANIM_TIME    0     /*Time of slide animation [ms] (0: no animation)*/
 #endif
 
 /*************************

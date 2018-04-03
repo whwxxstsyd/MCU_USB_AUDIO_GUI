@@ -31,6 +31,7 @@ typedef struct {
     lv_style_t style_end;
     lv_style_t *style_anim;
     void (*end_cb)(void *);
+	void *free_p;
 }lv_style_anim_dsc_t;
 #endif
 
@@ -220,8 +221,9 @@ void lv_style_copy(lv_style_t * dest, const lv_style_t * src)
 /**
  * Create an animation from a pre-configured 'lv_style_anim_t' variable
  * @param anim pointer to a pre-configured 'lv_style_anim_t' variable (will be copied)
+ * return pointer to the new style anim
  */
-void lv_style_anim_create(lv_style_anim_t * anim)
+void* lv_style_anim_create(lv_style_anim_t * anim, void *free_p)
 {
     lv_style_anim_dsc_t * dsc;
     dsc = lv_mem_alloc(sizeof(lv_style_anim_dsc_t));
@@ -229,7 +231,7 @@ void lv_style_anim_create(lv_style_anim_t * anim)
     memcpy(&dsc->style_start, anim->style_start, sizeof(lv_style_t));
     memcpy(&dsc->style_end, anim->style_end, sizeof(lv_style_t));
     dsc->end_cb = anim->end_cb;
-
+	dsc->free_p = free_p;
 
     lv_anim_t a;
     a.var = (void*)dsc;
@@ -246,7 +248,22 @@ void lv_style_anim_create(lv_style_anim_t * anim)
     a.repeat_pause = anim->repeat_pause;
 
     lv_anim_create(&a);
+
+	return (void *)dsc;
 }
+
+/**
+* get the free_p from the style anim
+* @param dsc pointer to the return value of lv_style_anim_create
+*/
+void* lv_style_anim_get_free_ptr(void *dsc)
+{
+	if (dsc != NULL) {
+		return  ((lv_style_anim_dsc_t *)dsc)->free_p;
+	}
+	return NULL;
+}
+
 #endif
 /**********************
  *   STATIC FUNCTIONS
@@ -271,8 +288,9 @@ static void style_animator(lv_style_anim_dsc_t * dsc, int32_t val)
     STYLE_ATTR_ANIM(body.padding.ver, val);
     STYLE_ATTR_ANIM(body.padding.inner, val);
     STYLE_ATTR_ANIM(text.line_space, val);
-    STYLE_ATTR_ANIM(text.letter_space, val);
-    STYLE_ATTR_ANIM(line.width, val);
+	STYLE_ATTR_ANIM(text.letter_space, val);
+	STYLE_ATTR_ANIM(text.opa, val);
+	STYLE_ATTR_ANIM(line.width, val);
     STYLE_ATTR_ANIM(image.intense, val);
 
     lv_opa_t opa = val == LV_STYLE_ANIM_RES ? LV_OPA_COVER : val;

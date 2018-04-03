@@ -106,6 +106,39 @@ bool lv_anim_del(void * var, lv_anim_fp_t fp)
 }
 
 /**
+* reflash an animation for a variable with a given animator function
+* @param var pointer to variable
+* @param fp a function pointer which is animating 'var',
+*           or NULL for all animations of 'var'
+* @param act_time new act_time
+* @param val the new val for the fp
+* @return true: at least 1 animation is found, false: no animation is found
+*/
+bool lv_anim_reflash(void * var, lv_anim_fp_t fp, int16_t act_time, int16_t val)
+{
+	bool find = false;
+	lv_anim_t * a;
+	lv_anim_t * a_next;
+	a = lv_ll_get_head(&anim_ll);
+	while (a != NULL) {
+		/*'a' might be deleted, so get the next object while 'a' is valid*/
+		a_next = lv_ll_get_next(&anim_ll, a);
+
+		if (a->var == var && (a->fp == fp || fp == NULL)) {
+			a->act_time = act_time;
+			if (a->fp){
+				a->fp(a->var, val);
+			}
+			find = true;
+		}
+
+		a = a_next;
+	}
+
+	return find;
+}
+
+/**
  * Calculate the time of an animation with a given speed and the start and end values
  * @param speed speed of animation in unit/sec
  * @param start start value of the animation

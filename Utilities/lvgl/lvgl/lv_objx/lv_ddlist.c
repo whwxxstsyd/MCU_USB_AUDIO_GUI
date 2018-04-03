@@ -477,11 +477,31 @@ static bool lv_ddlist_design(lv_obj_t * ddlist, const lv_area_t * mask, lv_desig
         if(area_ok) {
             lv_style_t *sel_style = lv_ddlist_get_style(ddlist, LV_DDLIST_STYLE_SEL);
             lv_style_t new_style;
+            lv_txt_flag_t flag = LV_TXT_FLAG_NONE;
             lv_style_copy(&new_style, style);
             new_style.text.color = sel_style->text.color;
             new_style.text.opa = sel_style->text.opa;
+
+            if (lv_label_get_recolor(ext->label))
+            {
+            	flag |= LV_TXT_FLAG_RECOLOR;
+            }
+            if (lv_label_get_long_mode(ext->label) == LV_LABEL_LONG_ROLL)
+            {
+            	flag |= LV_TXT_FLAG_EXPAND;
+            }
+            if (lv_label_get_no_break(ext->label))
+            {
+            	flag |= LV_TXT_FLAG_NO_BREAK;
+            }
+
+            if (lv_label_get_align(ext->label) == LV_LABEL_ALIGN_CENTER)
+            {
+            	flag |= LV_TXT_FLAG_CENTER;
+            }
+
             lv_draw_label(&ext->label->coords, &mask_sel, &new_style,
-                          lv_label_get_text(ext->label), LV_TXT_FLAG_NONE, NULL);
+                          lv_label_get_text(ext->label), flag, NULL);
         }
     }
 
@@ -636,10 +656,20 @@ static lv_res_t lv_ddlist_release_action(lv_obj_t * ddlist)
 
         uint16_t new_opt = 0;
         const char * txt = lv_label_get_text(ext->label);
-        uint16_t i;
+		uint16_t i;
+#if 0	/* what about the utf8 word !!!!? */
         for(i = 0; i < letter_i; i++) {
             if(txt[i] == '\n') new_opt ++;
         }
+#else
+		uint32_t j = 0;
+		for (i = 0; i < letter_i; i++) {
+			uint32_t letter_uni = lv_txt_utf8_next(txt, &j);
+			if (letter_uni == '\n'){
+				new_opt++;
+			}
+		}
+#endif
 
         ext->sel_opt_id = new_opt;
 
