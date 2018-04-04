@@ -127,6 +127,13 @@ void lv_group_focus_obj(lv_obj_t * obj)
             g->obj_focus = i;
 
             if(g->obj_focus != NULL){
+				if (*g->obj_focus != NULL) {
+					/*Move the last_top object to the foreground*/
+					lv_obj_t * par = lv_obj_get_parent(*g->obj_focus);
+					/*After list change it will be the new head*/
+					lv_ll_chg_list(&par->child_ll, &par->child_ll, *g->obj_focus);
+					lv_obj_invalidate(*g->obj_focus);
+				}
                 (*g->obj_focus)->signal_func(*g->obj_focus, LV_SIGNAL_FOCUS, NULL);
                 lv_obj_invalidate(*g->obj_focus);
             }
@@ -156,6 +163,13 @@ void lv_group_focus_next(lv_group_t * group)
     group->obj_focus = obj_next;
 
     if(group->obj_focus){
+		if (*group->obj_focus != NULL) {
+			/*Move the last_top object to the foreground*/
+			lv_obj_t * par = lv_obj_get_parent(*group->obj_focus);
+			/*After list change it will be the new head*/
+			lv_ll_chg_list(&par->child_ll, &par->child_ll, *group->obj_focus);
+			lv_obj_invalidate(*group->obj_focus);
+		}
         (*group->obj_focus)->signal_func(*group->obj_focus, LV_SIGNAL_FOCUS, NULL);
         lv_obj_invalidate(*group->obj_focus);
 
@@ -184,6 +198,13 @@ void lv_group_focus_prev(lv_group_t * group)
     group->obj_focus = obj_next;
 
     if(group->obj_focus != NULL){
+		if (*group->obj_focus != NULL) {
+			/*Move the last_top object to the foreground*/
+			lv_obj_t * par = lv_obj_get_parent(*group->obj_focus);
+			/*After list change it will be the new head*/
+			lv_ll_chg_list(&par->child_ll, &par->child_ll, *group->obj_focus);
+			lv_obj_invalidate(*group->obj_focus);
+		}
         (*group->obj_focus)->signal_func(*group->obj_focus, LV_SIGNAL_FOCUS, NULL);
         lv_obj_invalidate(*group->obj_focus);
 
@@ -212,6 +233,8 @@ void lv_group_send_data(lv_group_t * group, uint32_t c)
 {
     lv_obj_t * act = lv_group_get_focused(group);
     if(act == NULL) return;
+
+	if (!lv_obj_get_click(act)) return;
 
     act->signal_func(act, LV_SIGNAL_CONTROLL, &c);
 }

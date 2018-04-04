@@ -106,7 +106,7 @@ bool lv_anim_del(void * var, lv_anim_fp_t fp)
 }
 
 /**
-* reflash an animation for a variable with a given animator function
+* reflush an animation for a variable with a given animator function
 * @param var pointer to variable
 * @param fp a function pointer which is animating 'var',
 *           or NULL for all animations of 'var'
@@ -114,7 +114,7 @@ bool lv_anim_del(void * var, lv_anim_fp_t fp)
 * @param val the new val for the fp
 * @return true: at least 1 animation is found, false: no animation is found
 */
-bool lv_anim_reflash(void * var, lv_anim_fp_t fp, int16_t act_time, int16_t val)
+bool lv_anim_reflush(void * var, lv_anim_fp_t fp, int16_t act_time, int16_t val)
 {
 	bool find = false;
 	lv_anim_t * a;

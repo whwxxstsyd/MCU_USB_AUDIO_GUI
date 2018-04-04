@@ -66,6 +66,11 @@ void lv_flush_ready(void);
 void lv_flush_ready(void);
 #endif
 
+/**
+* Call in the display driver's  'disp_flush' function when the flushing is begin
+*/
+void lv_flush_begin(void);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

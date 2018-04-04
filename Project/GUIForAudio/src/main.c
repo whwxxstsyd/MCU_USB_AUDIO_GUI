@@ -131,30 +131,71 @@ int main (void)
 static void ex_disp_flush(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t * color_p)
 {
     /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
-#define LCD_DMA					DMA1_Channel2
-#define LCD_DMA_FINISH_FLAG		DMA1_FLAG_TC2
-
-#if 0
-    int32_t x;
-    int32_t y;
-    for(y = y1; y <= y2; y++) {
-        for(x = x1; x <= x2; x++) {
-            /* Put a pixel to the display. For example: */
-            /* put_px(x, y, *color_p)*/
-            color_p++;
-        }
-    }
-#endif
+#if LV_VDB_DOUBLE == 0
 	int32_t s32Length = (x2 - x1 + 1) * (y2 - y1 + 1);
 
 	LCDSetCursor(x1, y1);	//设置光标位置 
 	LCDSetXEnd(x2);
 	LCDWriteRAMPrepare();     //开始写入GRAM	 	  
-	LCDDMAWrite((const uint16_t *)color_p, s32Length);
+	LCDDMAWrite((const uint16_t *)color_p, s32Length);	
+	lv_flush_begin();
 
-    /* IMPORTANT!!!
-     * Inform the graphics library that you are ready with the flushing*/
-    lv_flush_ready();
+	/* IMPORTANT!!!
+	 * Inform the graphics library that you are ready with the flushing*/
+	lv_flush_ready();
+	
+#else
+#define LCD_DMA					DMA1_Channel2
+#define LCD_DMA_FINISH_FLAG		DMA1_FLAG_TC2
+
+	static bool boIsFlushing = false;
+	int32_t s32Length;
+	
+	if (boIsFlushing)
+	{
+		/* Check if DMA channel transfer is finished */
+		while(!DMA_GetFlagStatus(LCD_DMA_FINISH_FLAG));
+
+		/* Clear DMA channel transfer complete flag bit */
+		DMA_ClearFlag(LCD_DMA_FINISH_FLAG);
+
+		/* disable */
+		LCD_DMA->CCR = 0;
+		
+		boIsFlushing = false;
+		
+		/* IMPORTANT!!!
+		 * Inform the graphics library that you are ready with the flushing*/
+		lv_flush_ready();
+		
+	}
+
+
+	s32Length = (x2 - x1 + 1) * (y2 - y1 + 1);
+
+	LCDSetCursor(x1, y1);	//设置光标位置 
+	LCDSetXEnd(x2);
+	LCDWriteRAMPrepare();     //开始写入GRAM	 	  
+	//LCDDMAWrite((const uint16_t *)color_p, s32Length);
+	{
+		
+		LCD_DMA->CPAR = (u32)color_p;
+		LCD_DMA->CMAR = (u32)(&(LCD->LCDRam));
+		
+		LCD_DMA->CNDTR = s32Length;
+		
+		LCD_DMA->CCR = DMA_PeripheralInc_Enable | DMA_PeripheralDataSize_HalfWord |
+						DMA_MemoryDataSize_HalfWord | DMA_Priority_High | DMA_M2M_Enable;
+		/* enable */
+		LCD_DMA->CCR |= DMA_CCR1_EN;
+		
+
+	}
+	
+	boIsFlushing = true;
+	
+	lv_flush_begin();
+#endif
 }
 #endif
 

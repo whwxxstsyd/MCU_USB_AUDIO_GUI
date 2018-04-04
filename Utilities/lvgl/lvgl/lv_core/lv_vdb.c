@@ -106,7 +106,7 @@ void lv_vdb_flush(void)
 {
     lv_vdb_t * vdb_act = lv_vdb_get();
     if(vdb_act == NULL) return;
-
+#if 0
 #if LV_VDB_DOUBLE == 0
     vdb_state = LV_VDB_STATE_FLUSH;     /*User call to 'lv_flush_ready()' will set to ACTIVE 'disp_flush'*/
 #else
@@ -118,7 +118,7 @@ void lv_vdb_flush(void)
     if(vdb_state[0] == LV_VDB_STATE_ACTIVE) vdb_state[0] = LV_VDB_STATE_FLUSH;
     if(vdb_state[1] == LV_VDB_STATE_ACTIVE) vdb_state[1] = LV_VDB_STATE_FLUSH;
 #endif
-
+#endif
     /*Flush the rendered content to the display*/
 	lv_disp_flush(vdb_act->area.x1, vdb_act->area.y1, vdb_act->area.x2, vdb_act->area.y2, vdb_act->buf);
 
@@ -136,6 +136,21 @@ void lv_flush_ready(void)
     if(vdb_state[1] == LV_VDB_STATE_FLUSH)  vdb_state[1] = LV_VDB_STATE_FREE;
 #endif
 }
+
+/**
+* Call in the display driver's  'disp_flush' function when the flushing is begin
+*/
+void lv_flush_begin(void)
+{
+#if LV_VDB_DOUBLE == 0
+	vdb_state = LV_VDB_STATE_FLUSH;     /*User call to 'lv_flush_ready()' will set to ACTIVE 'disp_flush'*/
+#else
+	if (vdb_state[0] == LV_VDB_STATE_ACTIVE) vdb_state[0] = LV_VDB_STATE_FLUSH;
+	if (vdb_state[1] == LV_VDB_STATE_ACTIVE) vdb_state[1] = LV_VDB_STATE_FLUSH;
+#endif
+}
+
+
 
 /**********************
  *   STATIC FUNCTIONS
