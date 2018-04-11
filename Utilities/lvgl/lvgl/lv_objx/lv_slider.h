@@ -39,7 +39,8 @@ typedef struct
     lv_action_t action;             /*Function to call when a new value is set*/
     lv_style_t *style_knob;    /*Style of the knob*/
     int16_t drag_value;          /*Store a temporal value during press until release (Handled by the library)*/
-    uint8_t knob_in     :1;     /*1: Draw the knob inside the bar*/
+	int16_t progressive_value;	/* using by the group */
+	uint8_t knob_in     :1;     /*1: Draw the knob inside the bar*/
 }lv_slider_ext_t;
 
 /*Built-in styles of slider*/
@@ -121,6 +122,14 @@ void lv_slider_set_knob_in(lv_obj_t * slider, bool in);
  */
 void lv_slider_set_style(lv_obj_t *slider, lv_slider_style_t type, lv_style_t *style);
 
+/**
+* Set the progressive of a slider
+* @param slider pointer to a slider object
+* @param progressive_value new progressive value should be set
+*/
+void lv_slider_set_progressive_value(lv_obj_t *slider, uint16_t progressive_value);
+
+
 /*=====================
  * Getter functions
  *====================*/
@@ -182,6 +191,13 @@ bool lv_slider_get_knob_in(lv_obj_t * slider);
  * @return style pointer to a style
  */
 lv_style_t * lv_slider_get_style(lv_obj_t *slider, lv_slider_style_t type);
+
+/**
+* Get the progressive of a slider
+* @param slider pointer to a slider object
+* @return progressive value new of the slider
+*/
+uint16_t lv_slider_get_progressive_value(lv_obj_t *slider);
 
 /**********************
  *      MACROS

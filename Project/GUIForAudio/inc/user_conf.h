@@ -8,40 +8,45 @@
 *******************************************************************************/
 #ifndef _USER_CONF_H_
 #define _USER_CONF_H_
-#include <stdint.h>
-
-#define KEY_UP			0x01
-#define KEY_DOWN		0x02
-#define KEY_KEEP		0xEE
-#define KEY_MOVE		0xDD
-
-#define KEY_MIX_MAX				8				/* 最大组合键数量 */
-
-
-
 
 #define MSG_BUF_MAX					8	/* 消息缓冲数量 */
 
 #define BUF_CHECK_SIZE				32	/* 消息过滤 buffer 大小 */
 
-#define KEY_BUF_MAX					8	/* 键盘消息缓冲数量 */
+#define GET_UID_CNT(Byte)		(96 / (Byte * 8))
+#define UID_BASE_ADDR			(0x1FFFF7E8)
+
+#define UID_CHECK_ADDR			(0x0800F800)
+#define DATA_SAVE_ADDR  		(0x0800F000)
+#define DATA_SAVE_HEAD 			(0xA5A5)
+
+/*
+ * 8 * 8矩阵
+ */
+
+#define KEY_X_CNT		2				/* 键盘扫描列 */
+#define KEY_Y_CNT		1				/* 键盘扫描行 power */
+#define KEY_SCAN_CNT	8				/* 消抖扫描次数 */
+#define KEY_MIX_MAX		8				/* 单次支持的最大扫描个数 */
+
+#define KEY_BUF_MAX		8				/* 键盘消息缓冲数量 */
+
+#define LED_X_CNT		2				/* LED扫描列 */
+#define LED_Y_CNT		1				/* LED扫描行 power */
 
 
-//#define SYNC_MAX_TIME	(KEY_SCAN_CNT * 2 * KEY_BUF_MAX) /* 最大同步时间 单位 ms */
-#define SYNC_MAX_TIME	(10 * 1000)	/* 10s */
+#define CAM_ADDR_MAX						8
 
+#define CODE_SWITCH_MAX						2
+#define CODE_SWITCH1_MAX_VALUE				63
+#define CODE_SWITCH2_MAX_VALUE				63
+#define CODE_SWITCH3_MAX_VALUE				63
+#define CODE_SWITCH4_MAX_VALUE				63
 
-#define DATA_SAVE_ADDR  		(0x0807D000)
-#define AUDIO_DATA_SAVE_ADDR	(0x0807E000)
-#define DATA_SAVE_HEAD			(0xA5A5)
-
-typedef struct _tagStKeyState
-{
-	uint8_t u8KeyValue;		/* 值 */
-	uint8_t u8KeyLocation;	/* 位置/ ID */
-	uint8_t u8KeyState;		/* 状态 */
-	uint8_t u8Reserved;
-}StKeyState;
+#define CODE_SWITCH1_REVERSE	0
+#define CODE_SWITCH2_REVERSE	0
+#define CODE_SWITCH3_REVERSE	0
+#define CODE_SWITCH4_REVERSE	0
 
 
 #endif

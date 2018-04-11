@@ -256,13 +256,20 @@ return 0;
  * @param unicode_letter an unicode letter which bitmap should be get
  * @return pointer to the bitmap or NULL if not found
  */
-const uint8_t * lv_font_get_bitmap_continuous(const lv_font_t * font, uint32_t unicode_letter)
+#ifndef __arm__
+const 
+#endif
+	uint8_t * lv_font_get_bitmap_continuous(const lv_font_t * font, uint32_t unicode_letter)
 {
     /*Check the range*/
     if(unicode_letter < font->unicode_first || unicode_letter > font->unicode_last) return NULL;
 
     uint32_t index = (unicode_letter - font->unicode_first);
+#ifdef __arm__
+    return (uint8_t *)(&font->glyph_bitmap[font->glyph_dsc[index].glyph_index]);
+#else
     return &font->glyph_bitmap[font->glyph_dsc[index].glyph_index];
+#endif
 }
 
 /**
@@ -271,7 +278,10 @@ const uint8_t * lv_font_get_bitmap_continuous(const lv_font_t * font, uint32_t u
  * @param unicode_letter an unicode letter which bitmap should be get
  * @return pointer to the bitmap or NULL if not found
  */
-const uint8_t * lv_font_get_bitmap_sparse(const lv_font_t * font, uint32_t unicode_letter)
+#ifndef __arm__
+const 
+#endif
+	uint8_t * lv_font_get_bitmap_sparse(const lv_font_t * font, uint32_t unicode_letter)
 {
     /*Check the range*/
     if(unicode_letter < font->unicode_first || unicode_letter > font->unicode_last) return NULL;
@@ -279,7 +289,11 @@ const uint8_t * lv_font_get_bitmap_sparse(const lv_font_t * font, uint32_t unico
     uint32_t i;
     for(i = 0; font->unicode_list[i] != 0; i++) {
         if(font->unicode_list[i] == unicode_letter) {
-            return &font->glyph_bitmap[font->glyph_dsc[i].glyph_index];
+#ifdef __arm__
+            return (uint8_t *)(&font->glyph_bitmap[font->glyph_dsc[i].glyph_index]);
+#else
+            return &font->glyph_bitmap[font->glyph_dsc[i].glyph_index];			
+#endif
         }
     }
 
@@ -292,7 +306,10 @@ const uint8_t * lv_font_get_bitmap_sparse(const lv_font_t * font, uint32_t unico
  * @param unicode_letter an unicode letter which width should be get
  * @return width of the gylph or -1 if not found
  */
-const int16_t lv_font_get_width_continuous(const lv_font_t * font, uint32_t unicode_letter)
+#ifndef __arm__
+const 
+#endif
+	int16_t lv_font_get_width_continuous(const lv_font_t * font, uint32_t unicode_letter)
 {
     /*Check the range*/
     if(unicode_letter < font->unicode_first || unicode_letter > font->unicode_last) {
@@ -309,7 +326,10 @@ const int16_t lv_font_get_width_continuous(const lv_font_t * font, uint32_t unic
  * @param unicode_letter an unicode letter which width should be get
  * @return width of the glyph or -1 if not found
  */
-const int16_t lv_font_get_width_sparse(const lv_font_t * font, uint32_t unicode_letter)
+#ifndef __arm__
+const 
+#endif
+	int16_t lv_font_get_width_sparse(const lv_font_t * font, uint32_t unicode_letter)
 {
     /*Check the range*/
     if(unicode_letter < font->unicode_first || unicode_letter > font->unicode_last) return -1;

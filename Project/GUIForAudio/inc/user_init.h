@@ -10,13 +10,8 @@
 #ifndef _USER_INIT_H_
 #define _USER_INIT_H_
 
-#define USB_POWER_PIN			GPIO_Pin_0
-#define USB_POWER_PIN_PORT		GPIOB
-
-void PeripheralClkEnable(void);
+void PeripheralPinClkEnable(void);
 void OpenSpecialGPIO(void);
-void USBPowerPinInit(void);
-void PVDInit(void);
 void SysTickInit(void);
-
+void Timer2InitTo1us(void);
 #endif

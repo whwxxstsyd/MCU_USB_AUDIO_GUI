@@ -17,6 +17,7 @@
 #include "app_port.h"
 
 #include "user_api.h"
+#include "gui_driver.h"
 
 u32 g_u32SysTickCnt = 0;
 
@@ -75,13 +76,26 @@ void DelayMicro(u32 u32MicroSecond)
 	}
 }
 
+__weak void LvglTickInc(void)
+{
+
+}
+__weak void KeyLedFlush(void)
+{
+
+}
+
+__weak void CodeSwitchFlush(void)
+{
+	
+}
 /* µŒ¥ ±÷”÷’∂À */
 void SysTick_Handler(void)
 {
-	void lv_tick_inc(uint32_t tick_period);
-
 	g_u32SysTickCnt++;
-	lv_tick_inc(1);
+	LvglTickInc();
+	KeyLedFlush();
+	CodeSwitchFlush();
 }
 
 

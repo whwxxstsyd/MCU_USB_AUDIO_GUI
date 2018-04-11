@@ -70,6 +70,7 @@ lv_obj_t * lv_slider_create(lv_obj_t * par, lv_obj_t * copy)
     ext->drag_value = LV_SLIDER_NOT_PRESSED;
     ext->style_knob = &lv_style_pretty;
     ext->knob_in = 0;
+	ext->progressive_value = 1;
 
     /*The signal and design functions are not copied so set them here*/
     lv_obj_set_signal_func(new_slider, lv_slider_signal);
@@ -96,9 +97,15 @@ lv_obj_t * lv_slider_create(lv_obj_t * par, lv_obj_t * copy)
     	ext->style_knob = copy_ext->style_knob;
         ext->action = copy_ext->action;
         ext->knob_in = copy_ext->knob_in;
+		ext->progressive_value = copy_ext->progressive_value;
+
         /*Refresh the style with new signal function*/
         lv_obj_refresh_style(new_slider);
     }
+	if (ext->progressive_value == 0)
+	{
+		ext->progressive_value = 1;
+	}
     
     return new_slider;
 }
@@ -153,6 +160,17 @@ void lv_slider_set_style(lv_obj_t *slider, lv_slider_style_t type, lv_style_t *s
             lv_obj_refresh_ext_size(slider);
             break;
     }
+}
+
+/**
+* Set the progressive of a slider
+* @param slider pointer to a slider object
+* @param progressive_value new progressive value should be set
+*/
+void lv_slider_set_progressive_value(lv_obj_t *slider, uint16_t progressive_value)
+{
+	lv_slider_ext_t * ext = lv_obj_get_ext_attr(slider);
+	ext->progressive_value = progressive_value == 0 ? 1 : progressive_value;
 }
 
 /*=====================
@@ -225,6 +243,18 @@ lv_style_t * lv_slider_get_style(lv_obj_t *slider, lv_slider_style_t type)
 
     /*To avoid warning*/
     return NULL;
+}
+
+/**
+* Get the progressive of a slider
+* @param slider pointer to a slider object
+* @return progressive value new of the slider
+*/
+uint16_t lv_slider_get_progressive_value(lv_obj_t *slider)
+{
+	lv_slider_ext_t *ext = lv_obj_get_ext_attr(slider);
+
+	return ext->progressive_value;
 }
 
 /**********************
@@ -436,10 +466,12 @@ static lv_res_t lv_slider_signal(lv_obj_t * slider, lv_signal_t sign, void * par
     } else if(sign == LV_SIGNAL_CONTROLL) {
         char c = *((char*)param);
         if(c == LV_GROUP_KEY_RIGHT || c == LV_GROUP_KEY_UP) {
-            lv_slider_set_value(slider, lv_slider_get_value(slider) + 1);
+            lv_slider_set_value(slider, lv_slider_get_value(slider) + 
+				ext->progressive_value);
             if(ext->action != NULL) ext->action(slider);
         } else if(c == LV_GROUP_KEY_LEFT || c == LV_GROUP_KEY_DOWN) {
-            lv_slider_set_value(slider, lv_slider_get_value(slider) - 1);
+            lv_slider_set_value(slider, lv_slider_get_value(slider) - 
+				ext->progressive_value);
             if(ext->action != NULL) ext->action(slider);
         }
     }

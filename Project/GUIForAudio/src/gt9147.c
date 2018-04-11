@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include "stm32f10x_conf.h"
-#include "user_conf.h"
 #include "user_api.h"
 #include "I2C.h"
 #include "lcd.h"
