@@ -40,8 +40,11 @@ typedef struct _tagStCodeSwitchState
 	u16 u16Index;
 	
 	u16 u16Dir;
+	u16 u16Speed;
+	
 	u16 u16Cnt;
 	u16 u16OldCnt;
+	u32 u32TriggerTime;
 }StCodeSwitchState;
 
 void CodeSwitchInit(void);

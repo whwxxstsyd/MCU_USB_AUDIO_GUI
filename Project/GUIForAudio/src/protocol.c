@@ -990,6 +990,7 @@ static bool KeyBoardProcess(StKeyMixIn *pKeyIn)
 		{
 			case _Key_Switch_2:
 			{
+				SetKeyValue(LV_GROUP_KEY_ENTER, pKeyState->u8KeyState == KEY_DOWN);
 				SetLvglKey(LV_GROUP_KEY_ENTER, pKeyState->u8KeyState == KEY_DOWN);
 				break;
 			}
@@ -1043,6 +1044,7 @@ static bool CodeSwitchProcess(StKeyMixIn *pKeyIn)
 	}
 	else if (pKeyIn->unKeyMixIn.stCodeSwitchState.u16Index == 1)
 	{
+		SetKeySpeek(pKeyIn->unKeyMixIn.stCodeSwitchState.u16Speed);
 		if (pKeyIn->unKeyMixIn.stCodeSwitchState.u16Dir)
 		{
 			SetLvglKey(LV_GROUP_KEY_RIGHT, boIsPress);
@@ -1521,8 +1523,17 @@ int32_t SendFactoryCtrlCmd(void)
 	return SendMemeoryCtrlCmd(0xFF, false);
 }
 
+__weak void SetKeySpeek(uint16_t u16Speed)
+{
+	
+}
 
 __weak void SetLvglKey(uint32_t u32Key, bool boIsPress)
+{
+
+}
+
+__weak void SetKeyValue(uint32_t u32Key, bool boIsPress)
 {
 
 }

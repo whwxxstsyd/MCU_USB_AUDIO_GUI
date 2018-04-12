@@ -18,6 +18,12 @@
 #define SW_WIDTH	84
 #define SW_HTIGHT	42
 
+enum 
+{
+	_OBJ_TYPE_SLIDER = 0x80,
+	_OBJ_TYPE_BTN
+};
+
 extern lv_font_t lv_font_chs_24;
 
 char *GetFakeUTF8ForCHS(const char *pStr, int32_t s32StrLen);
@@ -709,6 +715,8 @@ int32_t CreateVolumeCtrlGroup(
 			}
 		}
 
+		lv_obj_set_free_num(pGroup->pLeftVolume, _OBJ_TYPE_SLIDER);
+		lv_obj_set_free_num(pGroup->pRightVolume, _OBJ_TYPE_SLIDER);
 	}
 
 	return 0;
@@ -744,6 +752,11 @@ lv_res_t ActionMemoryMBoxCB(lv_obj_t *btn, const char *txt)
 	}
 	if (pGroup->pMBox != NULL)
 	{
+		//if (pGroup->pFactorySet != NULL)
+		//{
+		//	lv_group_focus_obj(pGroup->pFactorySet);
+		//	//lv_obj_set_free_ptr()
+		//}
 		lv_group_remove_obj(pGroup->pMBox);
 		pGroup->pMBox = NULL;
 	}
@@ -912,6 +925,7 @@ int32_t CreateMemoryCtrl(
 
 	lv_obj_set_free_ptr(pGroup->pMemoryCtrl, pGroup);
 	lv_obj_set_free_ptr(pGroup->pFactorySet, pGroup);
+	lv_obj_set_free_num(pGroup->pFactorySet, _OBJ_TYPE_BTN);
 
 
 	return 0;
@@ -1877,5 +1891,55 @@ void BarValueTest(void)
 #endif
 
 }
+
+void SetKeySpeek(uint16_t u16Speed)
+{
+	lv_obj_t *pObj;
+	if (s_pGroup == NULL)
+	{
+		return;
+	}
+	
+	pObj = lv_group_get_focused(s_pGroup);
+	
+	if (pObj != NULL)
+	{
+		if (lv_obj_get_free_num(pObj) == _OBJ_TYPE_SLIDER)
+		{
+			lv_slider_set_progressive_value(pObj, u16Speed);
+		}
+	}
+}
+
+
+void SetKeyValue(uint32_t u32Key, bool boIsPress)
+{
+	if (u32Key == LV_GROUP_KEY_ENTER)
+	{
+		lv_obj_t *pObj;
+
+		if (s_pGroup == NULL)
+		{
+			return;
+		}
+
+		pObj = lv_group_get_focused(s_pGroup);
+
+		if (pObj != NULL)
+		{
+			if (lv_obj_get_free_num(pObj) == _OBJ_TYPE_BTN)
+			{
+				if (!lv_obj_get_click(pObj))
+				{
+					return;
+				}
+				lv_btn_set_state(pObj, boIsPress ? LV_BTN_STATE_PR : LV_BTN_STATE_REL);
+			}
+		}
+
+	}
+
+}
+
 
 #endif

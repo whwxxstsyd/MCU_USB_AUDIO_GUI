@@ -161,6 +161,29 @@ void FlushCodeSwitch1(void)
 	boIsCW = !boIsCW;
 #endif
 	ChangeCodeSwitch1(boIsCW);
+	
+	{
+		u32 u32Time = s_stCodeSwitch1.u32TriggerTime;
+		s_stCodeSwitch1.u32TriggerTime = g_u32SysTickCnt;
+		u32Time  = SysTimeDiff(u32Time, g_u32SysTickCnt);
+		if (u32Time > 250)
+		{
+			s_stCodeSwitch1.u16Speed = 1;
+		}
+		else
+		{
+			if (u32Time != 0)
+			{
+				s_stCodeSwitch1.u16Speed = 500 / u32Time;				
+			}
+			if (s_stCodeSwitch1.u16Speed > 80)
+			{
+				s_stCodeSwitch1.u16Speed = 80;
+			}
+		}
+		
+	}
+	
 }
 
 
@@ -244,6 +267,28 @@ void FlushCodeSwitch2(void)
 	boIsCW = !boIsCW;
 #endif
 	ChangeCodeSwitch2(boIsCW);
+
+	{
+		u32 u32Time = s_stCodeSwitch2.u32TriggerTime;
+		s_stCodeSwitch2.u32TriggerTime = g_u32SysTickCnt;
+		u32Time  = SysTimeDiff(u32Time, g_u32SysTickCnt);
+		if (u32Time > 250)
+		{
+			s_stCodeSwitch2.u16Speed = 1;
+		}
+		else
+		{
+			if (u32Time != 0)
+			{
+				s_stCodeSwitch2.u16Speed = 500 / u32Time;				
+			}
+			if (s_stCodeSwitch2.u16Speed > 80)
+			{
+				s_stCodeSwitch2.u16Speed = 80;
+			}
+		}
+		
+	}
 
 }
 
@@ -362,27 +407,27 @@ void CodeSwitchFlush(void)
 		if (u8SwitchMode[0] == 1)
 		{
 			FlushCodeSwitch1();
-			s_stCodeSwitch1.u16Cnt = 1;
-			s_stCodeSwitch1.u16OldCnt = 0;
+			//s_stCodeSwitch1.u16Cnt = 1;
+			//s_stCodeSwitch1.u16OldCnt = 0;
 		}
 		else if (u8SwitchMode[0] == 2)
 		{
 			ChangeCodeSwitch1(s_stCodeSwitch1.u16Dir);
-			s_stCodeSwitch1.u16Cnt = 0;
-			s_stCodeSwitch1.u16OldCnt = 1;
+			s_stCodeSwitch1.u16Cnt &= 0xFFFE;
+			s_stCodeSwitch1.u16OldCnt = s_stCodeSwitch1.u16Cnt - 1;
 		}
 		
 		if (u8SwitchMode[1] == 1)
 		{
 			FlushCodeSwitch2();
-			s_stCodeSwitch2.u16Cnt = 1;
-			s_stCodeSwitch2.u16OldCnt = 0;
+			//s_stCodeSwitch2.u16Cnt = 1;
+			//s_stCodeSwitch2.u16OldCnt = 0;
 		}
 		else if (u8SwitchMode[1] == 2)
 		{
 			ChangeCodeSwitch2(s_stCodeSwitch2.u16Dir);
-			s_stCodeSwitch2.u16Cnt = 0;
-			s_stCodeSwitch2.u16OldCnt = 1;
+			s_stCodeSwitch2.u16Cnt &= 0xFFFE;
+			s_stCodeSwitch2.u16OldCnt = s_stCodeSwitch2.u16Cnt - 1;
 		}
 		
 

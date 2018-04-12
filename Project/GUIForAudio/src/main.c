@@ -77,12 +77,12 @@ int main (void)
 	{
         /* Periodically call the lv_task handler.
          * It could be done in a timer interrupt or an OS task too.*/
-		if (SysTimeDiff(u32LvglHandlerTime, g_u32SysTickCnt) >= 2)
+		if (SysTimeDiff(u32LvglHandlerTime, g_u32SysTickCnt) != 0)
 		{		
+			u32LvglHandlerTime = g_u32SysTickCnt;
 #if USE_LVGL
 			LvglFlushTask();
 #endif	
-			u32LvglHandlerTime = g_u32SysTickCnt;
 		}
 
 		if (SysTimeDiff(u32Time, g_u32SysTickCnt) > 100)
