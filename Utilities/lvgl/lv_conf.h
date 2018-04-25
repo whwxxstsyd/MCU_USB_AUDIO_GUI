@@ -36,8 +36,10 @@
  * Required for buffered drawing, opacity and anti-aliasing
  * VDB makes the double buffering, you don't need to deal with it!
  * Typical size: ~1/10 screen */
-#define LV_VDB_SIZE         (16 * 1024)  /*Size of VDB in pixel count (1/10 screen size is good for first)*/
-#define LV_VDB_ADR          0                  /*Place VDB to a specific address (e.g. in external RAM) (0: allocate automatically into RAM)*/
+#define LV_VDB_SIZE         (384 * 1024)  /*Size of VDB in pixel count (1/10 screen size is good for first)*/
+#define LV_VDB_ADR          (0x68000000)                /*Place VDB to a specific address (e.g. in external RAM) (0: allocate automatically into RAM)*/
+//#define LV_VDB_SIZE         (16 * 1024)  /*Size of VDB in pixel count (1/10 screen size is good for first)*/
+//#define LV_VDB_ADR          0                /*Place VDB to a specific address (e.g. in external RAM) (0: allocate automatically into RAM)*/
 
 /* Use two Virtual Display buffers (VDB) parallelize rendering and flushing (optional)
  * The flushing should use DMA to write the frame buffer in the background*/
@@ -48,7 +50,7 @@
 #define LV_ANTIALIAS        1       /*1: Enable anti-aliasing*/
 
 /*Screen refresh settings*/
-#define LV_REFR_PERIOD      25    /*Screen refresh period in milliseconds*/
+#define LV_REFR_PERIOD      40    /*Screen refresh period in milliseconds*/
 #define LV_INV_FIFO_SIZE    32    /*The average count of objects on a screen */
 
 /*=================
@@ -56,7 +58,7 @@
  *=================*/
 
 /*Input device settings*/
-#define LV_INDEV_READ_PERIOD            10                     /*Input device read period in milliseconds*/
+#define LV_INDEV_READ_PERIOD            25                     /*Input device read period in milliseconds*/
 #define LV_INDEV_POINT_MARKER           0                      /*Mark the pressed points  (required: USE_LV_REAL_DRAW = 1)*/
 #define LV_INDEV_DRAG_LIMIT             10                     /*Drag threshold in pixels */
 #define LV_INDEV_DRAG_THROW             20                     /*Drag throw slow-down in [%]. Greater value means faster slow-down */

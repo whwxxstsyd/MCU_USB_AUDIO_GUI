@@ -22,6 +22,11 @@ typedef struct _tagStLCDCtrl
 	u16 LCDRam;
 }StLCDCtrl;
 
+//使用NOR/SRAM的 Bank1.sector3,地址位HADDR[27,26]=10 
+//对IS61LV25616/IS62WV25616,地址线范围为A0~A17 
+//对IS61LV51216/IS62WV51216,地址线范围为A0~A18
+#define SRAM3_ADDR		((u32)(0x68000000))	
+
 //使用NOR/SRAM的 Bank1.sector4,地址位HADDR[27,26]=11 A10作为数据命令区分线 
 //注意设置时STM32内部会右移一位对其! 111110=0X3E			    
 #define LCD_BASE        ((u32)(0x6C000000 | 0x000007FE))

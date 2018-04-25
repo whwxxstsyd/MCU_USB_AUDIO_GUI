@@ -612,8 +612,9 @@ void NT35510Init(void)
 	Delay(100);
 	LCDWriteCmd(0x2900);
 	
-	/* Horizontal */
-	LCDWriteReg(0x3600, ((0<<7) | (1<<6) | 1<<5));	/* dir */
+	/* Horizontal, NT35510, 5.9.3 */
+	//LCDWriteReg(0x3600, ((0 << 7) | (1 << 6) | 1 << 5));	/* dir: Y, X, V */
+	LCDWriteReg(0x3600, ((1 << 7) | (0 << 6) | 1 << 5));	/* dir: Y, X, V */
 }
 
 //初始化lcd
@@ -639,23 +640,67 @@ void LCDInit(void)
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	/* FSMC_D2, D3, NOE, NWE, D13, D14, D15, D0, D1 */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 | GPIO_Pin_5 |
-								GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 |
-								GPIO_Pin_15;
+	/* FSMC_D2, D3, NOE, NWE, D13, D14, D15, A16, A17, A18, D0, D1 */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | 
+								GPIO_Pin_4 | GPIO_Pin_5 |
+								GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | 
+								GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | 
+								GPIO_Pin_14 | GPIO_Pin_15;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
 
-	/* FSMC_D4, D5, D16, D17, D8, D9, D10, D11, D12, D13 */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 |
+	/* FSMC_NBL0, NBL1, FSMC_D4, D5, D16, D17, D8, D9, D10, D11, D12, D13 */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | 
+								GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 |
 								GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 |
 								GPIO_Pin_15;
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
+	
+	/* FSMC_A0, A1, A2, A3, A4, A5, A6, A7, A8, A9 */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 |  GPIO_Pin_1 |  GPIO_Pin_2 |  GPIO_Pin_3 |
+						GPIO_Pin_4 | GPIO_Pin_5 | 
+						GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
+	GPIO_Init(GPIOF, &GPIO_InitStructure);
+	
 
-	/* FSMC_A10, NE4 */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_12;
+	/* FSMC_A10, A11, A12, A13, A14, A15, NE3, NE4 */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 |  GPIO_Pin_1 |  GPIO_Pin_2 |  GPIO_Pin_3 |
+						GPIO_Pin_4 | GPIO_Pin_5 | 
+						GPIO_Pin_10 | GPIO_Pin_12;
 	GPIO_Init(GPIOG, &GPIO_InitStructure);
 
 /*-- FSMC Configuration ------------------------------------------------------*/
+
+	/*----------------------- SRAM Bank 3 ----------------------------------------*/
+	pRead.FSMC_AddressSetupTime = 0;
+	pRead.FSMC_AddressHoldTime = 0;
+	pRead.FSMC_DataSetupTime = 3;
+	pRead.FSMC_BusTurnAroundDuration = 0;
+	pRead.FSMC_CLKDivision = 0;
+	pRead.FSMC_DataLatency = 0;
+	pRead.FSMC_AccessMode = FSMC_AccessMode_A;
+	pWrite = pRead;
+
+    FSMC_NORSRAMInitStructure.FSMC_Bank = FSMC_Bank1_NORSRAM3;//  这里我们使用NE3 ，也就对应BTCR[4],[5]。
+    FSMC_NORSRAMInitStructure.FSMC_DataAddressMux = FSMC_DataAddressMux_Disable; 
+    FSMC_NORSRAMInitStructure.FSMC_MemoryType =FSMC_MemoryType_SRAM;// FSMC_MemoryType_SRAM;  //SRAM   
+    FSMC_NORSRAMInitStructure.FSMC_MemoryDataWidth = FSMC_MemoryDataWidth_16b;//存储器数据宽度为16bit  
+    FSMC_NORSRAMInitStructure.FSMC_BurstAccessMode =FSMC_BurstAccessMode_Disable;// FSMC_BurstAccessMode_Disable; 
+    FSMC_NORSRAMInitStructure.FSMC_WaitSignalPolarity = FSMC_WaitSignalPolarity_Low;
+	FSMC_NORSRAMInitStructure.FSMC_AsynchronousWait=FSMC_AsynchronousWait_Disable;
+    FSMC_NORSRAMInitStructure.FSMC_WrapMode = FSMC_WrapMode_Disable;   
+    FSMC_NORSRAMInitStructure.FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;  
+    FSMC_NORSRAMInitStructure.FSMC_WriteOperation = FSMC_WriteOperation_Enable;	//存储器写使能 
+    FSMC_NORSRAMInitStructure.FSMC_WaitSignal = FSMC_WaitSignal_Disable;  
+    FSMC_NORSRAMInitStructure.FSMC_ExtendedMode = FSMC_ExtendedMode_Disable; // 读写使用相同的时序
+    FSMC_NORSRAMInitStructure.FSMC_WriteBurst = FSMC_WriteBurst_Disable;  
+    FSMC_NORSRAMInitStructure.FSMC_ReadWriteTimingStruct = &pRead;
+    FSMC_NORSRAMInitStructure.FSMC_WriteTimingStruct = &pWrite; //读写同样时序
+
+    FSMC_NORSRAMInit(&FSMC_NORSRAMInitStructure);  //初始化FSMC配置
+
+   	FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);  // 使能BANK3										  
+
+
 	/*----------------------- SRAM Bank 4 ----------------------------------------*/
 	/* FSMC_Bank1_NORSRAM4 configuration */
 #if !USE_7
@@ -707,6 +752,7 @@ void LCDInit(void)
 	FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM4, ENABLE);
 	Delay(100);
 
+	//return ;
 #if USE_7
 
 	GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_RESET);
@@ -759,14 +805,14 @@ void LCDDMAWrite(const u16 *pBuf, u32 u32Len)
 	/* peripheral --> memory */
 	while (u32Len != 0)
 	{
-		u16 u16Tmp = (u32Len > 65535) ? 65535: u32Len;
-		u32Len -= u16Tmp;
+		u32 u32Tmp = (u32Len > 65535) ? 65535: u32Len;
+		u32Len -= u32Tmp;
 		
 		LCD_DMA->CPAR = (u32)pBuf;
-		pBuf = (const u16 *)((u32)pBuf + u16Tmp); 
+		pBuf = (const u16 *)((u32)pBuf + u32Tmp * 2); 
 		LCD_DMA->CMAR = (u32)(&(LCD->LCDRam));
 		
-		LCD_DMA->CNDTR = u16Tmp;
+		LCD_DMA->CNDTR = u32Tmp;
 		
 		LCD_DMA->CCR = DMA_PeripheralInc_Enable | DMA_PeripheralDataSize_HalfWord |
 						DMA_MemoryDataSize_HalfWord | DMA_Priority_High | DMA_M2M_Enable;

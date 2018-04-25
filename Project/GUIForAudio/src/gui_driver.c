@@ -220,9 +220,20 @@ void LvglDispMem(void)
 	char c8Buf[64];
 
 	lv_mem_monitor(&stMemMonitor);
-	sprintf(c8Buf, "Total: %d, free: %d%%, using: %d",
-		stMemMonitor.total_size, stMemMonitor.free_size * 100 / stMemMonitor.total_size,
+	sprintf(c8Buf, "free: %d%%, using: %d",
+		stMemMonitor.free_size * 100 / stMemMonitor.total_size,
 		stMemMonitor.total_size - stMemMonitor.free_size);
+	{
+		StPoint stPoint[GT9147_MAX_TOUCH];
+		uint8_t u8Cnt = 0;
+		GT9147Scan(stPoint, &u8Cnt);
+		if (u8Cnt != 0)
+		{
+			sprintf(c8Buf + strlen(c8Buf), "; c: %d, x: %d, y: %d",
+				u8Cnt, stPoint[0].u16X, stPoint[0].u16Y);			
+		}
+
+	}
 	if (label != NULL)
 	{
 		lv_obj_del(label);

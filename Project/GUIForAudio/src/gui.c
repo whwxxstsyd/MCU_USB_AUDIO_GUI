@@ -740,6 +740,11 @@ lv_res_t ActionMemoryMBoxCB(lv_obj_t *btn, const char *txt)
 {
 	lv_obj_t *pParent = lv_obj_get_parent(btn);
 	StMemoryCtrlGroup *pGroup = (StMemoryCtrlGroup *)lv_obj_get_free_ptr(pParent);
+	if (pGroup->pMBox == NULL)
+	{
+		return LV_RES_INV;
+	}
+
 	if (strstr(txt, s_c8StrLoad) != NULL)
 	{
 		printf("%s %d\n", "ÔØÈë", pGroup->u8TmpMemorySelect);
@@ -759,9 +764,9 @@ lv_res_t ActionMemoryMBoxCB(lv_obj_t *btn, const char *txt)
 		//}
 		lv_group_remove_obj(pGroup->pMBox);
 		pGroup->pMBox = NULL;
+		lv_mbox_start_auto_close(pParent, 100);
 	}
 
-	lv_mbox_start_auto_close(pParent, 100);
 
 
 	return LV_RES_INV;
@@ -1773,6 +1778,7 @@ int32_t CreateTableView(void)
 
 	//lv_font_add(&lv_font_symbol_20, &lv_font_chs_24);
 	s_pTheme = lv_theme_zen_init(120, &lv_font_chs_24);
+	//s_pTheme = lv_theme_alien_init(120, &lv_font_chs_24);
 
 	if (s_pTheme == NULL)
 	{

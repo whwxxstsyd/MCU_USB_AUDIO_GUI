@@ -200,9 +200,15 @@ bool GT9147GetPoint(u8 u8Mode)
 			u16 u16Tmp;
 			GT9147ReadReg(c_u16GT9147PointReg[i], s_unPoint.u8Buf[i],4);			//¶ÁÈ¡XY×ø±êÖµ
 		
-			u16Tmp = s_unPoint.stPoint[i].u16X;			
+			u16Tmp = s_unPoint.stPoint[i].u16X;	
+#if 0			
 			s_unPoint.stPoint[i].u16X = s_unPoint.stPoint[i].u16Y;
-			s_unPoint.stPoint[i].u16Y = LCD_HEIGHT - u16Tmp;
+			s_unPoint.stPoint[i].u16Y = LCD_HEIGHT - 1 - u16Tmp;
+#else
+			s_unPoint.stPoint[i].u16X = LCD_WIDTH - 1 -  s_unPoint.stPoint[i].u16Y;
+			s_unPoint.stPoint[i].u16Y = u16Tmp;
+#endif
+			
 		}
 		s_u8PointCnt = u8Tmp;
 	}	

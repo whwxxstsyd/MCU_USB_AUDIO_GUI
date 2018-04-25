@@ -31,7 +31,53 @@
 #include "gui_driver.h"
 #include "gui.h"
 
+#define _GUI_Dir_Horizontal 0
 
+void GUIDrawLine(uint16_t u16Xpos, uint16_t u16Ypos, uint16_t u16Length, 
+	uint16_t u16Direction, uint16_t u16Color)
+{
+	uint16_t i;
+	uint16_t *pTmp = (uint16_t *)(SRAM3_ADDR);
+	pTmp = pTmp + u16Ypos * LV_HOR_RES + u16Xpos;
+	for (i = 0; i < u16Length; i++)
+	{
+		pTmp[i] |= u16Color;
+	}
+}
+
+void GUIDrawFullCircle(uint16_t u16XPos, uint16_t u16YPos, uint16_t u16Radius, 
+	uint16_t u16Color)
+{
+	int16_t  D;    /* Decision Variable */ 
+	uint16_t  CurX;/* Current X Value */
+	uint16_t  CurY;/* Current Y Value */ 
+
+	D = 3 - (u16Radius << 1);
+
+	CurX = 0;
+	CurY = u16Radius;
+
+	while (CurX <= CurY)
+	{
+
+		GUIDrawLine(u16XPos - CurX, u16YPos + CurY, 2 * CurX, _GUI_Dir_Horizontal, u16Color);
+		GUIDrawLine(u16XPos - CurX, u16YPos - CurY, 2 * CurX, _GUI_Dir_Horizontal, u16Color);
+
+		GUIDrawLine(u16XPos - CurY, u16YPos + CurX, 2 * CurY, _GUI_Dir_Horizontal, u16Color);
+		GUIDrawLine(u16XPos - CurY, u16YPos - CurX, 2 * CurY, _GUI_Dir_Horizontal, u16Color);
+
+		if (D < 0)
+		{ 
+			D += ((CurX << 2) + 6);
+		}
+		else
+		{
+			D += (((CurX - CurY) << 2) + 10);
+			CurY--;
+		}
+		CurX++;
+	}
+}
 
 int main (void)
 {
@@ -45,8 +91,8 @@ int main (void)
 	OpenSpecialGPIO();
 	
 	//ReadSaveData();
-	KeyLedInit();
-	CodeSwitchInit();
+	//KeyLedInit();
+	//CodeSwitchInit();
 	
 	MessageUartInit();
 	MessageUart2Init();
@@ -56,6 +102,29 @@ int main (void)
 	
 	LCDInit();
 	LCDClear(RGB(255, 0, 0));
+	{
+		int32_t i = 0;
+		uint32_t *pTmp = (uint32_t *)SRAM3_ADDR;
+		uint16_t *pTmp1 = (uint16_t *)SRAM3_ADDR;
+		for (i = 0; i < 512 * 1024 / 2; i++)
+		{
+			*pTmp++ = 0;
+		}
+
+//		for (i = 0; i < 512 * 1024; i++)
+//		{
+//			uint8_t u8Gray = i;
+//			*pTmp1++ = RGB(u8Gray, u8Gray, u8Gray);
+//		}
+		
+		GUIDrawFullCircle(400, 150, 270 - 120, RGB(255, 0, 0));
+		GUIDrawFullCircle(400 + 104, 270 + 60, 150, RGB(0, 255, 0));
+		GUIDrawFullCircle(400 - 104, 270 + 60, 150, RGB(0, 0, 255));
+		
+		LCDDMAWrite((const uint16_t *)SRAM3_ADDR, 384000);	
+
+		i = i;
+	}
 
 	I2CInit();
 	GT9147Init();
