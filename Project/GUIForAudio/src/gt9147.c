@@ -175,10 +175,28 @@ bool GT9147Init(void)
 	return true;
 }
 
+static bool s_boNeedGetPoint = false;
 
-bool GT9147GetPoint(u8 u8Mode)
+void GT9147_EXIT_IRQHandler(void)
+{
+	if(EXTI_GetITStatus(GT9147_EXIT_LINE) != RESET)
+	{
+		s_boNeedGetPoint = true;
+		GT9147GetPoint(1);
+		/* Clear the  EXTI line 0 pending bit */
+		EXTI_ClearITPendingBit(GT9147_EXIT_LINE);
+	}
+} 
+
+
+bool GT9147GetPoint(uint8_t u8Mode)
 {
 	u8 u8Tmp = 0;
+	if (!s_boNeedGetPoint)
+	{
+		return false;
+	}
+	s_boNeedGetPoint = false;
 	if (!GT9147ReadReg(GT_GSTID_REG, &u8Mode, 1))
 	{
 		return false;
@@ -189,6 +207,12 @@ bool GT9147GetPoint(u8 u8Mode)
 		u8Tmp = 0;
 		GT9147WriteReg(GT_GSTID_REG, &u8Tmp, 1);//«Â±Í÷æ 				
 	}
+	
+//	if ((u8Mode & 0x80) == 0)
+//	{
+//		return false;
+//	}
+		
 
 	u8Tmp = u8Mode & 0x0F;
 	
@@ -222,18 +246,7 @@ bool GT9147GetPoint(u8 u8Mode)
 }
 
 
-void GT9147_EXIT_IRQHandler(void)
-{
-	if(EXTI_GetITStatus(GT9147_EXIT_LINE) != RESET)
-	{
-		GT9147GetPoint(1);
-		/* Clear the  EXTI line 0 pending bit */
-		EXTI_ClearITPendingBit(GT9147_EXIT_LINE);
-	}
-} 
-
-
-bool GT9147Scan(StPoint stPoint[GT9147_MAX_TOUCH], u8 *pCnt)
+bool GT9147Scan(StPoint stPoint[GT9147_MAX_TOUCH], uint8_t *pCnt)
 {
 
 	__disable_irq();

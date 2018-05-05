@@ -26,8 +26,8 @@ PW12:	PB14---->X
 */
 
 
-#define KEY_X_1				GPIO_Pin_12
-#define KEY_X_2				GPIO_Pin_14
+#define KEY_X_1				GPIO_Pin_4
+#define KEY_X_2				GPIO_Pin_3
 #define KEY_X_3				GPIO_Pin_6
 #define KEY_X_4				GPIO_Pin_7
 #define KEY_X_5				GPIO_Pin_8
@@ -36,8 +36,8 @@ PW12:	PB14---->X
 #define KEY_X_8				GPIO_Pin_11
 
 
-#define KEY_X_PORT_1		GPIOF
-#define KEY_X_PORT_2		GPIOF
+#define KEY_X_PORT_1		GPIOC
+#define KEY_X_PORT_2		GPIOE
 #define KEY_X_PORT_3		GPIOC
 #define KEY_X_PORT_4		GPIOC
 #define KEY_X_PORT_5		GPIOC

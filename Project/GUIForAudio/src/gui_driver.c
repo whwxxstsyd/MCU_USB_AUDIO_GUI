@@ -137,22 +137,24 @@ static bool ex_tp_read(lv_indev_data_t *data)
     /* data->state = LV_INDEV_STATE_REL or LV_INDEV_STATE_PR */
     /* data->point.x = tp_x; */
     /* data->point.y = tp_y; */
-	static StPoint stLastPoint = {0, 0};
+	
+	static StPoint stLastPoint[GT9147_MAX_TOUCH] = {0, 0};
+	uint32_t u32Index = (uint32_t)(data->user_data);
 	
 	StPoint stPoint[GT9147_MAX_TOUCH];
 	uint8_t u8Cnt = 0;
 	GT9147Scan(stPoint, &u8Cnt);
-	if (u8Cnt == 0)
+	if (u8Cnt < (u32Index + 1))
 	{
-		data->point.x = stLastPoint.u16X;
-		data->point.y = stLastPoint.u16Y;
+		data->point.x = stLastPoint[u32Index].u16X;
+		data->point.y = stLastPoint[u32Index].u16Y;
 		data->state = LV_INDEV_STATE_REL;					
 	}
 	else
 	{
 		data->state = LV_INDEV_STATE_PR;
-		data->point.x = stLastPoint.u16X = stPoint[0].u16X;
-		data->point.y = stLastPoint.u16Y = stPoint[0].u16Y;
+		data->point.x = stLastPoint[u32Index].u16X = stPoint[u32Index].u16X;
+		data->point.y = stLastPoint[u32Index].u16Y = stPoint[u32Index].u16Y;
 	}
 	
 
@@ -202,7 +204,11 @@ static void hal_init(void)
     lv_indev_drv_init(&indev_drv);          /*Basic initialization*/
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.read = ex_tp_read;         /*This function will be called periodically (by the library) to get the mouse position and state*/
-    lv_indev_drv_register(&indev_drv);
+    indev_drv.user_data = (void *) 0;
+	lv_indev_drv_register(&indev_drv);
+	
+    indev_drv.user_data = (void *) 1;
+	lv_indev_drv_register(&indev_drv);
 }
 
 

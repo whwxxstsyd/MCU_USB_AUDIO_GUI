@@ -994,6 +994,12 @@ static bool KeyBoardProcess(StKeyMixIn *pKeyIn)
 				SetLvglKey(LV_GROUP_KEY_ENTER, pKeyState->u8KeyState == KEY_DOWN);
 				break;
 			}
+			case _Key_Switch_1:
+			{
+//				int32_t *pTmp = NULL;
+//				pTmp[0] = 0;
+				break;
+			}
 			default:
 				break;
 		}

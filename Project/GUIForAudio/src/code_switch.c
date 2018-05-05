@@ -23,6 +23,29 @@
 
 #define CANCLE_TIME			(1)
 
+#define CODE_SWITCH1_PIN_A				GPIO_Pin_0
+#define CODE_SWITCH1_PIN_A_PORT			GPIOC
+#define CODE_SWITCH1_PIN_B				GPIO_Pin_4
+#define CODE_SWITCH1_PIN_B_PORT			GPIOA
+
+#define CODE_SWITCH1_INT_SRC			GPIO_PinSource0
+#define CODE_SWITCH1_INT_SRC_PORT		GPIO_PortSourceGPIOC
+#define CODE_SWITCH1_INT_LINE			EXTI_Line0
+#define CODE_SWITCH1_INT_CHANNEL		EXTI0_IRQn
+
+
+
+#define CODE_SWITCH2_PIN_A				GPIO_Pin_2
+#define CODE_SWITCH2_PIN_A_PORT			GPIOC
+#define CODE_SWITCH2_PIN_B				GPIO_Pin_6
+#define CODE_SWITCH2_PIN_B_PORT			GPIOA
+
+#define CODE_SWITCH2_INT_SRC			GPIO_PinSource2
+#define CODE_SWITCH2_INT_SRC_PORT		GPIO_PortSourceGPIOC
+#define CODE_SWITCH2_INT_LINE			EXTI_Line2
+#define CODE_SWITCH2_INT_CHANNEL		EXTI2_IRQn
+
+
 static uint8_t s_u8SwitchMode[CODE_SWITCH_MAX] = {0};
 #define s_u8SwitchMode1		s_u8SwitchMode[0]
 #define s_u8SwitchMode2		s_u8SwitchMode[1]
@@ -187,7 +210,7 @@ void FlushCodeSwitch1(void)
 }
 
 
-void EXTI1_IRQHandler(void)
+void EXTI0_IRQHandler(void)
 {
 	if(EXTI_GetITStatus(CODE_SWITCH1_INT_LINE) != RESET)
 	{	
@@ -292,7 +315,7 @@ void FlushCodeSwitch2(void)
 
 }
 
-void EXTI3_IRQHandler(void)
+void EXTI2_IRQHandler(void)
 {
 	if(EXTI_GetITStatus(CODE_SWITCH2_INT_LINE) != RESET)
 	{	

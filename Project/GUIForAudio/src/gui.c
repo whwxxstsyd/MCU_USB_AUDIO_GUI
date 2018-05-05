@@ -1618,7 +1618,6 @@ int32_t CreateTable(lv_obj_t *pTabPage, uint16_t u16TableIndex)
 }
 
 
-static lv_obj_t *pBar[14];
 
 void ActionTabview(lv_obj_t *pTV, uint16_t u16CurTable)
 {

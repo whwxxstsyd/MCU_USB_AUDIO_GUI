@@ -11,6 +11,7 @@ typedef struct _tagStPoint
 }StPoint;
 
 bool GT9147Init(void);
+bool GT9147GetPoint(uint8_t u8Mode);
 bool GT9147Scan(StPoint stPoint[GT9147_MAX_TOUCH], uint8_t *pCnt);
 
 #endif

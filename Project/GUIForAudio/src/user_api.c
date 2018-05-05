@@ -94,8 +94,8 @@ void SysTick_Handler(void)
 {
 	g_u32SysTickCnt++;
 	LvglTickInc();
-	//KeyLedFlush();
-	//CodeSwitchFlush();
+	KeyLedFlush();
+	CodeSwitchFlush();
 }
 
 
