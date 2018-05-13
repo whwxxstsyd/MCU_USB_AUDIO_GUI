@@ -1240,7 +1240,7 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO)
 
 			case 0x81:	
 			{
-#if 1			
+#if 0			
 				const u8 u8ChannelMap[AUDIO_VOLTAGE_CNT + 1] = 
 				{
 					_Channel_AIN_1,

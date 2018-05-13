@@ -110,6 +110,7 @@ static void ex_disp_map(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv
     }
 
 }
+#endif
 
 
 /* Write a pixel array (called 'map') to the a specific area on the display
@@ -118,16 +119,14 @@ static void ex_disp_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2,  lv_col
 {
     /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
 
-    int32_t x;
-    int32_t y;
-    for(y = y1; y <= y2; y++) {
-        for(x = x1; x <= x2; x++) {
-            /* Put a pixel to the display. For example: */
-            /* put_px(x, y, *color)*/
-        }
-    }
+	int32_t s32Length = (x2 - x1 + 1) * (y2 - y1 + 1);
+
+	LCDSetCursor(x1, y1);	//设置光标位置 
+	LCDSetXEnd(x2);
+	LCDWriteRAMPrepare();     //开始写入GRAM	 	  
+	LCDDMAWriteSameValue((uint16_t)color.full, s32Length);	
+
 }
-#endif
 
 /* Read the touchpad and store it in 'data'
  * REaturn false if no more data read; true for ready again */
@@ -193,7 +192,7 @@ static void hal_init(void)
     disp_drv.disp_fill = ex_disp_fill;
     disp_drv.disp_map = ex_disp_map;
 #else
-    disp_drv.disp_fill = NULL;
+    disp_drv.disp_fill = ex_disp_fill;
     disp_drv.disp_map = NULL;
 	
 #endif

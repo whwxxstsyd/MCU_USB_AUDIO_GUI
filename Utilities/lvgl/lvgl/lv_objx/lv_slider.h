@@ -40,7 +40,9 @@ typedef struct
     lv_style_t *style_knob;    /*Style of the knob*/
     int16_t drag_value;          /*Store a temporal value during press until release (Handled by the library)*/
 	int16_t progressive_value;	/* using by the group */
-	uint8_t knob_in     :1;     /*1: Draw the knob inside the bar*/
+	uint8_t knob_in : 1;     /*1: Draw the knob inside the bar*/
+	uint8_t knob_radio_w;     /* knob radio width */
+	uint8_t knob_radio_h;     /* knob radio height */
 }lv_slider_ext_t;
 
 /*Built-in styles of slider*/
@@ -130,6 +132,14 @@ void lv_slider_set_style(lv_obj_t *slider, lv_slider_style_t type, lv_style_t *s
 void lv_slider_set_progressive_value(lv_obj_t *slider, uint16_t progressive_value);
 
 
+/**
+* Set the knob radio of a slider
+* @param slider pointer to a slider object
+* @param width width radio
+* @param height height radio
+*/
+void lv_slider_set_knob_radio(lv_obj_t *slider, uint8_t width, uint8_t height);
+
 /*=====================
  * Getter functions
  *====================*/
@@ -198,6 +208,14 @@ lv_style_t * lv_slider_get_style(lv_obj_t *slider, lv_slider_style_t type);
 * @return progressive value new of the slider
 */
 uint16_t lv_slider_get_progressive_value(lv_obj_t *slider);
+
+/**
+* Set the knob radio of a slider
+* @param slider pointer to a slider object
+* @param width porinter to a width value
+* @param height porinter to a height value
+*/
+uint16_t lv_slider_get_knob_radio(lv_obj_t *slider, uint8_t *width, uint8_t *height);
 
 /**********************
  *      MACROS

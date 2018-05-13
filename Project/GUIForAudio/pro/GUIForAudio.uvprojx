@@ -627,6 +627,56 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>C2D</GroupName>
+          <Files>
+            <File>
+              <FileName>C2D.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\C2D.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_DrawLine.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\GUI_DrawLine.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_DrawPoint.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\GUI_DrawPoint.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_DrawPolygon.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\GUI_DrawPolygon.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_DrawPolyline.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\GUI_DrawPolyline.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_FillPolygon.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\GUI_FillPolygon.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_FillRect.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\GUI_FillRect.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI2DLib.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\GUI2DLib.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUICirc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\GUICirc.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>CMSIS</GroupName>
           <Files>
             <File>

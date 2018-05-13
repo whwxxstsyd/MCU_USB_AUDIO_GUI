@@ -50,6 +50,7 @@ static void basic_init(void)
 
     lv_style_copy(&def, &lv_style_pretty);  /*Initialize the default style*/
     def.body.border.opa = LV_OPA_COVER;
+	def.body.radius = LV_DPI / 10;
     def.text.font = _font;
 	def.text.color = LV_COLOR_WHITE;//LV_COLOR_HEX3(0x444);
 
@@ -97,7 +98,7 @@ static void btn_init(void)
     static lv_style_t rel, pr, tgl_pr, ina;
     lv_style_copy(&rel, &def);
     rel.body.empty = 1;
-    rel.body.radius = LV_RADIUS_CIRCLE;
+    //rel.body.radius = LV_RADIUS_CIRCLE;
     rel.body.border.width = 2;
     rel.body.border.color = lv_color_hsv_to_rgb(_hue, 40, 90);
     rel.body.border.opa = LV_OPA_COVER;
@@ -199,13 +200,13 @@ static void bar_init(void)
 
     lv_style_copy(&bg, &def);
     bg.body.empty = 1;
-    bg.body.radius = LV_RADIUS_CIRCLE;
+    //bg.body.radius = LV_RADIUS_CIRCLE;
     bg.body.border.width = 2;
     bg.body.border.opa = LV_OPA_COVER;
     bg.body.border.color = lv_color_hsv_to_rgb(_hue, 40, 90);
 
     lv_style_copy(&indic, &def);
-    indic.body.radius = LV_RADIUS_CIRCLE;
+    //indic.body.radius = LV_RADIUS_CIRCLE;
     indic.body.main_color = lv_color_hsv_to_rgb(_hue, 40, 90);
     indic.body.grad_color = indic.body.main_color;
     indic.body.border.width = 0;
@@ -226,7 +227,7 @@ static void slider_init(void)
     lv_style_copy(&knob, &def);
     knob.body.main_color = theme.bar.indic->body.main_color;
     knob.body.grad_color = knob.body.main_color;
-    knob.body.radius = LV_RADIUS_CIRCLE;
+    //knob.body.radius = LV_RADIUS_CIRCLE;
     knob.body.border.width = 0;
 
     theme.slider.bg = theme.bar.bg;
@@ -241,7 +242,7 @@ static void sw_init(void)
     static lv_style_t indic;
 
     lv_style_copy(&indic, theme.slider.indic);
-    indic.body.radius = LV_RADIUS_CIRCLE;
+    //indic.body.radius = LV_RADIUS_CIRCLE;
     indic.body.main_color = lv_color_hsv_to_rgb(_hue, 15, 95);
     indic.body.grad_color = indic.body.main_color;
     indic.body.border.width = theme.slider.bg->body.border.width;
@@ -457,7 +458,8 @@ static void mbox_init(void)
     lv_style_copy(&bg, theme.panel);
     //bg.body.main_color = lv_color_hsv_to_rgb(_hue, 10, 95);
     //bg.body.grad_color = bg.body.main_color;
-    bg.text.color = lv_color_hsv_to_rgb(_hue, 40, 25);
+    //bg.text.color = lv_color_hsv_to_rgb(_hue, 40, 25);
+	bg.text.color = lv_color_hsv_to_rgb(_hue, 50, 80);
 
     lv_style_copy(&rel, &def);
     rel.body.main_color = lv_color_hsv_to_rgb(_hue, 25, 85);

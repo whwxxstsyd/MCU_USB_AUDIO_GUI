@@ -174,6 +174,7 @@ enum
 	_Tab_Input_PC_Ctrl,
 	_Tab_Output,
 	_Tab_Other_Ctrl,
+	_Tab_Peripheral_Ctrl,
 	_Tab_SYS_Ctrl,
 	
 	_Tab_Reserved,
@@ -195,6 +196,36 @@ enum
 	_Fun_Reserved,
 };
 
+
+enum
+{
+	_Logo_Color_Red,
+	_Logo_Color_Green,
+	_Logo_Color_Blue,
+	_Logo_Color_White,
+	_Logo_Color_Reserved,
+	//_Logo_Color_Black,
+};
+
+enum
+{
+	_Logo_State_REL,
+	_Logo_State_TGL_REL,
+	_Logo_State_Press,
+	_Logo_State_Reserved,
+};
+#define LIGHT_ON		0xFF
+#define LIGHT_PRESS		0xC0
+#define LIGHT_OFF		0x80
+#define LIGHT_GRAD		0x50
+#define LIGHT_SHADOW	0x30
+
+
+typedef struct _tagStLogoColorCtrl
+{
+	lv_obj_t *pObjColor[_Logo_Color_Reserved];
+	uint8_t u8CurColorIndex;
+}StLogoColorCtrl;
 
 int32_t CreateTableView(void);
 int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel);

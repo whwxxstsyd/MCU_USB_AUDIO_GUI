@@ -15,8 +15,13 @@
 #define printf(x, ...)
 #endif
 
-#define SW_WIDTH	84
-#define SW_HTIGHT	42
+#define SW_WIDTH		84
+#define SW_HTIGHT		55
+
+#define SLIDER_WIDTH	60
+
+#define KNOB_WIDTH		3
+#define KNOB_HEIGHT		2
 
 enum 
 {
@@ -91,6 +96,7 @@ const char *c_pTableName[_Tab_Reserved] =
 	"PC 控制",
 	"输出",
 	"其他",
+	"外设",
 	"系统设置",
 //	"音量采集",
 //	"保留",
@@ -107,6 +113,22 @@ const uint8_t c_u8CtrlMode2[] =
 {
 	0, 3
 };
+
+
+static lv_style_t s_stLogoStyle[_Logo_Color_Reserved][_Logo_State_Reserved] =
+{
+	0,
+};
+/* B, G, R */
+static lv_color24_t const s_stLogoColor[_Logo_Color_Reserved] =
+{
+	{ 0 , 0, 0xFF, },
+	{ 0 , 0xFF, 0, },
+	{ 0xFF, 0 , 0, },
+	{ 0xFF, 0xFF , 0xFF, },
+	//{ 0x00, 0x00 , 0x00, },
+};
+static StLogoColorCtrl s_stLogoColorCtrl = { {NULL,}, 0xFF };
 
 
 int32_t GetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode *pMode)
@@ -293,6 +315,13 @@ __weak int32_t SendMemeoryCtrlCmd(uint16_t u16Channel, bool boIsSave)
 __weak int32_t SendFactoryCtrlCmd(void)
 {
 	printf("%s\n", __FUNCTION__);
+	return 0;
+}
+
+__weak int32_t SendLogoColorCtrlCmd(lv_color24_t stColor)
+{
+	printf("%s logo color is: (%02x, %02x, %02x)\n", __FUNCTION__,
+		stColor.red, stColor.green, stColor.blue);
 	return 0;
 }
 
@@ -510,27 +539,6 @@ int32_t CreateVolumeCtrlGroup(
 		return -1;
 	}
 
-	if (lv_obj_get_free_ptr(pParent) == NULL)
-	{
-		pObjTmp = lv_cont_create(pParent, NULL);
-		lv_obj_set_style(pObjTmp, &lv_style_transp);
-		lv_obj_set_click(pObjTmp, false);
-		//lv_cont_set_fit(pObjTmp, false, false);
-		//lv_cont_set_layout(pObjTmp, LV_LAYOUT_OFF);
-		//lv_obj_set_pos(pObjTmp, 0, 0);
-		lv_obj_set_height(pObjTmp, lv_obj_get_height(pParent));
-		lv_obj_set_width(pObjTmp, lv_obj_get_width(pParent));
-		lv_obj_set_free_ptr(pParent, pObjTmp);
-
-		pParent = pObjTmp;
-	}
-	else
-	{
-		pParent = (lv_obj_t *)lv_obj_get_free_ptr(pParent);
-	}
-
-
-
 	memset(pGroup, 0, sizeof(StVolumeCtrlGroup));
 
 	if (u8MaxCtrlMode > (uint8_t)_Audio_Ctrl_Mode_Reserved)
@@ -601,8 +609,9 @@ int32_t CreateVolumeCtrlGroup(
 			goto err;
 		}
 
-		lv_obj_set_size(pObjTmp, SW_HTIGHT, 256);
+		lv_obj_set_size(pObjTmp, SLIDER_WIDTH, 256);
 		lv_slider_set_range(pObjTmp, 0, 255);
+		lv_slider_set_knob_radio(pObjTmp, KNOB_WIDTH, KNOB_HEIGHT);
 		//lv_slider_set_progressive_value(pObjTmp, 20);
 
 		lv_obj_align(pObjTmp, pGroup->pCtrlMode, LV_ALIGN_OUT_TOP_LEFT, 0, -20);
@@ -632,8 +641,9 @@ int32_t CreateVolumeCtrlGroup(
 		{
 			goto err;
 		}
+		lv_slider_set_knob_radio(pObjTmp, KNOB_WIDTH, KNOB_HEIGHT);
 		lv_obj_set_size(pObjTmp, SW_WIDTH, SW_HTIGHT);
-		lv_obj_align(pObjTmp, pGroup->pCtrlMode, LV_ALIGN_OUT_BOTTOM_LEFT, -10, 20);
+		lv_obj_align(pObjTmp, pGroup->pCtrlMode, LV_ALIGN_OUT_BOTTOM_LEFT, -10, 15);
 		pGroup->pUniformVolume = pObjTmp;
 
 
@@ -778,7 +788,7 @@ lv_res_t ActionMemoryCB(lv_obj_t * obj)
 	lv_obj_t *pParent = lv_obj_get_parent(obj);
 	lv_obj_t *pObjTmp = lv_mbox_create(pParent, NULL);
 	StMemoryCtrlGroup *pGroup = (StMemoryCtrlGroup *)lv_obj_get_free_ptr(obj);
-
+	char c8Str[16];
 
 	pGroup->u8TmpMemorySelect = (uint8_t)lv_ddlist_get_selected(obj);
 
@@ -792,7 +802,8 @@ lv_res_t ActionMemoryCB(lv_obj_t * obj)
 
 	lv_mbox_add_btns(pObjTmp, s_pMemoryMboxBTNs, NULL);
 	lv_obj_align(pObjTmp, obj, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-	lv_mbox_set_text(pObjTmp, "message");
+	sprintf(c8Str, "存储%d", pGroup->u8TmpMemorySelect + 1);
+	lv_mbox_set_text(pObjTmp, CHS_TO_UTF8(c8Str));
 	lv_mbox_set_action(pObjTmp, ActionMemoryMBoxCB);
 	lv_obj_set_free_ptr(pObjTmp, pGroup);
 	pGroup->pMBox = pObjTmp;
@@ -853,22 +864,6 @@ int32_t CreateMemoryCtrl(
 	if ((u16XPos >= LV_HOR_RES) || (u16YPos >= LV_VER_RES))
 	{
 		return -1;
-	}
-
-	if (lv_obj_get_free_ptr(pParent) == NULL)
-	{
-		pObjTmp = lv_cont_create(pParent, NULL);
-		lv_obj_set_style(pObjTmp, &lv_style_transp);
-		lv_obj_set_click(pObjTmp, false);
-		lv_obj_set_height(pObjTmp, lv_obj_get_height(pParent));
-		lv_obj_set_width(pObjTmp, lv_obj_get_width(pParent));
-		lv_obj_set_free_ptr(pParent, pObjTmp);
-
-		pParent = pObjTmp;
-	}
-	else
-	{
-		pParent = (lv_obj_t *)lv_obj_get_free_ptr(pParent);
 	}
 
 	memset(pGroup, 0, sizeof(StMemoryCtrlGroup));
@@ -971,21 +966,6 @@ int32_t CreatePhantomPowerCtrl(
 		return -1;
 	}
 
-	if (lv_obj_get_free_ptr(pParent) == NULL)
-	{
-		pObjTmp = lv_cont_create(pParent, NULL);
-		lv_obj_set_style(pObjTmp, &lv_style_transp);
-		lv_obj_set_click(pObjTmp, false);
-		lv_obj_set_height(pObjTmp, lv_obj_get_height(pParent));
-		lv_obj_set_width(pObjTmp, lv_obj_get_width(pParent));
-		lv_obj_set_free_ptr(pParent, pObjTmp);
-
-		pParent = pObjTmp;
-	}
-	else
-	{
-		pParent = (lv_obj_t *)lv_obj_get_free_ptr(pParent);
-	}
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
@@ -1002,6 +982,7 @@ int32_t CreatePhantomPowerCtrl(
 #if 1
 			pObjTmp = lv_sw_create(pParent, NULL);
 			lv_obj_set_size(pObjTmp, SW_WIDTH, SW_HTIGHT);
+			lv_slider_set_knob_radio(pObjTmp, KNOB_WIDTH, KNOB_HEIGHT);
 			lv_obj_set_pos(pObjTmp, u16XPos + j * 180, u16YPos + 50);
 			pGroup->pCBArr[j] = pObjTmp;
 			if (pGlobalGroup != NULL)
@@ -1110,21 +1091,6 @@ int32_t CreateInputEnableCtrl(
 		return -1;
 	}
 
-	if (lv_obj_get_free_ptr(pParent) == NULL)
-	{
-		pObjTmp = lv_cont_create(pParent, NULL);
-		lv_obj_set_style(pObjTmp, &lv_style_transp);
-		lv_obj_set_click(pObjTmp, false);
-		lv_obj_set_height(pObjTmp, lv_obj_get_height(pParent));
-		lv_obj_set_width(pObjTmp, lv_obj_get_width(pParent));
-		lv_obj_set_free_ptr(pParent, pObjTmp);
-
-		pParent = pObjTmp;
-	}
-	else
-	{
-		pParent = (lv_obj_t *)lv_obj_get_free_ptr(pParent);
-	}
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
@@ -1139,8 +1105,9 @@ int32_t CreateInputEnableCtrl(
 			char c8Str[32];
 			sprintf(c8Str, "第%d组", j + 1);
 			pObjTmp = lv_sw_create(pParent, NULL);
-			lv_obj_set_pos(pObjTmp, u16XPos + j % 2 * 180, u16YPos + 40 + ((j / 2) * 65));
+			lv_obj_set_pos(pObjTmp, u16XPos + j % 2 * 180, u16YPos + 40 + ((j / 2) * 63));
 			lv_obj_set_size(pObjTmp, SW_WIDTH, SW_HTIGHT);
+			lv_slider_set_knob_radio(pObjTmp, KNOB_WIDTH, KNOB_HEIGHT);
 			pGroup->pCBArr[j] = pObjTmp;
 			if (pGlobalGroup != NULL)
 			{
@@ -1235,22 +1202,6 @@ int32_t CreateOutputEnableCtrl(
 		return -1;
 	}
 
-	if (lv_obj_get_free_ptr(pParent) == NULL)
-	{
-		pObjTmp = lv_cont_create(pParent, NULL);
-		lv_obj_set_style(pObjTmp, &lv_style_transp);
-		lv_obj_set_click(pObjTmp, false);
-		lv_obj_set_height(pObjTmp, lv_obj_get_height(pParent));
-		lv_obj_set_width(pObjTmp, lv_obj_get_width(pParent));
-		lv_obj_set_free_ptr(pParent, pObjTmp);
-
-		pParent = pObjTmp;
-	}
-	else
-	{
-		pParent = (lv_obj_t *)lv_obj_get_free_ptr(pParent);
-	}
-
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
 		lv_label_set_text(pObjTmp, CHS_TO_UTF8("输出使能"));
@@ -1266,8 +1217,9 @@ int32_t CreateOutputEnableCtrl(
 		{
 			lv_obj_t *pLab;
 			pObjTmp = lv_sw_create(pParent, NULL);
-			lv_obj_set_pos(pObjTmp, u16XPos + j % 2 * 180, u16YPos + 40 + ((j / 2) * 65));
+			lv_obj_set_pos(pObjTmp, u16XPos + j % 2 * 180, u16YPos + 40 + ((j / 2) * 63));
 			lv_obj_set_size(pObjTmp, SW_WIDTH, SW_HTIGHT);
+			lv_slider_set_knob_radio(pObjTmp, KNOB_WIDTH, KNOB_HEIGHT);
 			pGroup->pCBArr[j] = pObjTmp;
 			if (pGlobalGroup != NULL)
 			{
@@ -1550,6 +1502,159 @@ int32_t RebulidTableOtherVaule(void)
 }
 
 
+lv_color_t CreateLogoColor(lv_color24_t color, uint32_t opa)
+{
+	return LV_COLOR_MAKE((color.red * opa / 255), (color.green * opa / 255),
+		(color.blue * opa / 255));
+}
+
+void CreateLogoStyle(void)
+{
+	static bool boIsCreate = false;
+	int32_t i;
+
+	if (boIsCreate)
+	{
+		return;
+	}
+
+	for (i = 0; i < _Logo_Color_Reserved; i++)
+	{
+		lv_style_t *pStyle1 = lv_theme_get_current()->panel;
+		lv_style_t *pStyle = &(s_stLogoStyle[i][_Logo_State_TGL_REL]);
+		lv_color24_t stColor = s_stLogoColor[i];
+		lv_style_copy(pStyle, pStyle1);
+		pStyle->body.main_color = CreateLogoColor(stColor, LIGHT_ON);
+		pStyle->body.grad_color = CreateLogoColor(stColor, LIGHT_GRAD);
+		pStyle->body.border.color = CreateLogoColor(stColor, LIGHT_OFF);
+		pStyle->body.shadow.color = CreateLogoColor(stColor, LIGHT_OFF);
+		pStyle->body.shadow.width = 10;
+		pStyle->body.border.opa = LV_OPA_30;
+
+
+		pStyle1 = pStyle;
+		pStyle = &(s_stLogoStyle[i][_Logo_State_Press]);
+		lv_style_copy(pStyle, pStyle1);
+		pStyle->body.main_color = CreateLogoColor(stColor, LIGHT_PRESS);
+
+		pStyle1 = pStyle;
+		pStyle = &(s_stLogoStyle[i][_Logo_State_REL]);
+		lv_style_copy(pStyle, pStyle1);
+		pStyle->body.main_color = CreateLogoColor(stColor, LIGHT_OFF);
+		pStyle->body.border.color =
+		pStyle->body.shadow.color = CreateLogoColor(stColor, LIGHT_SHADOW);
+	}
+	boIsCreate = true;
+}
+
+
+static lv_res_t ActionLogoColorCtrl(lv_obj_t * btn)
+{
+	int32_t i;
+	StLogoColorCtrl *pCtrl = (StLogoColorCtrl *)lv_obj_get_free_ptr(btn);
+	lv_color24_t stColor = {0, 0, 0};
+
+	printf("btn state: %d\n", lv_btn_get_state(btn));
+	for (i = 0; i < _Logo_Color_Reserved; i++)
+	{
+		if (btn != pCtrl->pObjColor[i])
+		{
+			if (lv_btn_get_state(pCtrl->pObjColor[i]) != LV_BTN_STATE_REL)
+			{
+				lv_btn_set_state(pCtrl->pObjColor[i], LV_BTN_STATE_REL);
+			}
+		}
+		else
+		{
+			if (lv_btn_get_state(btn) == LV_BTN_STATE_TGL_REL)
+			{
+				stColor = s_stLogoColor[i];
+				pCtrl->u8CurColorIndex = i;
+			}
+			else
+			{
+				pCtrl->u8CurColorIndex = 0xFF;
+			}
+
+		}
+	}
+	SendLogoColorCtrlCmd(stColor);
+	return LV_RES_OK;
+}
+
+
+
+int32_t CreateLogoColorCtrl(lv_obj_t *pParent,
+	lv_group_t *pGlobalGroup,
+	uint16_t u16XPos, uint16_t u16YPos,
+	StLogoColorCtrl *pGroup)
+{
+	lv_obj_t *pObjTmp;
+	int32_t i;
+	if ((pGroup == NULL) || (pParent == NULL))
+	{
+		return -1;
+	}
+
+	CreateLogoStyle();
+
+	{
+		pObjTmp = lv_label_create(pParent, NULL);
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8("LOGO颜色"));
+		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
+	}
+
+	for (i = 0; i < _Logo_Color_Reserved; i++)
+	{
+		pGroup->pObjColor[i] = NULL;
+		pObjTmp = lv_btn_create(pParent, NULL);
+		if (pObjTmp == NULL)
+		{
+			continue;;
+		}
+		lv_btn_set_action(pObjTmp, LV_BTN_ACTION_CLICK, ActionLogoColorCtrl);
+		lv_obj_set_pos(pObjTmp, u16XPos + i % 2 * 180, u16YPos + 40 + ((i / 2) * 63));
+		lv_obj_set_size(pObjTmp, SW_HTIGHT * 2, SW_HTIGHT);
+		lv_btn_set_toggle(pObjTmp, true);
+
+		lv_btn_set_style(pObjTmp, LV_BTN_STYLE_REL, &s_stLogoStyle[i][_Logo_State_REL]);
+		lv_btn_set_style(pObjTmp, LV_BTN_STYLE_PR, &s_stLogoStyle[i][_Logo_State_Press]);
+		lv_btn_set_style(pObjTmp, LV_BTN_STYLE_TGL_PR, &s_stLogoStyle[i][_Logo_State_Press]);
+		lv_btn_set_style(pObjTmp, LV_BTN_STYLE_TGL_REL, &s_stLogoStyle[i][_Logo_State_TGL_REL]);
+		
+		lv_obj_set_free_ptr(pObjTmp, pGroup);
+
+		if (pGlobalGroup != NULL)
+		{
+			lv_group_add_obj(pGlobalGroup, pObjTmp);
+		}
+		pGroup->pObjColor[i] = pObjTmp;
+	}
+
+	return 0;
+
+}
+
+int32_t RebulidLogoColorCtrlValue(StLogoColorCtrl *pGroup)
+{
+	if (pGroup->u8CurColorIndex < _Logo_Color_Reserved)
+	{
+		lv_btn_set_state(pGroup->pObjColor[pGroup->u8CurColorIndex], LV_BTN_STATE_TGL_REL);
+	}
+	return 0;
+}
+
+int32_t CreateTablePeripheralCtrl(lv_obj_t *pParent, lv_group_t *pGroup)
+{
+	CreateLogoColorCtrl(pParent, pGroup, 20, 20, &s_stLogoColorCtrl);
+	return 0;
+}
+
+int32_t RebulidTablePeripheralVaule(void)
+{
+	RebulidLogoColorCtrlValue(&s_stLogoColorCtrl);
+	return 0;
+}
 
 const PFUN_ReleaseTable c_pFUN_ReleaseTable[_Tab_Reserved] = 
 {
@@ -1568,6 +1673,7 @@ const PFUN_CreateTable c_pFUN_CreateTable[_Tab_Reserved] =
 	CreateTableInputPCCtrl,
 	CreateTableOutputCtrl,
 	CreateTableOtherCtrl,
+	CreateTablePeripheralCtrl,
 	NULL,
 };
 
@@ -1578,6 +1684,7 @@ const PFUN_RebulidTableValue c_pFun_RebulidTableValue[_Tab_Reserved] =
 	RebulidTableInputPCCtrlVaule,
 	RebulidTableOutputVaule,
 	RebulidTableOtherVaule,
+	RebulidTablePeripheralVaule,
 	NULL,
 };
 
@@ -1603,7 +1710,25 @@ int32_t CreateTable(lv_obj_t *pTabPage, uint16_t u16TableIndex)
 	}
 	if (c_pFUN_CreateTable[u16TableIndex] != NULL)
 	{
-		if (c_pFUN_CreateTable[u16TableIndex](pTabPage, 
+#if 1
+		lv_obj_t *pParent = NULL;
+		if (lv_obj_get_free_ptr(pTabPage) == NULL)
+		{
+			lv_obj_t *pObjTmp = lv_cont_create(pTabPage, NULL);
+			lv_obj_set_style(pObjTmp, &lv_style_transp);
+			lv_obj_set_click(pObjTmp, false);
+			lv_obj_set_height(pObjTmp, lv_obj_get_height(pTabPage));
+			lv_obj_set_width(pObjTmp, lv_obj_get_width(pTabPage));
+			lv_obj_set_free_ptr(pTabPage, pObjTmp);
+
+			pParent = pObjTmp;
+		}
+		else
+		{
+			pParent = (lv_obj_t *)lv_obj_get_free_ptr(pTabPage);
+		}
+#endif
+		if (c_pFUN_CreateTable[u16TableIndex](pParent,
 			lv_obj_get_free_ptr(lv_obj_get_parent(lv_obj_get_parent(pTabPage)))) == 0)
 		{
 			if (c_pFun_RebulidTableValue[u16TableIndex] != NULL)

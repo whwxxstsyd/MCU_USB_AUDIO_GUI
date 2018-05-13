@@ -30,53 +30,143 @@
 #include "gt9147.h"
 #include "gui_driver.h"
 #include "gui.h"
+#include "C2D.h"
 
-#define _GUI_Dir_Horizontal 0
-
-void GUIDrawLine(uint16_t u16Xpos, uint16_t u16Ypos, uint16_t u16Length, 
-	uint16_t u16Direction, uint16_t u16Color)
+typedef struct _tagStPentagon
 {
-	uint16_t i;
-	uint16_t *pTmp = (uint16_t *)(SRAM3_ADDR);
-	pTmp = pTmp + u16Ypos * LV_HOR_RES + u16Xpos;
-	for (i = 0; i < u16Length; i++)
+	GUI_POINT stPoint[5];
+	lv_color24_t stColor;
+}StPentagon;
+
+typedef struct _tagStTactangle
+{
+	GUI_POINT stPoint[4];
+	lv_color24_t stColor;
+}StTactangle;
+
+typedef struct _tagStCycle
+{
+	uint16_t x;
+	uint16_t y;
+	uint16_t r;
+	lv_color24_t stColor;
+}StCycle;
+
+static StPentagon s_stPentagon[3] =
+{
 	{
-		pTmp[i] |= u16Color;
+		{ { 52, 395, },{ 750, 180, },{ 1075, 368 },{ 976, 866 },{ 21, 866 } },
+		{75, 29, 21},
+	},
+	{ 
+		{ { 78, 406, },{ 750, 200, },{ 1046, 372 },{ 954, 843 },{ 48, 843 } },
+		{ 51, 51, 51 }
+	},
+	{
+		{ { 110, 420, },{ 722, 233, },{ 1003, 396, },{ 915, 817, },{ 84, 817 } },
+		{ 75, 29, 21 }
+	},
+};
+
+static StTactangle s_stTactangle[3] =
+{
+	{
+		{ { 234, 817, },{ 255, 600, },{ 316, 600, },{ 297, 817, }, },
+		{ 51, 51, 51 }
+	},
+	{
+		{ { 472, 610, },{ 534, 280, },{ 595, 260, },{ 535, 614, }, },
+		{ 51, 51, 51 }
+	},
+	{
+		{ { 712, 613, },{ 776, 619, },{ 793, 524, },{ 727, 517 }, },
+		{33, 101, 230},
+	},
+};
+
+static StCycle s_stCycle[4] =
+{
+	{
+		290, 535, 75,
+		{ 51, 51, 51 }
+	},
+	{
+		500, 679, 75,
+		{ 51, 51, 51 }
+	},
+	{
+		768, 468, 71,
+		{ 33, 101, 230 },
+	},
+	{
+		739, 680, 71,
+		{ 33, 101, 230 },
+	},
+};
+
+void LOGOCoordsInit(void)
+{
+	uint32_t i;
+	for (i = 0; i < 3; i++)
+	{
+		uint32_t j;
+		for (j = 0; j < 5; j++)
+		{
+			s_stPentagon[i].stPoint[j].x = (s_stPentagon[i].stPoint[j].x * LV_VER_RES + (1080 / 2))/ 1080;
+			s_stPentagon[i].stPoint[j].y = (s_stPentagon[i].stPoint[j].y * LV_VER_RES + (1080 / 2)) / 1080;
+			
+			s_stPentagon[i].stPoint[j].x += ((LV_HOR_RES - LV_VER_RES) / 2);
+		}
+	}
+
+	for (i = 0; i < 3; i++)
+	{
+		uint32_t j;
+		for (j = 0; j < 4; j++)
+		{
+			s_stTactangle[i].stPoint[j].x = (s_stTactangle[i].stPoint[j].x * LV_VER_RES + (1080 / 2)) / 1080;
+			s_stTactangle[i].stPoint[j].y = (s_stTactangle[i].stPoint[j].y * LV_VER_RES + (1080 / 2)) / 1080;
+
+			s_stTactangle[i].stPoint[j].x += ((LV_HOR_RES - LV_VER_RES) / 2);
+		}
+	}
+
+	for (i = 0; i < 4; i++)
+	{
+		s_stCycle[i].x = (s_stCycle[i].x * LV_VER_RES + (1080 / 2)) / 1080;
+		s_stCycle[i].y = (s_stCycle[i].y * LV_VER_RES + (1080 / 2)) / 1080;
+		s_stCycle[i].r = (s_stCycle[i].r * LV_VER_RES + (1080 / 2)) / 1080;
+
+		s_stCycle[i].x += ((LV_HOR_RES - LV_VER_RES) / 2);
+
 	}
 }
 
-void GUIDrawFullCircle(uint16_t u16XPos, uint16_t u16YPos, uint16_t u16Radius, 
-	uint16_t u16Color)
+void LOGODraw(void)
 {
-	int16_t  D;    /* Decision Variable */ 
-	uint16_t  CurX;/* Current X Value */
-	uint16_t  CurY;/* Current Y Value */ 
 
-	D = 3 - (u16Radius << 1);
+	uint32_t i;
+	GUI_SetColor(GUI_MAKE_ARGB(0, 51, 51, 51));
+	GUI_FillRect(0, 0, LV_HOR_RES - 1, LV_VER_RES - 1) ;
 
-	CurX = 0;
-	CurY = u16Radius;
-
-	while (CurX <= CurY)
+	for (i = 0; i < 3; i++)
 	{
-
-		GUIDrawLine(u16XPos - CurX, u16YPos + CurY, 2 * CurX, _GUI_Dir_Horizontal, u16Color);
-		GUIDrawLine(u16XPos - CurX, u16YPos - CurY, 2 * CurX, _GUI_Dir_Horizontal, u16Color);
-
-		GUIDrawLine(u16XPos - CurY, u16YPos + CurX, 2 * CurY, _GUI_Dir_Horizontal, u16Color);
-		GUIDrawLine(u16XPos - CurY, u16YPos - CurX, 2 * CurY, _GUI_Dir_Horizontal, u16Color);
-
-		if (D < 0)
-		{ 
-			D += ((CurX << 2) + 6);
-		}
-		else
-		{
-			D += (((CurX - CurY) << 2) + 10);
-			CurY--;
-		}
-		CurX++;
+		GUI_SetColor(GUI_MAKE_ARGB(0, s_stPentagon[i].stColor.red, s_stPentagon[i].stColor.green, s_stPentagon[i].stColor.blue));
+		GUI_FillPolygon(s_stPentagon[i].stPoint, 5, 0, 0);
 	}
+
+	for (i = 0; i < 3; i++)
+	{
+		GUI_SetColor(GUI_MAKE_ARGB(0, s_stTactangle[i].stColor.red, s_stTactangle[i].stColor.green, s_stTactangle[i].stColor.blue));
+		GUI_FillPolygon(s_stTactangle[i].stPoint, 4, 0, 0);
+	}
+
+	for (i = 0; i < 4; i++)
+	{
+		GUI_SetColor(GUI_MAKE_ARGB(0, s_stCycle[i].stColor.red, s_stCycle[i].stColor.green, s_stCycle[i].stColor.blue));
+		GUI_FillCircle(s_stCycle[i].x, s_stCycle[i].y, s_stCycle[i].r);
+	}
+
 }
 
 void EnableWatchDog(void)
@@ -127,29 +217,6 @@ int main (void)
 	
 	
 	LCDInit();
-	LCDClear(RGB(255, 0, 0));
-	{
-		int32_t i = 0;
-		uint32_t *pTmp = (uint32_t *)SRAM3_ADDR;
-		for (i = 0; i < 512 * 1024 / 2; i++)
-		{
-			*pTmp++ = 0;
-		}
-
-//		for (i = 0; i < 512 * 1024; i++)
-//		{
-//			uint8_t u8Gray = i;
-//			*pTmp1++ = RGB(u8Gray, u8Gray, u8Gray);
-//		}
-		
-		GUIDrawFullCircle(400, 150, 270 - 120, RGB(255, 0, 0));
-		GUIDrawFullCircle(400 + 104, 270 + 60, 150, RGB(0, 255, 0));
-		GUIDrawFullCircle(400 - 104, 270 + 60, 150, RGB(0, 0, 255));
-		
-		LCDDMAWrite((const uint16_t *)SRAM3_ADDR, 384000);	
-
-		i = i;
-	}
 
 	I2CInit();
 	GT9147Init();
@@ -158,6 +225,12 @@ int main (void)
 	
 #if USE_LVGL
 	LvglInit();
+	GUI_Init();
+
+	LOGOCoordsInit();
+	LOGODraw();
+	Delay(3 * 1000);
+
 #endif	
 	
 #if USE_LVGL
@@ -186,7 +259,7 @@ int main (void)
 		if (SysTimeDiff(u32Time, g_u32SysTickCnt) > 100)
 		{
 			u32Time = g_u32SysTickCnt;
-#if USE_LVGL
+#if USE_LVGL && 0
 			LvglDispMem();
 #endif	
 		}

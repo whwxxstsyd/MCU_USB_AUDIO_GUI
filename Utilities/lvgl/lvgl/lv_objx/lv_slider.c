@@ -71,6 +71,7 @@ lv_obj_t * lv_slider_create(lv_obj_t * par, lv_obj_t * copy)
     ext->style_knob = &lv_style_pretty;
     ext->knob_in = 0;
 	ext->progressive_value = 1;
+	ext->knob_radio_h = ext->knob_radio_w = 1;
 
     /*The signal and design functions are not copied so set them here*/
     lv_obj_set_signal_func(new_slider, lv_slider_signal);
@@ -98,6 +99,8 @@ lv_obj_t * lv_slider_create(lv_obj_t * par, lv_obj_t * copy)
         ext->action = copy_ext->action;
         ext->knob_in = copy_ext->knob_in;
 		ext->progressive_value = copy_ext->progressive_value;
+		ext->knob_radio_h = copy_ext->knob_radio_h;
+		ext->knob_radio_w = copy_ext->knob_radio_w;
 
         /*Refresh the style with new signal function*/
         lv_obj_refresh_style(new_slider);
@@ -172,6 +175,19 @@ void lv_slider_set_progressive_value(lv_obj_t *slider, uint16_t progressive_valu
 	lv_slider_ext_t * ext = lv_obj_get_ext_attr(slider);
 	ext->progressive_value = progressive_value == 0 ? 1 : progressive_value;
 }
+
+/**
+* Set the progressive of a slider
+* @param slider pointer to a slider object
+* @param progressive_value new progressive value should be set
+*/
+void lv_slider_set_knob_radio(lv_obj_t *slider, uint8_t width, uint8_t height)
+{
+	lv_slider_ext_t * ext = lv_obj_get_ext_attr(slider);
+	ext->knob_radio_w = width == 0 ? 1 : width;
+	ext->knob_radio_h = height == 0 ? 1 : height;
+}
+
 
 /*=====================
  * Getter functions
@@ -257,6 +273,21 @@ uint16_t lv_slider_get_progressive_value(lv_obj_t *slider)
 	return ext->progressive_value;
 }
 
+/**
+* Set the knob radio of a slider
+* @param slider pointer to a slider object
+* @param width porinter to a width value
+* @param height porinter to a height value
+*/
+uint16_t lv_slider_get_knob_radio(lv_obj_t *slider, uint8_t *width, uint8_t *height)
+{
+	lv_slider_ext_t *ext = lv_obj_get_ext_attr(slider);
+	*width = ext->knob_radio_w;
+	*height = ext->knob_radio_h;
+	return 0;
+}
+
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -333,7 +364,8 @@ static bool lv_slider_design(lv_obj_t * slider, const lv_area_t * mask, lv_desig
         lv_coord_t cur_value = lv_slider_get_value(slider);
         lv_coord_t min_value = lv_slider_get_min_value(slider);
         lv_coord_t max_value = lv_slider_get_max_value(slider);
-
+		uint8_t knob_radio_w, knob_radio_h;
+		lv_slider_get_knob_radio(slider, &knob_radio_w, &knob_radio_h);
         /*If dragged draw to the drag position*/
         if(ext->drag_value != LV_SLIDER_NOT_PRESSED) cur_value = ext->drag_value;
 
@@ -353,25 +385,28 @@ static bool lv_slider_design(lv_obj_t * slider, const lv_area_t * mask, lv_desig
         lv_area_copy(&knob_area, &slider->coords);
 
         if(slider_w >= slider_h) {
+			lv_coord_t knob_h = slider_h * knob_radio_h / knob_radio_w;
             if(ext->knob_in == 0) {
-                knob_area.x1 = area_indic.x2 - slider_h / 2;
-                knob_area.x2 = knob_area.x1 + slider_h;
+                knob_area.x1 = area_indic.x2 - knob_h / 2;
+                knob_area.x2 = knob_area.x1 + knob_h;
             } else {
-                knob_area.x1 = (int32_t) ((int32_t)(slider_w - slider_h) * (cur_value - min_value)) / (max_value - min_value);
+                knob_area.x1 = (int32_t) ((int32_t)(slider_w - knob_h) * (cur_value - min_value)) / (max_value - min_value);
                 knob_area.x1 += slider->coords.x1;
-                knob_area.x2 = knob_area.x1 + slider_h;
+                knob_area.x2 = knob_area.x1 + knob_h;
             }
 
             knob_area.y1 = slider->coords.y1;
             knob_area.y2 = slider->coords.y2;
         } else {
+			lv_coord_t knob_w = slider_w * knob_radio_h / knob_radio_w;
+
             if(ext->knob_in == 0) {
-                knob_area.y1 = area_indic.y1 - slider_w / 2;
-                knob_area.y2 = knob_area.y1 + slider_w;
+                knob_area.y1 = area_indic.y1 - knob_w / 2;
+                knob_area.y2 = knob_area.y1 + knob_w;
             } else {
-                knob_area.y2 = (int32_t) ((int32_t)(slider_h - slider_w) * (cur_value - min_value)) / (max_value - min_value);
+                knob_area.y2 = (int32_t) ((int32_t)(slider_h - knob_w) * (cur_value - min_value)) / (max_value - min_value);
                 knob_area.y2 = slider->coords.y2 - knob_area.y2;
-                knob_area.y1 = knob_area.y2 - slider_w;
+                knob_area.y1 = knob_area.y2 - knob_w;
             }
             knob_area.x1 = slider->coords.x1;
             knob_area.x2 = slider->coords.x2;
