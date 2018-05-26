@@ -186,14 +186,16 @@ void YNAGetCheckSum(u8 *pBuf);
 int32_t BaseCmdProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB);
 
 bool KeyProcess(StIOFIFO *pFIFO);
-bool PCEchoProcess(StIOFIFO *pFIFO);
+bool PCEchoProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB);
 
 void TurnOnSwitchLed(void);
 bool ProtocolSelect(StIOFIFO *pFIFO);
 
-void CopyToUartMessage(void *pData, u32 u32Length);
+void CopyToUartMessage(const StIOTCB *pIOTCB, void *pData, u32 u32Length);
 void FlushHIDMsgForSB(void);
 
+void DeviceSendKeepAlive(void);
+void DeviceGetCurState(void);
 
 #endif
 

@@ -113,7 +113,7 @@ static void UARTInit(void)
 void MSG_UART_IRQ(void)
 {
 	u16 u16SR = MSG_UART->SR;
-	if ((u16SR & USART_FLAG_RXNE) != 0)
+	if (((u16SR & USART_FLAG_RXNE) != 0) || ((u16SR & USART_FLAG_ORE) != 0))
 	{
 		u8 u8RxTmp = (MSG_UART->DR & (uint16_t)0x00FF);
 		LOCWriteSomeData(&s_stLevelOneCache, &u8RxTmp, 1);

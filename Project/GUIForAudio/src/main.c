@@ -199,6 +199,8 @@ int main (void)
 {
 	u32 u32Time = 0;
 	u32 u32LvglHandlerTime = 0;
+	u32 u32DeviceKeepAliveTime = 0;
+	u32 u32DeviceGetEchoTime = -20 * 1000;
 
 	KeyBufInit();
 	GlobalStateInit();
@@ -276,13 +278,15 @@ int main (void)
 			}	
 			if (pMsgIn != NULL)
 			{
-				if (BaseCmdProcess(pMsgIn, &c_stUartIOTCB) != 0)			
+				if (BaseCmdProcess(pMsgIn, &c_stUartIOTCB) == 0)			
 				{
-					PCEchoProcess(pMsgIn);
+					MessageUartRelease(pMsgIn);
 				}
-				
+				else				
 				{
-					int32_t res = MessageUart2Write(pMsgIn->pData, pMsgIn->boNeedFree, 0, pMsgIn->s32Length);
+					int32_t res = 0;
+					PCEchoProcess(pMsgIn, &c_stUartIOTCB);
+					res = MessageUart2Write(pMsgIn->pData, pMsgIn->boNeedFree, 0, pMsgIn->s32Length);
 					if (res != 0)
 					{
 						if (pMsgIn->boNeedFree)
@@ -290,16 +294,27 @@ int main (void)
 							free(pMsgIn->pData);
 						}
 					}						
+					MessageUartReleaseNoReleaseData(pMsgIn);
 				}
 				
-				MessageUartReleaseNoReleaseData(pMsgIn);
 			}
 			
 			if (pMsg2In != NULL)
 			{
-				
+				if (BaseCmdProcess(pMsg2In, NULL) == 0)
 				{
-					int32_t res = MessageUartWrite(pMsg2In->pData, pMsg2In->boNeedFree, 0, pMsg2In->s32Length);
+					if (SysTimeDiff(u32DeviceGetEchoTime, g_u32SysTickCnt) > 10 * 1000)
+					{
+						DeviceGetCurState();
+					}
+					u32DeviceGetEchoTime = g_u32SysTickCnt;
+					MessageUart2Release(pMsg2In);
+				}
+				else
+				{
+					int32_t res = 0;
+					PCEchoProcess(pMsg2In, NULL);
+					res = MessageUartWrite(pMsg2In->pData, pMsg2In->boNeedFree, 0, pMsg2In->s32Length);
 					if (res != 0)
 					{
 						if (pMsg2In->boNeedFree)
@@ -307,13 +322,19 @@ int main (void)
 							free(pMsg2In->pData);
 						}
 					}						
+					MessageUart2ReleaseNoReleaseData(pMsg2In);
 				}
-				
-				MessageUart2ReleaseNoReleaseData(pMsg2In);
+				//u32DeviceKeepAliveTime = g_u32SysTickCnt;
 			}
 			
 			
-			KeyBufGetEnd(pKeyIn);				
+			KeyBufGetEnd(pKeyIn);
+
+			if (SysTimeDiff(u32DeviceKeepAliveTime, g_u32SysTickCnt) >= 5 * 1000)
+			{		
+				u32DeviceKeepAliveTime = g_u32SysTickCnt;
+				DeviceSendKeepAlive();
+			}
 
 		}
 #endif		

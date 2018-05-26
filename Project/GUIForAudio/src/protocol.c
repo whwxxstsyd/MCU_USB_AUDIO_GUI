@@ -665,9 +665,20 @@ void CopyToUart3Message(void *pData, u32 u32Length)
 {
 }
 
-void CopyToUartMessage(void *pData, u32 u32Length)
+void CopyToUartMessage(const StIOTCB *pIOTCB, void *pData, u32 u32Length)
 {
-	CopyToUart1Message(pData, u32Length);
+	if ((pIOTCB != NULL) && (pData != NULL) && (u32Length != 0))
+	{
+		void *pBuf = malloc(u32Length);
+		if (pBuf != NULL)
+		{
+			memcpy(pBuf, pData, u32Length);
+			if (pIOTCB->pFunMsgWrite(pBuf, true, _IO_Reserved, u32Length) != 0)
+			{
+				free (pBuf);
+			}	
+		}
+	}
 }
 
 
@@ -1007,7 +1018,7 @@ static bool KeyBoardProcess(StKeyMixIn *pKeyIn)
 		pBuf[_YNA_Data2] = u8KeyValue;
 		
 		YNAGetCheckSum(pBuf);
-		CopyToUartMessage(pBuf, PROTOCOL_YNA_DECODE_LENGTH);	
+		CopyToUart1Message(pBuf, PROTOCOL_YNA_DECODE_LENGTH);	
 	}
 	return true;
 }
@@ -1033,7 +1044,7 @@ static bool CodeSwitchProcess(StKeyMixIn *pKeyIn)
 	pBuf[_YNA_Data2] = pKeyIn->unKeyMixIn.stCodeSwitchState.u16Cnt;
 	
 	YNAGetCheckSum(pBuf);
-	CopyToUartMessage(pBuf, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart1Message(pBuf, PROTOCOL_YNA_DECODE_LENGTH);
 
 {
 	bool boIsPress = ((pKeyIn->unKeyMixIn.stCodeSwitchState.u16Cnt & 0x0001) == 0x0001);
@@ -1089,7 +1100,7 @@ bool KeyProcess(StIOFIFO *pFIFO)
 	return false;
 }
 
-bool PCEchoProcessYNA(StIOFIFO *pFIFO)
+bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 {
 #if 1
 	uint8_t *pMsg;
@@ -1197,7 +1208,7 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO)
 			}
 			case 0x50:
 			{
-				if (pMsg[_YNA_Data1] == 0x00)
+				if ((pMsg[_YNA_Data1] == 0x00) || (pMsg[_YNA_Data1] == 0x81))
 				{
 					SetInputEnableState(pMsg[_YNA_Data2]);
 					SetOutputEnableState(pMsg[_YNA_Data3]);
@@ -1283,11 +1294,19 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO)
 		if (boNeedCopy)
 		{
 			YNAGetCheckSum(u8EchoBase);
-			CopyToUartMessage(u8EchoBase, PROTOCOL_YNA_DECODE_LENGTH);
+			CopyToUartMessage(pIOTCB, u8EchoBase, PROTOCOL_YNA_DECODE_LENGTH);
 		}
 		if (boHasEcho && pEcho != NULL)
 		{
-			if(MessageUartWrite(pEcho, true, _IO_Reserved, u32EchoLength) != 0)
+			if (pIOTCB == NULL)
+			{
+				free(pEcho);
+			}
+			else if(pIOTCB->pFunMsgWrite == NULL)
+			{
+				free(pEcho);
+			}
+			else if (pIOTCB->pFunMsgWrite(pEcho, true, _IO_Reserved, u32EchoLength) != 0)
 			{
 				free(pEcho);
 			}
@@ -1359,10 +1378,10 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO)
 					{
 						StVolume stVolume;
 						
-						if (pVolume[i].u8Index == _Channel_AIN_Mux)
-						{
-							continue;
-						}
+//						if (pVolume[i].u8Index == _Channel_AIN_Mux)
+//						{
+//							continue;
+//						}
 						stVolume.u8Channel1 = pVolume[i].u8Left;
 						stVolume.u8Channel2 = pVolume[i].u8Right;
 						SetAudioVolume(pVolume[i].u8Index, stVolume);
@@ -1375,7 +1394,15 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO)
 			}
 			if (boHasEcho && pEcho != NULL)
 			{
-				if (MessageUartWrite(pEcho, true, _IO_Reserved, u32EchoLength) != 0)
+				if (pIOTCB == NULL)
+				{
+					free(pEcho);
+				}
+				else if(pIOTCB->pFunMsgWrite == NULL)
+				{
+					free(pEcho);
+				}
+				else if (pIOTCB->pFunMsgWrite(pEcho, true, _IO_Reserved, u32EchoLength) != 0)
 				{
 					free(pEcho);
 				}
@@ -1390,15 +1417,63 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO)
 	return true;
 }
 
-bool PCEchoProcess(StIOFIFO *pFIFO)
+bool PCEchoProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 {
 	if (pFIFO->u8ProtocolType == _Protocol_YNA)
 	{
-		return PCEchoProcessYNA(pFIFO);
+		return PCEchoProcessYNA(pFIFO, pIOTCB);
 	}
 	
 	return false;
 }
+
+void DeviceSendKeepAlive(void)
+{
+	uint8_t u8Base[PROTOCOL_YNA_DECODE_LENGTH] = {0};
+
+	u8Base[_YNA_Sync] = 0xAA;
+	u8Base[_YNA_Mix] = 0x0C;
+	u8Base[_YNA_Cmd] = 0x80;
+	u8Base[_YNA_Data1] = 0x00;
+	u8Base[_YNA_Data3] = 0x02;
+	YNAGetCheckSum(u8Base);
+	
+	CopyToUart2Message(u8Base, PROTOCOL_YNA_DECODE_LENGTH);
+}
+
+void DeviceGetCurState(void)
+{
+	unsigned char u8Cmd[PROTOCOL_YNA_DECODE_LENGTH] = { 0 };
+	u8Cmd[_YNA_Sync] = 0xAA;
+	u8Cmd[_YNA_Mix] = 0x06;
+
+	u8Cmd[_YNA_Cmd] = 0x40;	/* 输入源 */
+	YNAGetCheckSum(u8Cmd);
+	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+
+
+
+	u8Cmd[_YNA_Cmd] = 0x41;	/* 输出源 */
+	YNAGetCheckSum(u8Cmd);
+	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+
+	u8Cmd[_YNA_Cmd] = 0x80;	/* 音量 */
+	YNAGetCheckSum(u8Cmd);
+	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+
+	u8Cmd[_YNA_Cmd] = 0x50;	/* 输入输出通道 */
+	u8Cmd[_YNA_Data1] = 0x01;
+	YNAGetCheckSum(u8Cmd);
+	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+
+	u8Cmd[_YNA_Data1] = 0x00;
+
+	u8Cmd[_YNA_Cmd] = 0x46;	/* 输入输出通道 */
+	u8Cmd[_YNA_Data3] = 0xFF;
+	YNAGetCheckSum(u8Cmd);
+	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+}
+
 
 
 int32_t SendAudioCtrlModeCmd(uint16_t u16Channel, EmAudioCtrlMode emMode)
@@ -1489,7 +1564,10 @@ int32_t SendInputEnableStateCmd(uint8_t u8NewState)
 	u8Cmd[_YNA_Data3] = GetOutputEnableState();
 
 	YNAGetCheckSum(u8Cmd);
-	CopyToUartMessage(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart1Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	
+	u8Cmd[_YNA_Data1] = 0x00;
+	YNAGetCheckSum(u8Cmd);
 	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 
 	return 0;
