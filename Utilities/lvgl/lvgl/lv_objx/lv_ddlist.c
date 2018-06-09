@@ -81,8 +81,9 @@ lv_obj_t * lv_ddlist_create(lv_obj_t * par, lv_obj_t * copy)
     /*Initialize the allocated 'ext' */
     ext->label = NULL;
     ext->action = NULL;
-    ext->opened = 0;
-    ext->fix_height = 0;
+	ext->opened = 0;
+	ext->move_up = 0;
+	ext->fix_height = 0;
     ext->sel_opt_id = 0;
     ext->sel_opt_id_ori = 0;
     ext->option_cnt = 0;
@@ -131,6 +132,7 @@ lv_obj_t * lv_ddlist_create(lv_obj_t * par, lv_obj_t * copy)
         ext->option_cnt = copy_ext->option_cnt;
         ext->sel_style = copy_ext->sel_style;
         ext->anim_time = copy_ext->anim_time;
+		ext->move_up = copy_ext->move_up;
 
         /*Refresh the style with new signal function*/
         lv_obj_refresh_style(new_ddlist);
@@ -260,6 +262,17 @@ void lv_ddlist_set_style(lv_obj_t *ddlist, lv_ddlist_style_t type, lv_style_t *s
             lv_obj_refresh_ext_size(scrl);  /*Because of the wider selected rectangle*/
             break;
     }
+}
+
+/**
+* set the direction when drop opened
+* @param ddlist pointer to drop down list object
+* @param is_up true for up and false for down
+*/
+void lv_ddlist_set_move_dirction(lv_obj_t * ddlist, bool is_up)
+{
+	lv_ddlist_ext_t * ext = lv_obj_get_ext_attr(ddlist);
+	ext->move_up = is_up ? 1 : 0;
 }
 
 /*=====================
@@ -402,6 +415,17 @@ void lv_ddlist_close(lv_obj_t * ddlist, bool anim_en)
     ext->opened = 0;
     lv_obj_set_drag(lv_page_get_scrl(ddlist), false);
     lv_ddlist_refr_size(ddlist, anim_en);
+}
+
+/**
+* get the direction when drop opened
+* @param ddlist pointer to drop down list object
+* @param is_up true for up and false for down
+*/
+bool lv_ddlist_get_move_dirction(lv_obj_t * ddlist)
+{
+	lv_ddlist_ext_t * ext = lv_obj_get_ext_attr(ddlist);
+	return (ext->move_up == 1);
 }
 
 /**********************
@@ -682,6 +706,23 @@ static lv_res_t lv_ddlist_release_action(lv_obj_t * ddlist)
     return LV_RES_OK;
 
 }
+/**
+* Refresh the size of drop down list according to its status (open or closed)
+* But it will move to up
+* @param ddlist pointer to a drop down list object
+* @param anim_en Change the size (open/close) with or without animation (true/false)
+*/
+static void lv_ddlist_set_height_up(lv_obj_t * obj, lv_coord_t h)
+{
+	lv_coord_t org_h = lv_obj_get_height(obj);
+	lv_coord_t y = lv_obj_get_y(obj);
+
+	y = y - (h - org_h);
+	
+	lv_obj_set_size(obj, lv_obj_get_width(obj), h);
+	lv_obj_set_y(obj, y);
+}
+
 
 /**
  * Refresh the size of drop down list according to its status (open or closed)
@@ -707,7 +748,14 @@ static void lv_ddlist_refr_size(lv_obj_t * ddlist, bool anim_en)
     }
 
     if(anim_en == 0) {
-        lv_obj_set_height(ddlist, new_height);
+		if (ext->move_up == 1)
+		{
+			lv_ddlist_set_height_up(ddlist, new_height);
+		}
+		else
+		{
+			lv_obj_set_height(ddlist, new_height);
+		}
         lv_ddlist_pos_current_option(ddlist);
     } else {
 #if USE_LV_ANIMATION
@@ -715,7 +763,15 @@ static void lv_ddlist_refr_size(lv_obj_t * ddlist, bool anim_en)
         a.var = ddlist;
         a.start = lv_obj_get_height(ddlist);
         a.end = new_height;
-        a.fp = (lv_anim_fp_t)lv_obj_set_height;
+		if (ext->move_up == 1)
+		{
+			a.fp = (lv_anim_fp_t)lv_ddlist_set_height_up;
+		}
+		else
+		{
+			a.fp = (lv_anim_fp_t)lv_obj_set_height;
+		}
+		//a.fp = (lv_anim_fp_t)lv_ddlist_set_height_up;//lv_obj_set_height;
         a.path = lv_anim_path_linear;
         a.end_cb = (lv_anim_cb_t)lv_ddlist_pos_current_option;
         a.act_time = 0;

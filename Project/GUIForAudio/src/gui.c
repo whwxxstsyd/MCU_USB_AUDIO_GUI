@@ -129,7 +129,7 @@ static lv_color24_t const s_stLogoColor[_Logo_Color_Reserved] =
 	//{ 0x00, 0x00 , 0x00, },
 };
 static StLogoColorCtrl s_stLogoColorCtrl = { {NULL,}, 0xFF };
-
+static StKeyboardCtrl s_stKeyboardCtrl = { NULL, NULL, true, 0 };
 
 int32_t GetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode *pMode)
 {
@@ -325,6 +325,105 @@ __weak int32_t SendLogoColorCtrlCmd(lv_color24_t stColor)
 	return 0;
 }
 
+__weak int32_t SendKeyboardPowerCmd(bool boIsPowerOn)
+{
+	printf("%s, state: %d\n", __FUNCTION__, boIsPowerOn);
+	return 0;
+}
+
+__weak int32_t SendKeyboardConnectCmd(uint8_t u8CurConnect)
+{
+	printf("%s, state: %d\n", __FUNCTION__, u8CurConnect);
+	return 0;
+}
+
+
+int32_t GetUnionVolumeValue(uint16_t u16Channel, bool *pValue)
+{
+	
+	if (u16Channel <= _Channel_NormalOut && 
+		u16Channel >= _Channel_AIN_Mux && pValue != NULL)
+	{
+		*pValue = s_stTotalUnifromCheckState.boUniformCheckState[u16Channel];
+		return 0;
+	}
+	
+	return -1;
+	
+}
+
+int32_t GetLogoColor(lv_color24_t *pValue)
+{
+	if (pValue != NULL)
+	{
+		*pValue = s_stLogoColor[s_stLogoColorCtrl.u8CurColorIndex];
+		return 0;
+	}
+	return -1;
+}
+
+int32_t GetKeyboardPowerValue(bool *pIsPowerOn)
+{
+	if (pIsPowerOn != NULL)
+	{
+		*pIsPowerOn = s_stKeyboardCtrl.boIsPowerOn;
+		return 0;
+	}
+	return -1;
+}
+
+int32_t GetKeyboardConnectMode(uint8_t *pCurConnect)
+{
+	if (pCurConnect != NULL)
+	{
+		*pCurConnect = s_stKeyboardCtrl.u8CurConnect;
+		return 0;
+	}
+	return -1;
+}
+
+
+int32_t SetUnionVolumeValue(uint16_t u16Channel, bool boValue)
+{
+	if (u16Channel <= _Channel_NormalOut && 
+		u16Channel >= _Channel_AIN_Mux)
+	{
+		s_stTotalUnifromCheckState.boUniformCheckState[u16Channel] = boValue;
+		return 0;
+	}
+
+	return -1;
+}
+
+int32_t SetLogoColor(lv_color24_t stValue)
+{
+	int32_t i;
+	for (i = 0; i < _Logo_Color_Reserved; i++)
+	{
+		if (memcmp(&stValue, s_stLogoColor + i, sizeof(lv_color24_t)) == 0)	
+		{
+			s_stLogoColorCtrl.u8CurColorIndex = i;
+			SendLogoColorCtrlCmd(stValue);
+			return 0;
+		}	
+	}
+
+	return -1;
+}
+
+int32_t SetKeyboardPowerValue(bool boIsPowerOn)
+{
+	s_stKeyboardCtrl.boIsPowerOn = boIsPowerOn;
+	SendKeyboardPowerCmd(boIsPowerOn);
+	return 0;
+}
+
+int32_t SetKeyboardConnectMode(uint8_t u8CurConnect)
+{
+	s_stKeyboardCtrl.u8CurConnect = u8CurConnect;
+	SendKeyboardConnectCmd(u8CurConnect);
+	return 0;
+}
 
 
 
@@ -578,12 +677,13 @@ int32_t CreateVolumeCtrlGroup(
 
 		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(c8Str));
 
-	    lv_ddlist_set_fix_height(pObjTmp, LV_DPI);
+	    //lv_ddlist_set_fix_height(pObjTmp, LV_DPI);
 	    //lv_ddlist_set_hor_fit(pObjTmp, false);
 
 
 		//lv_obj_set_width(pObjTmp, 300);
 
+		lv_ddlist_set_move_dirction(pObjTmp, true);
 
 #if 1
 		lv_label_set_align(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
@@ -612,6 +712,8 @@ int32_t CreateVolumeCtrlGroup(
 		lv_obj_set_size(pObjTmp, SLIDER_WIDTH, 256);
 		lv_slider_set_range(pObjTmp, 0, 255);
 		lv_slider_set_knob_radio(pObjTmp, KNOB_WIDTH, KNOB_HEIGHT);
+		lv_slider_set_knob_in(pObjTmp, true);
+		lv_slider_set_knob_drag_only(pObjTmp, true);
 		//lv_slider_set_progressive_value(pObjTmp, 20);
 
 		lv_obj_align(pObjTmp, pGroup->pCtrlMode, LV_ALIGN_OUT_TOP_LEFT, 0, -20);
@@ -1610,7 +1712,7 @@ int32_t CreateLogoColorCtrl(lv_obj_t *pParent,
 		pObjTmp = lv_btn_create(pParent, NULL);
 		if (pObjTmp == NULL)
 		{
-			continue;;
+			continue;
 		}
 		lv_btn_set_action(pObjTmp, LV_BTN_ACTION_CLICK, ActionLogoColorCtrl);
 		lv_obj_set_pos(pObjTmp, u16XPos + i % 2 * 180, u16YPos + 40 + ((i / 2) * 63));
@@ -1635,6 +1737,120 @@ int32_t CreateLogoColorCtrl(lv_obj_t *pParent,
 
 }
 
+
+lv_res_t ActionKeyboardPowerCB(lv_obj_t *pObj)
+{
+	StKeyboardCtrl *pGroup = lv_obj_get_free_ptr(pObj);
+	if (lv_sw_get_state(pObj))
+	{
+		pGroup->boIsPowerOn = true;
+	}
+	else
+	{
+		pGroup->boIsPowerOn = false;
+	}
+
+	SendKeyboardPowerCmd(pGroup->boIsPowerOn);
+	printf("set the keyboard power %s\n", lv_sw_get_state(pObj) ? "ON" : "OFF");
+
+	return LV_RES_OK;
+}
+
+lv_res_t ActionKeyboardConnectCB(lv_obj_t *pObj)
+{
+	StKeyboardCtrl *pGroup = lv_obj_get_free_ptr(pObj);
+
+	pGroup->u8CurConnect = (uint8_t)lv_ddlist_get_selected(pObj);
+
+	SendKeyboardConnectCmd(pGroup->u8CurConnect);
+	printf("set the keyboard connect %s\n", pGroup->u8CurConnect ? "UART" : "HID");
+
+	return LV_RES_OK;
+}
+
+
+int32_t CreateKeyBoardCtrl(lv_obj_t *pParent,
+	lv_group_t *pGlobalGroup,
+	uint16_t u16XPos, uint16_t u16YPos,
+	StKeyboardCtrl *pGroup)
+{
+	lv_obj_t *pObjTmp;
+
+	if ((pGroup == NULL) || (pParent == NULL))
+	{
+		return -1;
+	}
+
+	{
+		pObjTmp = lv_label_create(pParent, NULL);
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8("¼üÅÌ¿ØÖÆ"));
+		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
+	}
+
+	{
+		lv_obj_t *pLab = NULL;
+		lv_obj_t *pObjTmp = lv_sw_create(pParent, NULL);
+		if (pObjTmp == NULL)
+		{
+			goto err;
+		}
+		lv_slider_set_knob_radio(pObjTmp, KNOB_WIDTH, KNOB_HEIGHT);
+		lv_obj_set_size(pObjTmp, SW_WIDTH, SW_HTIGHT);
+		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos + 40);
+		lv_sw_on(pObjTmp);
+		pGroup->pPowerCtrl = pObjTmp;
+
+		pLab = lv_label_create(pParent, NULL);
+		lv_label_set_text(pLab, CHS_TO_UTF8("µçÔ´"));
+		lv_obj_align(pLab, pGroup->pPowerCtrl, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+
+		if (pGlobalGroup != NULL)
+		{
+			lv_group_add_obj(pGlobalGroup, pObjTmp);
+		}
+
+	}
+
+	{
+		pObjTmp = lv_ddlist_create(pParent, NULL);
+		if (pObjTmp == NULL)
+		{
+			goto err;
+		}
+		pGroup->pConnectCtrl = pObjTmp;
+
+		lv_obj_set_pos(pObjTmp, u16XPos + 180, u16YPos + 40);
+
+		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8("HID\nUART"));
+
+		lv_ddlist_set_move_dirction(pObjTmp, true);
+
+		lv_label_set_align(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_ALIGN_CENTER);
+
+		lv_label_set_long_mode(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_LONG_BREAK);
+
+		lv_obj_set_width(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label, 80);
+
+		if (pGlobalGroup != NULL)
+		{
+			lv_group_add_obj(pGlobalGroup, pObjTmp);
+		}
+	}
+
+	lv_obj_set_free_ptr(pGroup->pConnectCtrl, pGroup);
+	lv_obj_set_free_ptr(pGroup->pPowerCtrl, pGroup);
+
+	lv_sw_set_action(pGroup->pPowerCtrl, ActionKeyboardPowerCB);
+	lv_ddlist_set_action(pGroup->pConnectCtrl, ActionKeyboardConnectCB);
+
+	return 0;
+err:
+	return -1;
+}
+
+
 int32_t RebulidLogoColorCtrlValue(StLogoColorCtrl *pGroup)
 {
 	if (pGroup->u8CurColorIndex < _Logo_Color_Reserved)
@@ -1644,15 +1860,32 @@ int32_t RebulidLogoColorCtrlValue(StLogoColorCtrl *pGroup)
 	return 0;
 }
 
+int32_t RebulidKeyBoardCtrlValue(StKeyboardCtrl *pGroup)
+{
+	lv_ddlist_set_selected(pGroup->pConnectCtrl, pGroup->u8CurConnect);
+	if (pGroup->boIsPowerOn)
+	{
+		lv_sw_on(pGroup->pPowerCtrl);
+	}
+	else
+	{
+		lv_sw_off(pGroup->pPowerCtrl);
+	}
+
+	return 0;
+}
+
 int32_t CreateTablePeripheralCtrl(lv_obj_t *pParent, lv_group_t *pGroup)
 {
 	CreateLogoColorCtrl(pParent, pGroup, 20, 20, &s_stLogoColorCtrl);
+	CreateKeyBoardCtrl(pParent, pGroup, 20, 200, &s_stKeyboardCtrl);
 	return 0;
 }
 
 int32_t RebulidTablePeripheralVaule(void)
 {
 	RebulidLogoColorCtrlValue(&s_stLogoColorCtrl);
+	RebulidKeyBoardCtrlValue(&s_stKeyboardCtrl);
 	return 0;
 }
 
@@ -1978,6 +2211,8 @@ int32_t CreateTableView(void)
 	}
 
 
+	s_pTableView = pTableView;
+
 
 	CreateTable(pTab[_Tab_Input_PC_Ctrl], _Tab_Input_PC_Ctrl);
 
@@ -2005,7 +2240,9 @@ int32_t CreateTableView(void)
 
 	lv_tabview_set_tab_load_action(pTableView, ActionTabview);
 
-	s_pTableView = pTableView;
+	//s_pTableView = pTableView;
+	
+	//RebulidTableInputPCCtrlVaule();
 
 	return 0;
 }

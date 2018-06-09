@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include "stm32f10x_conf.h"
 #include "key_led_ctrl.h"
-
+#include "flash_ctrl.h"
 
 
 #define ALIGN(org, align)					(((org + (align - 1)) / align) * align)
@@ -196,6 +196,12 @@ void FlushHIDMsgForSB(void);
 
 void DeviceSendKeepAlive(void);
 void DeviceGetCurState(void);
+
+
+void SaveMemoryFromDevice(StPowerOffMemory *pMem);
+void LoadMemoryToDevice(StPowerOffMemory *pMem);
+void LoadPowerOffMemoryToDevice(void);
+void PowerOffMemoryFlush(void);
 
 #endif
 

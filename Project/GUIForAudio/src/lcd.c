@@ -5,8 +5,8 @@
 #include "lcd.h"
 
 #define LCD_DMA_CLOCK			RCC_AHBPeriph_DMA1		
-#define LCD_DMA					DMA1_Channel2
-#define LCD_DMA_FINISH_FLAG		DMA1_FLAG_TC2
+#define LCD_DMA					DMA1_Channel1
+#define LCD_DMA_FINISH_FLAG		DMA1_FLAG_TC1
 
 u16 s_u16LCDSysReg = 0;		//PREF寄存器，设置当前操作页，显示页和背光等（ATK-7' TFTLCD暂不支持横竖屏设置，统一为横屏）。	
 bool g_boIsLCDCanUse = false;

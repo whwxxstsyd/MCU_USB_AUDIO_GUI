@@ -48,8 +48,9 @@ typedef struct
     uint16_t sel_opt_id;                 /*Index of the current option*/
     uint16_t sel_opt_id_ori;             /*Store the original index on focus*/
     uint16_t anim_time;                  /*Open/Close animation time [ms]*/
-    uint8_t opened :1;                   /*1: The list is opened*/
-    lv_coord_t fix_height;                   /*Height if the ddlist is opened. (0: auto-size)*/
+	uint8_t opened : 1;                   /*1: The list is opened*/
+	uint8_t move_up : 1;                  /*1: The list is will move to up*/
+	lv_coord_t fix_height;                   /*Height if the ddlist is opened. (0: auto-size)*/
 }lv_ddlist_ext_t;
 
 typedef enum {
@@ -135,6 +136,14 @@ void lv_ddlist_set_anim_time(lv_obj_t * ddlist, uint16_t anim_time);
  *  */
 void lv_ddlist_set_style(lv_obj_t *ddlist, lv_ddlist_style_t type, lv_style_t *style);
 
+
+/**
+* set the direction when drop opened
+* @param ddlist pointer to drop down list object
+* @param is_up true for up and false for down
+*/
+void lv_ddlist_set_move_dirction(lv_obj_t * ddlist, bool is_up);
+
 /*=====================
  * Getter functions
  *====================*/
@@ -198,6 +207,13 @@ uint16_t lv_ddlist_get_anim_time(lv_obj_t * ddlist);
  * @return style pointer to a style
  */
 lv_style_t * lv_ddlist_get_style(lv_obj_t *ddlist, lv_ddlist_style_t type);
+
+/**
+* get the direction when drop opened
+* @param ddlist pointer to drop down list object
+* @param is_up true for up and false for down
+*/
+bool lv_ddlist_get_move_dirction(lv_obj_t * ddlist);
 
 /*=====================
  * Other functions

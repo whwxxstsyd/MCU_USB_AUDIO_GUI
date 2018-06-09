@@ -227,6 +227,16 @@ typedef struct _tagStLogoColorCtrl
 	uint8_t u8CurColorIndex;
 }StLogoColorCtrl;
 
+typedef struct _tagStKeyboardCtrl
+{
+	lv_obj_t *pPowerCtrl;
+	lv_obj_t *pConnectCtrl;
+
+	bool boIsPowerOn;
+	uint8_t u8CurConnect;
+}StKeyboardCtrl;
+
+
 int32_t CreateTableView(void);
 int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel);
 void SetKeySpeek(uint16_t u16Speed);
@@ -264,5 +274,22 @@ int32_t SendOutputEnableStateCmd(uint8_t u8NewState);
 
 int32_t SendMemeoryCtrlCmd(uint16_t u16Channel, bool boIsSave);
 int32_t SendFactoryCtrlCmd(void);
+
+
+int32_t SendLogoColorCtrlCmd(lv_color24_t stColor);
+int32_t SendKeyboardPowerCmd(bool boIsPowerOn);
+int32_t SendKeyboardConnectCmd(uint8_t u8CurConnect);
+
+
+int32_t GetUnionVolumeValue(uint16_t u16Channel, bool *pValue);
+int32_t GetLogoColor(lv_color24_t *pValue);
+int32_t GetKeyboardPowerValue(bool *pIsPowerOn);
+int32_t GetKeyboardConnectMode(uint8_t *pCurConnect);
+
+int32_t SetUnionVolumeValue(uint16_t u16Channel, bool boValue);
+int32_t SetLogoColor(lv_color24_t stValue);
+int32_t SetKeyboardPowerValue(bool boIsPowerOn);
+int32_t SetKeyboardConnectMode(uint8_t u8CurConnect);
+
 
 #endif // GUI_H_

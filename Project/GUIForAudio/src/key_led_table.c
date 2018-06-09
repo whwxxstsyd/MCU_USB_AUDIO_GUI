@@ -8,10 +8,28 @@
 u8 g_u8KeyTable[KEY_Y_CNT][KEY_X_CNT] = 
 {
 	{
-		_Key_Switch_1,
-		_Key_Switch_2,
+		0,
+		0,
 
 	},	/* 1 */
+	{
+		0,
+		0,
+
+	},	/* 2 */
+
+	{
+		0,
+		0,
+		_Key_Switch_2,
+
+	},	/* 3 */
+	{
+		0,
+		0,
+		_Key_Switch_1,
+	},	/* 4 */
+
 };
 
 /* dp, g, f, e, d, c, b, a */

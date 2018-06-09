@@ -6,6 +6,7 @@
 #include "stm32f10x_conf.h"
 #include "common.h"
 #include "user_api.h"
+#include "gui.h"
 
 
 /* Define the STM32F10x FLASH Page Size depending on the used device */
@@ -39,7 +40,7 @@
 #define APP_START_ADDRESS			0x08003000
 #define APP_END_ADDRESS				(0x08019000 - 1)
 
-#define LIC_ADDRESS					0x08019000
+#define LIC_ADDRESS					0x08079000
 
 #define EEPROM_ADDRESS				(LIC_ADDRESS + FLASH_PAGE_SIZE)
 #define EEPROM_DATA_HEAD  			(0xA5A5)
@@ -118,36 +119,28 @@ int32_t SetOptionByte(uint8_t u8Data);
 uint8_t GetOptionByte(void);
 
 
-#if 0
-#ifndef	MAX_MEMORY_CNT
-#define MAX_MEMORY_CNT			8
-#endif
 
-
-
-
-typedef struct _tagStMemory
+#pragma pack(2) 
+typedef struct _tagStPowerOffMemory
 {
-	StVolume stVolume[TOTAL_VOLUME_CHANNEL];
-	EmAudioCtrlMode emAudioCtrlMode[TOTAL_MODE_CTRL];
-	bool boFantasyPower[FANTASY_POWER_CTRL];
-	u8 u8AINChannelEnableState;
-	u8 u8OutputChannelEnableState;
-}StMemory;
+	bool boUnionVolume[_Channel_NormalOut - _Channel_AIN_Mux + 1];
+	lv_color24_t stLogoColor;
+	bool boIsKeyboardPowerOn;
+	uint8_t u8KeyboardConnectMode;	
+}StPowerOffMemory;
 
 typedef struct _tagStSave
 {
-	u16 u16Head;
-	StMemory stMemory[MAX_MEMORY_CNT];
-	StMemory stPowerOffMemory;
-	StMemory stFactoryMemory;
-	u16 u16CheckDum;
+	uint16_t u16Head;
+	StPowerOffMemory stMemory;
+	uint16_t u16CheckDum;
 }StSave;
+#pragma pack() 
 
 extern StSave g_stSave;
 
 bool WriteSaveData(void);
 void ReadSaveData(void);
-#endif
+
 
 #endif

@@ -24,14 +24,14 @@
  * 8 * 8矩阵
  */
 
-#define KEY_X_CNT		2				/* 键盘扫描列 */
-#define KEY_Y_CNT		1				/* 键盘扫描行 power */
+#define KEY_X_CNT		3				/* 键盘扫描列 */
+#define KEY_Y_CNT		4				/* 键盘扫描行 power */
 #define KEY_SCAN_CNT	8				/* 消抖扫描次数 */
 #define KEY_MIX_MAX		8				/* 单次支持的最大扫描个数 */
 
 #define KEY_BUF_MAX		8				/* 键盘消息缓冲数量 */
 
-#define LED_X_CNT		2				/* LED扫描列 */
+#define LED_X_CNT		1				/* LED扫描列 */
 #define LED_Y_CNT		1				/* LED扫描行 power */
 
 
@@ -43,8 +43,8 @@
 #define CODE_SWITCH3_MAX_VALUE				63
 #define CODE_SWITCH4_MAX_VALUE				63
 
-#define CODE_SWITCH1_REVERSE	0
-#define CODE_SWITCH2_REVERSE	0
+#define CODE_SWITCH1_REVERSE	1
+#define CODE_SWITCH2_REVERSE	1
 #define CODE_SWITCH3_REVERSE	0
 #define CODE_SWITCH4_REVERSE	0
 

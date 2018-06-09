@@ -21,6 +21,7 @@
 #include "protocol.h"
 #include "message.h"
 #include "message_2.h"
+#include "message_3.h"
 
 
 #include "user_init.h"
@@ -31,6 +32,9 @@
 #include "gui_driver.h"
 #include "gui.h"
 #include "C2D.h"
+
+#include "extern_peripheral.h"
+
 
 typedef struct _tagStPentagon
 {
@@ -60,7 +64,8 @@ static StPentagon s_stPentagon[3] =
 	},
 	{ 
 		{ { 78, 406, },{ 750, 200, },{ 1046, 372 },{ 954, 843 },{ 48, 843 } },
-		{ 51, 51, 51 }
+		//{ 51, 51, 51 }
+		{ 255, 255, 255 }
 	},
 	{
 		{ { 110, 420, },{ 722, 233, },{ 1003, 396, },{ 915, 817, },{ 84, 817 } },
@@ -72,11 +77,13 @@ static StTactangle s_stTactangle[3] =
 {
 	{
 		{ { 234, 817, },{ 255, 600, },{ 316, 600, },{ 297, 817, }, },
-		{ 51, 51, 51 }
+		//{ 51, 51, 51 }
+		{ 255, 255, 255 }
 	},
 	{
 		{ { 472, 610, },{ 534, 280, },{ 595, 260, },{ 535, 614, }, },
-		{ 51, 51, 51 }
+		//{ 51, 51, 51 }
+		{ 255, 255, 255 }
 	},
 	{
 		{ { 712, 613, },{ 776, 619, },{ 793, 524, },{ 727, 517 }, },
@@ -88,11 +95,13 @@ static StCycle s_stCycle[4] =
 {
 	{
 		290, 535, 75,
-		{ 51, 51, 51 }
+		//{ 51, 51, 51 }
+		{ 255, 255, 255 }
 	},
 	{
 		500, 679, 75,
-		{ 51, 51, 51 }
+		//{ 51, 51, 51 }
+		{ 255, 255, 255 }
 	},
 	{
 		768, 468, 71,
@@ -146,7 +155,8 @@ void LOGODraw(void)
 {
 
 	uint32_t i;
-	GUI_SetColor(GUI_MAKE_ARGB(0, 51, 51, 51));
+	//GUI_SetColor(GUI_MAKE_ARGB(0, 51, 51, 51));
+	GUI_SetColor(GUI_MAKE_ARGB(0, 255, 255, 255));
 	GUI_FillRect(0, 0, LV_HOR_RES - 1, LV_VER_RES - 1) ;
 
 	for (i = 0; i < 3; i++)
@@ -208,12 +218,16 @@ int main (void)
 	PeripheralPinClkEnable();
 	OpenSpecialGPIO();
 	
-	//ReadSaveData();
+	ReadSaveData();
 	KeyLedInit();
 	CodeSwitchInit();
 	
 	MessageUartInit();
 	MessageUart2Init();
+	MessageUart3Init();
+	
+	ExternPeripheralInit();
+
 
 	SysTickInit();
 	
@@ -234,6 +248,8 @@ int main (void)
 	Delay(3 * 1000);
 
 #endif	
+
+	LoadPowerOffMemoryToDevice();
 	
 #if USE_LVGL
 	{
@@ -264,12 +280,14 @@ int main (void)
 #if USE_LVGL && 0
 			LvglDispMem();
 #endif	
+
 		}
 
 #if 1		
 		{
 			StIOFIFO *pMsgIn = MessageUartFlush(false);
 			StIOFIFO *pMsg2In = MessageUart2Flush(false);
+			StIOFIFO *pMsg3In = MessageUart3Flush(false);
 			void *pKeyIn = KeyBufGetBuf();
 
 			if (pKeyIn != NULL)
@@ -286,7 +304,8 @@ int main (void)
 				{
 					int32_t res = 0;
 					PCEchoProcess(pMsgIn, &c_stUartIOTCB);
-					res = MessageUart2Write(pMsgIn->pData, pMsgIn->boNeedFree, 0, pMsgIn->s32Length);
+					res = MessageUart3Write(pMsgIn->pData, pMsgIn->boNeedFree, 0, 
+						pMsgIn->s32Length);
 					if (res != 0)
 					{
 						if (pMsgIn->boNeedFree)
@@ -299,34 +318,36 @@ int main (void)
 				
 			}
 			
-			if (pMsg2In != NULL)
+			if (pMsg3In != NULL)
 			{
-				if (BaseCmdProcess(pMsg2In, NULL) == 0)
+				if (BaseCmdProcess(pMsg3In, NULL) == 0)
 				{
 					if (SysTimeDiff(u32DeviceGetEchoTime, g_u32SysTickCnt) > 10 * 1000)
 					{
 						DeviceGetCurState();
 					}
 					u32DeviceGetEchoTime = g_u32SysTickCnt;
-					MessageUart2Release(pMsg2In);
+					MessageUart3Release(pMsg3In);
 				}
 				else
 				{
 					int32_t res = 0;
-					PCEchoProcess(pMsg2In, NULL);
-					res = MessageUartWrite(pMsg2In->pData, pMsg2In->boNeedFree, 0, pMsg2In->s32Length);
+					PCEchoProcess(pMsg3In, NULL);
+					res = MessageUartWrite(pMsg3In->pData, pMsg3In->boNeedFree, 0, 
+							pMsg3In->s32Length);
 					if (res != 0)
 					{
-						if (pMsg2In->boNeedFree)
+						if (pMsg3In->boNeedFree)
 						{
-							free(pMsg2In->pData);
+							free(pMsg3In->pData);
 						}
 					}						
-					MessageUart2ReleaseNoReleaseData(pMsg2In);
+					MessageUart3ReleaseNoReleaseData(pMsg3In);
 				}
 				//u32DeviceKeepAliveTime = g_u32SysTickCnt;
 			}
 			
+			MessageUart2Release(pMsg2In);
 			
 			KeyBufGetEnd(pKeyIn);
 
@@ -337,7 +358,8 @@ int main (void)
 			}
 
 		}
-#endif		
+#endif	
+		PowerOffMemoryFlush();		
     }
 }
 

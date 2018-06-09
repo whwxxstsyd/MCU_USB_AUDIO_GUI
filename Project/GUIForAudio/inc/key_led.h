@@ -26,9 +26,9 @@ PW12:	PB14---->X
 */
 
 
-#define KEY_X_1				GPIO_Pin_4
-#define KEY_X_2				GPIO_Pin_3
-#define KEY_X_3				GPIO_Pin_6
+#define KEY_X_1				GPIO_Pin_7
+#define KEY_X_2				GPIO_Pin_8
+#define KEY_X_3				GPIO_Pin_9
 #define KEY_X_4				GPIO_Pin_7
 #define KEY_X_5				GPIO_Pin_8
 #define KEY_X_6				GPIO_Pin_9
@@ -36,16 +36,16 @@ PW12:	PB14---->X
 #define KEY_X_8				GPIO_Pin_11
 
 
-#define KEY_X_PORT_1		GPIOC
-#define KEY_X_PORT_2		GPIOE
-#define KEY_X_PORT_3		GPIOC
+#define KEY_X_PORT_1		GPIOB
+#define KEY_X_PORT_2		GPIOB
+#define KEY_X_PORT_3		GPIOB
 #define KEY_X_PORT_4		GPIOC
 #define KEY_X_PORT_5		GPIOC
 #define KEY_X_PORT_6		GPIOC
 #define KEY_X_PORT_7		GPIOC
 #define KEY_X_PORT_8		GPIOC
 
-#define LED_X_1				GPIO_Pin_5
+#define LED_X_1				GPIO_Pin_2
 #define LED_X_2				GPIO_Pin_5
 #define LED_X_3				GPIO_Pin_2
 #define LED_X_4				GPIO_Pin_3
@@ -54,7 +54,7 @@ PW12:	PB14---->X
 #define LED_X_7				GPIO_Pin_6
 #define LED_X_8				GPIO_Pin_7
 
-#define LED_X_PORT_1		GPIOB
+#define LED_X_PORT_1		GPIOD
 #define LED_X_PORT_2		GPIOE
 #define LED_X_PORT_3		GPIOA
 #define LED_X_PORT_4		GPIOA

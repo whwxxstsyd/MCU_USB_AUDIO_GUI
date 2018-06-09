@@ -40,7 +40,9 @@ typedef struct
     lv_style_t *style_knob;    /*Style of the knob*/
     int16_t drag_value;          /*Store a temporal value during press until release (Handled by the library)*/
 	int16_t progressive_value;	/* using by the group */
-	uint8_t knob_in : 1;     /*1: Draw the knob inside the bar*/
+	uint8_t knob_in : 1;			/*1: Draw the knob inside the bar*/
+	uint8_t knob_drag_only : 1;		/*1: only drag the knob */
+	uint8_t point_in_knob : 1;		/*1: flag whether the point is in the knob */
 	uint8_t knob_radio_w;     /* knob radio width */
 	uint8_t knob_radio_h;     /* knob radio height */
 }lv_slider_ext_t;
@@ -115,6 +117,14 @@ void lv_slider_set_action(lv_obj_t * slider, lv_action_t action);
  *           false: the knob can be out on the edges
  */
 void lv_slider_set_knob_in(lv_obj_t * slider, bool in);
+
+/**
+* Set the 'knob drag only' attribute of a slider
+* @param slider pointer to slider object
+* @param in true: drag the knob only;
+*           false: all the arae of slider
+*/
+void lv_slider_set_knob_drag_only(lv_obj_t * slider, bool enable);
 
 /**
  * Set a style of a slider
@@ -193,6 +203,13 @@ bool lv_slider_is_dragged(lv_obj_t * slider);
  */
 bool lv_slider_get_knob_in(lv_obj_t * slider);
 
+/**
+* get the 'knob drag only' attribute of a slider
+* @param slider pointer to slider object
+* @return true: drag the knob only;
+*           false: all the arae of slider
+*/
+bool lv_slider_get_knob_drag_only(lv_obj_t * slider);
 
 /**
  * Get a style of a slider

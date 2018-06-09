@@ -439,7 +439,6 @@ uint8_t GetOptionByte(void)
 	return *((uint8_t *)OPTION_BYTE_ADDRESS);
 }
 
-#if 0
 StSave g_stSave;
 
 #define CHECK_SIZE		((sizeof(StSave) / sizeof(u16)) - 1)
@@ -507,11 +506,7 @@ void ReadSaveData(void)
 	
 end:
 
-	for (i = 0; i < MAX_MEMORY_CNT + 2; i++)
-	{
-		SaveMemoryFromDevice((g_stSave.stMemory + i));
-	}
+	SaveMemoryFromDevice(&(g_stSave.stMemory));
 	
 	WriteSaveData();
 }
-#endif

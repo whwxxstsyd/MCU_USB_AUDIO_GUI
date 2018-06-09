@@ -30,6 +30,7 @@
 
 #include "message.h"
 #include "message_2.h"
+#include "message_3.h"
 #include "flash_ctrl.h"
 #include "extern_io_ctrl.h"
 
@@ -40,6 +41,7 @@
 
 
 #include "protocol.h"
+#include "extern_peripheral.h"
 
 
 //#include "I2C.h"
@@ -644,8 +646,11 @@ void CopyToUart1Message(void *pData, u32 u32Length)
 	}
 
 }
-
 void CopyToUart2Message(void *pData, u32 u32Length)
+{
+}
+
+void CopyToUart3Message(void *pData, u32 u32Length)
 {
 	if ((pData != NULL) && (u32Length != 0))
 	{
@@ -653,7 +658,7 @@ void CopyToUart2Message(void *pData, u32 u32Length)
 		if (pBuf != NULL)
 		{
 			memcpy(pBuf, pData, u32Length);
-			if (MessageUart2Write(pBuf, true, _IO_Reserved, u32Length) != 0)
+			if (MessageUart3Write(pBuf, true, _IO_Reserved, u32Length) != 0)
 			{
 				free (pBuf);
 			}	
@@ -661,9 +666,6 @@ void CopyToUart2Message(void *pData, u32 u32Length)
 	}
 }
 
-void CopyToUart3Message(void *pData, u32 u32Length)
-{
-}
 
 void CopyToUartMessage(const StIOTCB *pIOTCB, void *pData, u32 u32Length)
 {
@@ -1110,7 +1112,23 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 	}
 	pMsg = (uint8_t *)pFIFO->pData;
 	
-	if (pMsg[_YNA_Mix] == 0x06)
+	if (pMsg[_YNA_Mix] == 0x07)
+	{
+		switch(pMsg[_YNA_Cmd])
+		{
+			case 0x50:
+			{
+				LDPWrite(pMsg[_YNA_Data1] >> 3,
+					 pMsg[_YNA_Data2] >> 3,
+					 pMsg[_YNA_Data3] >> 3);
+				break;
+			}
+
+			default:
+				break;
+		}		
+	}
+	else if (pMsg[_YNA_Mix] == 0x06)
 	{
 		uint8_t *u8EchoBase = u8YNABuf;
 		uint8_t *pEcho = NULL;
@@ -1438,7 +1456,7 @@ void DeviceSendKeepAlive(void)
 	u8Base[_YNA_Data3] = 0x02;
 	YNAGetCheckSum(u8Base);
 	
-	CopyToUart2Message(u8Base, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart3Message(u8Base, PROTOCOL_YNA_DECODE_LENGTH);
 }
 
 void DeviceGetCurState(void)
@@ -1449,29 +1467,29 @@ void DeviceGetCurState(void)
 
 	u8Cmd[_YNA_Cmd] = 0x40;	/* 输入源 */
 	YNAGetCheckSum(u8Cmd);
-	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 
 
 
 	u8Cmd[_YNA_Cmd] = 0x41;	/* 输出源 */
 	YNAGetCheckSum(u8Cmd);
-	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 
 	u8Cmd[_YNA_Cmd] = 0x80;	/* 音量 */
 	YNAGetCheckSum(u8Cmd);
-	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 
 	u8Cmd[_YNA_Cmd] = 0x50;	/* 输入输出通道 */
 	u8Cmd[_YNA_Data1] = 0x01;
 	YNAGetCheckSum(u8Cmd);
-	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 
 	u8Cmd[_YNA_Data1] = 0x00;
 
 	u8Cmd[_YNA_Cmd] = 0x46;	/* 输入输出通道 */
 	u8Cmd[_YNA_Data3] = 0xFF;
 	YNAGetCheckSum(u8Cmd);
-	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 }
 
 
@@ -1496,7 +1514,7 @@ int32_t SendAudioCtrlModeCmd(uint16_t u16Channel, EmAudioCtrlMode emMode)
 	if (pCmd != NULL)
 	{
 		uint32_t res = MessageUartWrite(pCmd, true, 0, u32CmdLen);
-		CopyToUart2Message(pCmd, u32CmdLen);
+		CopyToUart3Message(pCmd, u32CmdLen);
 		if (res != 0)
 		{
 			free(pCmd);
@@ -1518,7 +1536,7 @@ int32_t SendAudioVolumeCmd(uint16_t u16Channel, StVolume stVolume)
 	if (pCmd != NULL)
 	{
 		uint32_t res = MessageUartWrite(pCmd, true, 0, u32CmdLen);
-		CopyToUart2Message(pCmd, u32CmdLen);
+		CopyToUart3Message(pCmd, u32CmdLen);
 		if (res != 0)
 		{
 			free(pCmd);
@@ -1539,7 +1557,7 @@ int32_t SendPhantomPowerStateCmd(uint16_t u16Channel, bool boIsEnable)
 	if (pCmd != NULL)
 	{
 		uint32_t res = MessageUartWrite(pCmd, true, 0, u32CmdLen);
-		CopyToUart2Message(pCmd, u32CmdLen);
+		CopyToUart3Message(pCmd, u32CmdLen);
 		if (res != 0)
 		{
 			free(pCmd);
@@ -1568,7 +1586,7 @@ int32_t SendInputEnableStateCmd(uint8_t u8NewState)
 	
 	u8Cmd[_YNA_Data1] = 0x00;
 	YNAGetCheckSum(u8Cmd);
-	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 
 	return 0;
 }
@@ -1598,7 +1616,12 @@ int32_t SendMemeoryCtrlCmd(uint16_t u16Channel, bool boIsSave)
 	u8Cmd[_YNA_Data3] = 0x00;
 
 	YNAGetCheckSum(u8Cmd);
-	CopyToUart2Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	
+	if (!boIsSave)
+	{
+		DeviceGetCurState();
+	}
 	
 	return 0;
 }
@@ -1606,6 +1629,97 @@ int32_t SendFactoryCtrlCmd(void)
 {
 	return SendMemeoryCtrlCmd(0xFF, false);
 }
+
+int32_t SendLogoColorCtrlCmd(lv_color24_t stColor)
+{
+	LDPWrite(stColor.red, stColor.green, stColor.blue);
+	
+	return 0;
+}
+
+int32_t SendKeyboardPowerCmd(bool boIsPowerOn)
+{
+	KeyboardPowerEnable(boIsPowerOn);
+	return 0;
+}
+
+int32_t SendKeyboardConnectCmd(uint8_t u8CurConnect)
+{
+	KeyboardConnectSetMode(u8CurConnect);
+	return 0;
+}
+
+void SaveMemoryFromDevice(StPowerOffMemory *pMem)
+{
+	int32_t i;
+	for (i = _Channel_AIN_Mux; i <= _Channel_NormalOut; i++)
+	{
+		GetUnionVolumeValue(i, pMem->boUnionVolume + i - _Channel_AIN_Mux);			
+	}
+	GetLogoColor(&(pMem->stLogoColor));
+	GetKeyboardPowerValue(&(pMem->boIsKeyboardPowerOn));
+	GetKeyboardConnectMode(&(pMem->u8KeyboardConnectMode));	
+}
+
+void LoadMemoryToDevice(StPowerOffMemory *pMem)
+{
+	int32_t i;
+	//StPowerOffMemory *pMem = &(g_stSave.stMemory);
+	for (i = _Channel_AIN_Mux; i <= _Channel_NormalOut; i++)
+	{
+		SetUnionVolumeValue(i, pMem->boUnionVolume[i - _Channel_AIN_Mux]);			
+	}
+	SetLogoColor(pMem->stLogoColor);
+	SetKeyboardPowerValue(pMem->boIsKeyboardPowerOn);
+	SetKeyboardConnectMode(pMem->u8KeyboardConnectMode);	
+}
+
+void LoadPowerOffMemoryToDevice(void)
+{
+	LoadMemoryToDevice(&(g_stSave.stMemory));
+}
+
+void PowerOffMemoryFlush(void)	/* 100ms flush */
+{
+	static StPowerOffMemory StMemMonitor = {0};
+	static StPowerOffMemory StMemCur = {0};
+	static bool boIsGetMonitor = false;
+	static u32 u32GetMonitorTime = 0;
+	static u32 u32MonitorTimeInterval = 0;
+	
+	if (SysTimeDiff(u32MonitorTimeInterval, g_u32SysTickCnt) < 100)
+	{
+		return;
+	}
+	u32MonitorTimeInterval = g_u32SysTickCnt;
+
+	memset(&StMemCur, 0, sizeof(StPowerOffMemory));
+	SaveMemoryFromDevice(&StMemCur);
+	if (memcmp(&StMemMonitor, &StMemCur, sizeof(StPowerOffMemory)) != 0)
+	{
+		/* begin to monitor */
+		memcpy(&StMemMonitor, &StMemCur, sizeof(StPowerOffMemory));
+		boIsGetMonitor = true;
+		u32GetMonitorTime = g_u32SysTickCnt;
+	}
+	if (boIsGetMonitor)
+	{
+		if (SysTimeDiff(u32GetMonitorTime, g_u32SysTickCnt) > 15 * 1000)	/* 15S unchanged */
+		{
+			/* prevent to write flash after power on */
+			if (memcmp(&StMemMonitor, &g_stSave.stMemory, sizeof(StPowerOffMemory)) != 0)
+			{
+				memcpy(&(g_stSave.stMemory), &StMemMonitor, sizeof(StPowerOffMemory));
+				WriteSaveData();
+			}
+			boIsGetMonitor = false;
+		}
+	}
+	
+
+}
+
+
 
 __weak void SetKeySpeek(uint16_t u16Speed)
 {
@@ -1710,6 +1824,50 @@ __weak int32_t SetOutputEnableState(uint8_t u8NewState)
 {
 	return 0;
 }
+
+
+
+__weak int32_t GetUnionVolumeValue(uint16_t u16Channel, bool *pValue)
+{
+	return -1;
+}
+
+__weak int32_t GetLogoColor(lv_color24_t *pValue)
+{
+	return -1;
+}
+
+__weak int32_t GetKeyboardPowerValue(bool *pIsPowerOn)
+{
+	return -1;
+}
+
+__weak int32_t GetKeyboardConnectMode(uint8_t *pCurConnect)
+{
+	return -1;
+}
+
+
+__weak int32_t SetUnionVolumeValue(uint16_t u16Channel, bool boValue)
+{
+	return -1;
+}
+
+__weak int32_t SetLogoColor(lv_color24_t stValue)
+{
+	return -1;
+}
+
+__weak int32_t SetKeyboardPowerValue(bool boIsPowerOn)
+{
+	return -1;
+}
+
+__weak int32_t SetKeyboardConnectMode(uint8_t u8CurConnect)
+{
+	return -1;
+}
+
 
 
 

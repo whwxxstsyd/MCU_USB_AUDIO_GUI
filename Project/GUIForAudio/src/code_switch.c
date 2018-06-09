@@ -25,8 +25,8 @@
 
 #define CODE_SWITCH1_PIN_A				GPIO_Pin_0
 #define CODE_SWITCH1_PIN_A_PORT			GPIOC
-#define CODE_SWITCH1_PIN_B				GPIO_Pin_4
-#define CODE_SWITCH1_PIN_B_PORT			GPIOA
+#define CODE_SWITCH1_PIN_B				GPIO_Pin_13
+#define CODE_SWITCH1_PIN_B_PORT			GPIOC
 
 #define CODE_SWITCH1_INT_SRC			GPIO_PinSource0
 #define CODE_SWITCH1_INT_SRC_PORT		GPIO_PortSourceGPIOC
@@ -35,15 +35,15 @@
 
 
 
-#define CODE_SWITCH2_PIN_A				GPIO_Pin_2
+#define CODE_SWITCH2_PIN_A				GPIO_Pin_1
 #define CODE_SWITCH2_PIN_A_PORT			GPIOC
-#define CODE_SWITCH2_PIN_B				GPIO_Pin_6
-#define CODE_SWITCH2_PIN_B_PORT			GPIOA
+#define CODE_SWITCH2_PIN_B				GPIO_Pin_14
+#define CODE_SWITCH2_PIN_B_PORT			GPIOC
 
-#define CODE_SWITCH2_INT_SRC			GPIO_PinSource2
+#define CODE_SWITCH2_INT_SRC			GPIO_PinSource1
 #define CODE_SWITCH2_INT_SRC_PORT		GPIO_PortSourceGPIOC
-#define CODE_SWITCH2_INT_LINE			EXTI_Line2
-#define CODE_SWITCH2_INT_CHANNEL		EXTI2_IRQn
+#define CODE_SWITCH2_INT_LINE			EXTI_Line1
+#define CODE_SWITCH2_INT_CHANNEL		EXTI1_IRQn
 
 
 static uint8_t s_u8SwitchMode[CODE_SWITCH_MAX] = {0};
@@ -71,7 +71,7 @@ static void CodeSwitchPinInit(void)
 	EXTI_InitTypeDef   EXTI_InitStructure;
 	NVIC_InitTypeDef   NVIC_InitStructure;
 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_InitStructure.GPIO_Speed =   GPIO_Speed_2MHz;
 	
 	/* switch1 */
@@ -315,7 +315,7 @@ void FlushCodeSwitch2(void)
 
 }
 
-void EXTI2_IRQHandler(void)
+void EXTI1_IRQHandler(void)
 {
 	if(EXTI_GetITStatus(CODE_SWITCH2_INT_LINE) != RESET)
 	{	
