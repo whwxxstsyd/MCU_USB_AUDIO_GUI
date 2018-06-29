@@ -12,6 +12,7 @@
 #include "gt9147.h"
 #include "gui_driver.h"
 #include "gui.h"
+#include "screen_protect.h"
 
 #if USE_LVGL
 
@@ -156,6 +157,10 @@ static bool ex_tp_read(lv_indev_data_t *data)
 		data->point.y = stLastPoint[u32Index].u16Y = stPoint[u32Index].u16Y;
 	}
 	
+	if (SrceenProtectIsStart())
+	{
+		data->state = LV_INDEV_STATE_REL;
+	}
 
     return false;   /*false: no more data to read because we are no buffering*/
 }
@@ -172,6 +177,12 @@ bool keyboard_read(lv_indev_data_t * data)
 {
     data->state = state;
     data->key = last_key;
+	
+	if (SrceenProtectIsStart())
+	{
+		data->state = LV_INDEV_STATE_REL;
+	}
+
     return false;
 }
 

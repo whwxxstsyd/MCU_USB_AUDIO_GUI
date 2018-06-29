@@ -50,6 +50,14 @@ enum
 	_Channel_NormalOut,
 
 	_Channel_Reserved,
+
+
+	_Channel_PC_Ctrl = 0x80,
+	_Channel_PC_Ctrl_Play = _Channel_PC_Ctrl,
+	_Channel_PC_Ctrl_Record,
+
+	_Channel_PC_Ctrl_Reserved,
+
 };
 
 #ifndef TOTAL_MODE_CTRL_IN
@@ -90,6 +98,20 @@ enum
 #endif
 
 
+#ifndef TOTAL_PC_CTRL_MODE_CTRL
+#define TOTAL_PC_CTRL_MODE_CTRL			(_Channel_PC_Ctrl_Reserved - _Channel_PC_Ctrl)
+#endif
+
+
+#ifndef TOTAL_PC_CTRL_VOLUME_CHANNEL
+#define TOTAL_PC_CTRL_VOLUME_CHANNEL 			TOTAL_PC_CTRL_MODE_CTRL
+#endif
+
+#ifndef TOTAL_CHANNEL
+#define TOTAL_CHANNEL					(TOTAL_VOLUME_CHANNEL + TOTAL_PC_CTRL_MODE_CTRL)
+#endif
+
+
 typedef struct _tagStVolumeCtrlGroup
 {
 	lv_obj_t *pLeftVolume;
@@ -122,8 +144,8 @@ typedef struct _tagStVolume
 
 typedef struct _tagStMemory
 {
-	StVolume stVolume[TOTAL_VOLUME_CHANNEL];
-	EmAudioCtrlMode emAudioCtrlMode[TOTAL_MODE_CTRL];
+	StVolume stVolume[TOTAL_CHANNEL];
+	EmAudioCtrlMode emAudioCtrlMode[TOTAL_CHANNEL];
 	bool boPhantomPower[PHANTOM_POWER_CTRL];
 	uint8_t u8AINChannelEnableState;
 	uint8_t u8OutputChannelEnableState;
@@ -131,7 +153,7 @@ typedef struct _tagStMemory
 
 typedef struct _tagStUniformCheckState
 {
-	bool boUniformCheckState[TOTAL_VOLUME_CHANNEL];
+	bool boUniformCheckState[TOTAL_CHANNEL];
 }StUniformCheckState;
 
 
@@ -171,9 +193,10 @@ enum
 {
 	_Tab_Input_1_2,
 	_Tab_Input_3_5,
-	_Tab_Input_PC_Ctrl,
+	_Tab_Input_I2S_Ctrl,
 	_Tab_Output,
 	_Tab_Other_Ctrl,
+	_Tab_PC_Volume_Ctrl,
 	_Tab_Peripheral_Ctrl,
 	_Tab_SYS_Ctrl,
 	
@@ -236,6 +259,14 @@ typedef struct _tagStKeyboardCtrl
 	uint8_t u8CurConnect;
 }StKeyboardCtrl;
 
+typedef struct _tagStScreenProtedtCtrl
+{
+	lv_obj_t *pTimeCtrl;
+	lv_obj_t *pModeCtrl;
+
+	uint8_t u8CurTimeIndex;
+	uint8_t u8CurModeIndex;
+}StScreenProtectCtrl;
 
 int32_t CreateTableView(void);
 int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel);
@@ -290,6 +321,17 @@ int32_t SetUnionVolumeValue(uint16_t u16Channel, bool boValue);
 int32_t SetLogoColor(lv_color24_t stValue);
 int32_t SetKeyboardPowerValue(bool boIsPowerOn);
 int32_t SetKeyboardConnectMode(uint8_t u8CurConnect);
+
+
+int32_t GetScreenProtectTimeIndex(uint8_t *pIndex);
+int32_t GetScreenProtectModeIndex(uint8_t *pIndex);
+int32_t SetScreenProtectTimeIndex(uint8_t u8Index);
+int32_t SetScreenProtectModeIndex(uint8_t u8Index);
+
+
+int32_t SendScreenProtectTimeCmd(uint8_t u8Index);
+int32_t SendScreenProtectModeCmd(uint8_t u8Index);
+
 
 
 #endif // GUI_H_

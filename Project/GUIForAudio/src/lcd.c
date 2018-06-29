@@ -78,6 +78,12 @@ void LCDSetOperateLayer(u16 u16Layer)
 	s_u16LCDSysReg |= ((u16Layer & 0x07) << 12);
 	LCDWriteReg(LCD_PREF, s_u16LCDSysReg);
 } 
+#else
+void LCDSetBackLight(u8 u8Light)
+{	
+	GPIO_WriteBit(GPIOB, GPIO_Pin_0, u8Light == 0 ? Bit_RESET : Bit_SET);
+}
+
 #endif
 //设置光标位置
 //Xpos:横坐标

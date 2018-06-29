@@ -38,7 +38,7 @@
 
 #include "gui.h"
 #include "gui_driver.h"
-
+#include "screen_protect.h"
 
 #include "protocol.h"
 #include "extern_peripheral.h"
@@ -1009,13 +1009,24 @@ static bool KeyBoardProcess(StKeyMixIn *pKeyIn)
 			}
 			case _Key_Switch_1:
 			{
-//				int32_t *pTmp = NULL;
-//				pTmp[0] = 0;
+				if (pKeyState->u8KeyState == KEY_DOWN)
+				{
+					if (SrceenProtectIsStart())
+					{
+						SrceenProtectForceStop();
+					}
+					else
+					{
+						SrceenProtectForceStart();
+					}
+				}
 				break;
 			}
 			default:
-				break;
+				continue;
 		}
+
+		SrceenProtectReset();
 
 		pBuf[_YNA_Data2] = u8KeyValue;
 		
@@ -1075,6 +1086,8 @@ static bool CodeSwitchProcess(StKeyMixIn *pKeyIn)
 	}
 
 }	
+	SrceenProtectReset();
+
 	
 	return true;
 	
@@ -1356,17 +1369,8 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 			switch (u16Command)
 			{
 				case 0x0640:
-				{
-					StMixAudioCtrlMode *pMode = (StMixAudioCtrlMode *)(pVariableCmd + 6);
-					u16 i;
-					for (i = 0; i < u16Count; i++)
-					{
-						SetAudioCtrlMode(pMode[i].u8Index, (EmAudioCtrlMode)(pMode[i].u8Mode));
-						ReflushActiveTable(_Fun_AudioMode, pMode[i].u8Index);
-					}
-					break;
-				}
 				case 0x0641:
+				case 0x0642:
 				{
 					StMixAudioCtrlMode *pMode = (StMixAudioCtrlMode *)(pVariableCmd + 6);
 					u16 i;
@@ -1504,9 +1508,13 @@ int32_t SendAudioCtrlModeCmd(uint16_t u16Channel, EmAudioCtrlMode emMode)
 	{
 		u16Cmd = 0x0640;
 	}
-	else
+	else if (u16Channel < TOTAL_MODE_CTRL)
 	{
 		u16Cmd = 0x0641;		
+	}
+	else
+	{
+		u16Cmd = 0x0642;
 	}
 	pCmd = YNAMakeAnArrayVarialbleCmd(u16Cmd, &stValue, 
 				1, sizeof(StMixAudioCtrlMode), &u32CmdLen);
@@ -1659,6 +1667,8 @@ void SaveMemoryFromDevice(StPowerOffMemory *pMem)
 	GetLogoColor(&(pMem->stLogoColor));
 	GetKeyboardPowerValue(&(pMem->boIsKeyboardPowerOn));
 	GetKeyboardConnectMode(&(pMem->u8KeyboardConnectMode));	
+	GetScreenProtectTimeIndex(&(pMem->u8ScreenProtectTimeIndex));
+	GetScreenProtectModeIndex(&(pMem->u8ScreenProtectModeIndex));
 }
 
 void LoadMemoryToDevice(StPowerOffMemory *pMem)
@@ -1672,6 +1682,8 @@ void LoadMemoryToDevice(StPowerOffMemory *pMem)
 	SetLogoColor(pMem->stLogoColor);
 	SetKeyboardPowerValue(pMem->boIsKeyboardPowerOn);
 	SetKeyboardConnectMode(pMem->u8KeyboardConnectMode);	
+	SetScreenProtectTimeIndex(pMem->u8ScreenProtectTimeIndex);
+	SetScreenProtectModeIndex(pMem->u8ScreenProtectModeIndex);
 }
 
 void LoadPowerOffMemoryToDevice(void)
@@ -1867,6 +1879,45 @@ __weak int32_t SetKeyboardConnectMode(uint8_t u8CurConnect)
 {
 	return -1;
 }
+
+
+__weak int32_t GetScreenProtectTimeIndex(uint8_t *pIndex)
+{
+	return -1;
+}
+
+__weak int32_t GetScreenProtectModeIndex(uint8_t *pIndex)
+{
+	return -1;
+}
+
+__weak int32_t SetScreenProtectTimeIndex(uint8_t u8Index)
+{
+	return -1;
+}
+
+__weak int32_t SetScreenProtectModeIndex(uint8_t u8Index)
+{
+	return -1;
+}
+
+__weak bool SrceenProtectIsStart(void)
+{
+	return false;
+}
+
+__weak void SrceenProtectReset(void)
+{
+}
+
+__weak void SrceenProtectForceStart(void)
+{
+}
+
+__weak void SrceenProtectForceStop(void)
+{
+}
+
 
 
 

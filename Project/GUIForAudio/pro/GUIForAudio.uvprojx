@@ -539,6 +539,16 @@
               <FileType>1</FileType>
               <FilePath>..\src\message_3.c</FilePath>
             </File>
+            <File>
+              <FileName>logo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\logo.c</FilePath>
+            </File>
+            <File>
+              <FileName>screen_protect.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\screen_protect.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -396,7 +396,11 @@ void lv_ddlist_open(lv_obj_t * ddlist, bool anim_en)
     anim_en = false;
 #endif
     lv_ddlist_ext_t * ext = lv_obj_get_ext_attr(ddlist);
-    ext->opened = 1;
+	if (ext->opened != 0)
+	{
+		return;
+	}
+	ext->opened = 1;
     lv_obj_set_drag(lv_page_get_scrl(ddlist), true);
     lv_ddlist_refr_size(ddlist, anim_en);
 }
@@ -412,6 +416,10 @@ void lv_ddlist_close(lv_obj_t * ddlist, bool anim_en)
     anim_en = false;
 #endif
     lv_ddlist_ext_t * ext = lv_obj_get_ext_attr(ddlist);
+	if (ext->opened == 0)
+	{
+		return;
+	}
     ext->opened = 0;
     lv_obj_set_drag(lv_page_get_scrl(ddlist), false);
     lv_ddlist_refr_size(ddlist, anim_en);

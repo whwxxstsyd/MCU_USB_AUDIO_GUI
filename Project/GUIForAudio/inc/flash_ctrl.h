@@ -126,7 +126,9 @@ typedef struct _tagStPowerOffMemory
 	bool boUnionVolume[_Channel_NormalOut - _Channel_AIN_Mux + 1];
 	lv_color24_t stLogoColor;
 	bool boIsKeyboardPowerOn;
-	uint8_t u8KeyboardConnectMode;	
+	uint8_t u8KeyboardConnectMode;
+	uint8_t u8ScreenProtectTimeIndex;
+	uint8_t u8ScreenProtectModeIndex;
 }StPowerOffMemory;
 
 typedef struct _tagStSave

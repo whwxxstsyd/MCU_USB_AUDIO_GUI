@@ -8,6 +8,7 @@
 *******************************************************************************/
 
 #include "gui.h"
+#include "screen_protect.h"
 
 #if USE_LVGL
 
@@ -26,7 +27,8 @@
 enum 
 {
 	_OBJ_TYPE_SLIDER = 0x80,
-	_OBJ_TYPE_BTN
+	_OBJ_TYPE_BTN,
+	_OBJ_TYPE_DDLIST,
 };
 
 extern lv_font_t lv_font_chs_24;
@@ -46,6 +48,53 @@ const char *c_pCtrlMode[_Audio_Ctrl_Mode_Reserved] =
 	"混合",		//"Mux",
 };/**/
 
+const char *c_pCtrlModeSpecial[_Audio_Ctrl_Mode_Reserved] =
+{
+	"直连",		//"Normal",
+	"差分右",		//"L Mute",
+	"差分左",		//"R Mute",
+	"静音",		//"Mute",
+	"左→右",		//"R Use L",
+	"右→左",		//"L Use R",
+	"混合",		//"Mux",
+};/**/
+
+
+const float c_f32Volume[256] = 
+{
+	-99.0f, -24.1f, -21.0f, -19.3f, -18.0f, -17.0f, -16.2f, -15.5f, 
+	-14.9f, -14.4f, -13.9f, -13.5f, -13.1f, -12.7f, -12.4f, -12.1f, 
+	-11.8f, -11.5f, -11.2f, -11.0f, -10.7f, -10.5f, -10.3f, -10.1f, 
+	-9.9f, -9.7f, -9.5f, -9.3f, -9.1f, -8.9f, -8.8f, -8.6f,
+	-8.5f, -8.3f, -8.1f, -8.0f, -7.9f, -7.7f, -7.6f, -7.5f,
+	-7.3f, -7.2f, -7.1f, -6.9f, -6.8f, -6.7f, -6.6f, -6.5f,
+	-6.4f, -6.3f, -6.1f, -6.0f, -5.9f, -5.8f, -5.7f, -5.6f,
+	-5.5f, -5.4f, -5.3f, -5.2f, -5.1f, -5.0f, -5.0f, -4.9f,
+	-4.8f, -4.7f, -4.6f, -4.5f, -4.4f, -4.3f, -4.2f, -4.2f,
+	-4.1f, -4.0f, -3.9f, -3.8f, -3.7f, -3.7f, -3.6f, -3.5f,
+	-3.4f, -3.3f, -3.3f, -3.2f, -3.1f, -3.0f, -3.0f, -2.9f,
+	-2.8f, -2.7f, -2.7f, -2.6f, -2.5f, -2.4f, -2.4f, -2.3f,
+	-2.2f, -2.1f, -2.1f, -2.0f, -1.9f, -1.9f, -1.8f, -1.7f,
+	-1.6f, -1.6f, -1.5f, -1.4f, -1.4f, -1.3f, -1.2f, -1.2f,
+	-1.1f, -1.0f, -1.0f, -0.9f, -0.8f, -0.7f, -0.7f, -0.6f,
+	-0.5f, -0.5f, -0.4f, -0.3f, -0.3f, -0.2f, -0.1f, -0.1f,
+	0.0f, 0.1f, 0.1f, 0.2f, 0.3f, 0.3f, 0.4f, 0.5f,
+	0.5f, 0.6f, 0.7f, 0.7f, 0.8f, 0.9f, 1.0f, 1.0f,
+	1.1f, 1.2f, 1.2f, 1.3f, 1.4f, 1.4f, 1.5f, 1.6f,
+	1.6f, 1.7f, 1.8f, 1.9f, 1.9f, 2.0f, 2.1f, 2.1f,
+	2.2f, 2.3f, 2.4f, 2.4f, 2.5f, 2.6f, 2.7f, 2.7f,
+	2.8f, 2.9f, 3.0f, 3.0f, 3.1f, 3.2f, 3.3f, 3.3f,
+	3.4f, 3.5f, 3.6f, 3.7f, 3.7f, 3.8f, 3.9f, 4.0f,
+	4.1f, 4.2f, 4.2f, 4.3f, 4.4f, 4.5f, 4.6f, 4.7f,
+	4.8f, 4.9f, 5.0f, 5.0f, 5.1f, 5.2f, 5.3f, 5.4f,
+	5.5f, 5.6f, 5.7f, 5.8f, 5.9f, 6.0f, 6.1f, 6.3f,
+	6.4f, 6.5f, 6.6f, 6.7f, 6.8f, 6.9f, 7.1f, 7.2f,
+	7.3f, 7.5f, 7.6f, 7.7f, 7.9f, 8.0f, 8.1f, 8.3f,
+	8.5f, 8.6f, 8.8f, 8.9f, 9.1f, 9.3f, 9.5f, 9.7f,
+	9.9f, 10.1f, 10.3f, 10.5f, 10.7f, 11.0f, 11.2f, 11.5f, 
+	11.8f, 12.1f, 12.4f, 12.7f, 13.1f, 13.5f, 13.9f, 14.4f, 
+	14.9f, 15.5f, 16.2f, 17.0f, 18.0f, 19.3f, 21.0f, 24.1f,
+};
 
 
 StVolumeCtrlGroup stVolumeInput1 = { 0 };
@@ -61,7 +110,11 @@ StVolumeCtrlGroup stVolumeOutputHeaderPhone = { 0 };
 StVolumeCtrlGroup stVolumeOutputInnerSpeaker = { 0 };
 StVolumeCtrlGroup stVolumeOutput = { 0 };
 
-const StVolumeCtrlGroup *c_pValumeCtrlArr[_Channel_Reserved] =
+
+StVolumeCtrlGroup stVolumePCCtrlPlay = { 0 };
+StVolumeCtrlGroup stVolumePCCtrlRecord = { 0 };
+
+const StVolumeCtrlGroup *c_pValumeCtrlArr[TOTAL_VOLUME_CHANNEL + TOTAL_PC_CTRL_MODE_CTRL] =
 {
 	&stVolumeInput1,
 	&stVolumeInput2,
@@ -73,6 +126,10 @@ const StVolumeCtrlGroup *c_pValumeCtrlArr[_Channel_Reserved] =
 	&stVolumeOutputHeaderPhone,
 	&stVolumeOutputInnerSpeaker,
 	&stVolumeOutput,
+
+
+	&stVolumePCCtrlPlay,
+	&stVolumePCCtrlRecord,
 };
 
 
@@ -86,21 +143,54 @@ static StOutputEnableCtrlGroup s_stOutputEnableCtrlGroup;
 
 static StMemory s_stTotalCtrlMemroy = { 0 };
 
-static StUniformCheckState s_stTotalUnifromCheckState = {false};
+static StUniformCheckState s_stTotalUnifromCheckState = 
+{
+	true, true, true, true, 
+	true, true, true, true,
+	true, true, true, true,
+};
 
 
 const char *c_pTableName[_Tab_Reserved] =
 {
-	"输入1-2",
-	"输入3-5",
-	"PC 控制",
+	"输入A",
+	"输入B",
+	"I2S",
 	"输出",
 	"其他",
+	"声卡",
 	"外设",
-	"系统设置",
+	"设置",
 //	"音量采集",
 //	"保留",
 };
+
+const char *c_pScreenProtectTime[_ScreenProtect_Reserved] =
+{
+	"15 秒",
+	"30 秒",
+	"1 分钟",
+	"2 分钟",
+	"5 分钟",
+	"10 分钟",
+	"关闭",
+};
+
+const char *c_pScreenProtectMode[_ScreenProtect_Mode_Reserved] =
+{
+	"LOGO",
+	"熄屏"
+};
+
+const uint8_t c_u8CtrlModeSpecialLeft[] =
+{
+	0, 2, 3
+};
+const uint8_t c_u8CtrlModeSpecialRight[] =
+{
+	0, 1, 3
+};
+
 const uint8_t c_u8CtrlMode4[] =
 {
 	0, 1, 2, 3
@@ -131,8 +221,31 @@ static lv_color24_t const s_stLogoColor[_Logo_Color_Reserved] =
 static StLogoColorCtrl s_stLogoColorCtrl = { {NULL,}, 0xFF };
 static StKeyboardCtrl s_stKeyboardCtrl = { NULL, NULL, true, 0 };
 
+static StScreenProtectCtrl s_stScreenProtectCtrl = { 0 };
+
+int32_t ChannelToReal(uint16_t u16Channel)
+{
+	if (u16Channel < _Channel_Reserved)
+	{
+		return u16Channel;
+	}
+
+	if (u16Channel >= _Channel_PC_Ctrl && u16Channel < _Channel_PC_Ctrl_Reserved)
+	{
+		return u16Channel - _Channel_PC_Ctrl + _Channel_Reserved;
+	}
+
+	return -1;
+}
+
 int32_t GetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode *pMode)
 {
+	u16Channel = ChannelToReal(u16Channel);
+
+	if (u16Channel >= TOTAL_CHANNEL || pMode == NULL)
+	{
+		return -1;
+	}
 
 	*pMode = s_stTotalCtrlMemroy.emAudioCtrlMode[u16Channel];
 	return 0;
@@ -140,7 +253,9 @@ int32_t GetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode *pMode)
 
 int32_t SetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode emMode)
 {
-	if ((u16Channel >= TOTAL_MODE_CTRL) || (emMode >= _Audio_Ctrl_Mode_Reserved))
+	u16Channel = ChannelToReal(u16Channel);
+
+	if ((u16Channel >= TOTAL_CHANNEL) || (emMode >= _Audio_Ctrl_Mode_Reserved))
 	{
 		return -1;
 	}
@@ -171,7 +286,9 @@ void SetAllAudioCtrlMode(EmAudioCtrlMode emAudioCtrlMode[TOTAL_MODE_CTRL])
 
 int32_t SetAudioVolume(uint16_t u16Channel, StVolume stVolume)
 {
-	if ((u16Channel >= TOTAL_VOLUME_CHANNEL))
+	u16Channel = ChannelToReal(u16Channel);
+
+	if ((u16Channel >= TOTAL_CHANNEL))
 	{
 		return -1;
 	}
@@ -190,7 +307,9 @@ __weak int32_t SendAudioVolumeCmd(uint16_t u16Channel, StVolume stVolume)
 
 int32_t GetAudioVolume(uint16_t u16Channel, StVolume *pVolume)
 {
-	if ((u16Channel >= TOTAL_VOLUME_CHANNEL) || (pVolume == NULL))
+	u16Channel = ChannelToReal(u16Channel);
+
+	if ((u16Channel >= TOTAL_CHANNEL) || (pVolume == NULL))
 	{
 		return -1;
 	}
@@ -215,7 +334,9 @@ void SetAllAudioVolume(StVolume stVolume[TOTAL_VOLUME_CHANNEL])
 
 int32_t SetUniformCheckState(uint16_t u16Channel, bool boIsCheck)
 {
-	if ((u16Channel >= TOTAL_VOLUME_CHANNEL))
+	u16Channel = ChannelToReal(u16Channel);
+
+	if ((u16Channel >= TOTAL_CHANNEL))
 	{
 		return -1;
 	}
@@ -331,9 +452,22 @@ __weak int32_t SendKeyboardPowerCmd(bool boIsPowerOn)
 	return 0;
 }
 
-__weak int32_t SendKeyboardConnectCmd(uint8_t u8CurConnect)
+__weak int32_t 	SendKeyboardConnectCmd(uint8_t u8CurConnect)
 {
 	printf("%s, state: %d\n", __FUNCTION__, u8CurConnect);
+	return 0;
+}
+
+__weak int32_t 	SendScreenProtectTimeCmd(uint8_t u8Index)
+{
+	printf("%s, state: %d\n", __FUNCTION__, u8Index);
+	SrceenProtectSetTime(u8Index);
+	return 0;
+}
+__weak int32_t 	SendScreenProtectModeCmd(uint8_t u8Index)
+{
+	printf("%s, state: %d\n", __FUNCTION__, u8Index);
+	SrceenProtectSetMode(u8Index);
 	return 0;
 }
 
@@ -425,6 +559,49 @@ int32_t SetKeyboardConnectMode(uint8_t u8CurConnect)
 	return 0;
 }
 
+int32_t GetScreenProtectTimeIndex(uint8_t *pIndex)
+{
+	if (pIndex == NULL)
+	{
+		return -1;
+	}
+	*pIndex = s_stScreenProtectCtrl.u8CurTimeIndex;
+	return 0;
+}
+
+int32_t GetScreenProtectModeIndex(uint8_t *pIndex)
+{
+	if (pIndex == NULL)
+	{
+		return -1;
+	}
+	*pIndex = s_stScreenProtectCtrl.u8CurModeIndex;
+	return 0;
+}
+
+int32_t SetScreenProtectTimeIndex(uint8_t u8Index)
+{
+	if (u8Index >= _ScreenProtect_Reserved)
+	{
+		return -1;
+	}
+	s_stScreenProtectCtrl.u8CurTimeIndex = u8Index;
+	SendScreenProtectTimeCmd(u8Index);
+	return 0;
+}
+
+int32_t SetScreenProtectModeIndex(uint8_t u8Index)
+{
+	if (u8Index >= _ScreenProtect_Mode_Reserved)
+	{
+		return -1;
+	}
+	s_stScreenProtectCtrl.u8CurModeIndex = u8Index;
+	SendScreenProtectModeCmd(u8Index);
+	return 0;
+}
+
+
 
 
 static lv_theme_t *s_pTheme = NULL;
@@ -452,28 +629,37 @@ lv_res_t ActionSliderCB(struct _lv_obj_t * obj)
 
 	printf("slider value is: %d\n", u16NewValue);
 	StVolumeCtrlGroup *pGroup = lv_obj_get_free_ptr(obj);
-	if (pGroup->boIsFixUniformVoume || lv_sw_get_state(pGroup->pUniformVolume))
+	if (pGroup->boIsFixUniformVoume ||
+		((pGroup->pUniformVolume != NULL) && lv_sw_get_state(pGroup->pUniformVolume)))
 	{
-		if (obj == pGroup->pLeftVolume)
+		if ((obj == pGroup->pLeftVolume) && (pGroup->pRightVolume != NULL))
 		{
 			lv_slider_set_value(pGroup->pRightVolume, u16NewValue);
 		}
-		else
+		else if (pGroup->pLeftVolume != NULL)
 		{
 			lv_slider_set_value(pGroup->pLeftVolume, u16NewValue);
 		}
 	}
 	{
 		StVolume stVolume;
-		if (obj == pGroup->pLeftVolume)
+
+		if (pGroup->pRightVolume == NULL)
 		{
-			stVolume.u8Channel1 = (uint8_t)u16NewValue;
-			stVolume.u8Channel2 = (uint8_t)lv_slider_get_value(pGroup->pRightVolume);
+			stVolume.u8Channel1 = stVolume.u8Channel2 = (uint8_t)u16NewValue;
 		}
 		else
 		{
-			stVolume.u8Channel2 = (uint8_t)u16NewValue;
-			stVolume.u8Channel1 = (uint8_t)lv_slider_get_value(pGroup->pLeftVolume);
+			if (obj == pGroup->pLeftVolume)
+			{
+				stVolume.u8Channel1 = (uint8_t)u16NewValue;
+				stVolume.u8Channel2 = (uint8_t)lv_slider_get_value(pGroup->pRightVolume);
+			}
+			else
+			{
+				stVolume.u8Channel2 = (uint8_t)u16NewValue;
+				stVolume.u8Channel1 = (uint8_t)lv_slider_get_value(pGroup->pLeftVolume);
+			}
 		}
 		SetAudioVolume(pGroup->u8Index, stVolume);
 		SendAudioVolumeCmd(pGroup->u8Index, stVolume);
@@ -498,7 +684,6 @@ lv_res_t ActionSliderCB(struct _lv_obj_t * obj)
 			lv_style_copy(pGroup->pTipsStyle, lv_label_get_style(pGroup->pTipsLabel));
 
 			lv_label_set_style(pGroup->pTipsLabel, pGroup->pTipsStyle);
-			lv_obj_align(pGroup->pTipsLabel, pGroup->pCtrlMode, LV_ALIGN_OUT_TOP_MID, 0, -100);
 
 			{
 				lv_style_t stStyle;
@@ -529,12 +714,86 @@ lv_res_t ActionSliderCB(struct _lv_obj_t * obj)
 			}
 
 		}
-
+		u16NewValue &= 0xFF;
 		if (pGroup->pTipsAnim != NULL)
 		{
 			char c8Str[32];
-			sprintf(c8Str, "%dDB", u16NewValue);
+			switch (pGroup->u8Index)
+			{
+				case _Channel_AIN_1:
+				case _Channel_AIN_2:
+				case _Channel_AIN_3:
+				case _Channel_AIN_4:
+				case _Channel_AIN_5:
+				{
+					sprintf(c8Str, "%.1fDB", c_f32Volume[u16NewValue]);
+					break;
+				}
+				case _Channel_AIN_Mux:
+				{
+					float f32Tmp = -103.5f;
+					f32Tmp = f32Tmp + (float)u16NewValue * 0.5f;
+					sprintf(c8Str, "%.1fDB", f32Tmp);
+					break;
+				}
+				case _Channel_PC:
+				{
+					float f32Tmp = -127.5f;
+					f32Tmp = f32Tmp + (float)u16NewValue * 0.5f;
+					sprintf(c8Str, "%.1fDB", f32Tmp);
+					break;
+				}
+				case _Channel_HeaderPhone:
+				{
+					int8_t s8Tmp = 0;
+					uint8_t u8Tmp = u16NewValue >> 1;
+
+					if (u8Tmp < 0x30)
+					{
+						sprintf(c8Str, "mute");
+					}
+					else
+					{
+						s8Tmp = -73 + (u8Tmp - 0x30);
+					}
+					sprintf(c8Str, "%dDB", s8Tmp);
+					break;
+				}
+				case _Channel_InnerSpeaker:
+				{
+					sprintf(c8Str, "%.1fDB", c_f32Volume[u16NewValue]);
+					break;
+				}
+				case _Channel_PC_Ctrl_Play:
+				case _Channel_PC_Ctrl_Record:
+				{
+					sprintf(c8Str, "%d", ((u16NewValue * 100 + 128) / 255));
+					break;
+				}
+				default:
+				{
+					sprintf(c8Str, "%dDB", u16NewValue);
+					break;
+				}
+
+
+			}
+
+			if (u16NewValue == 0)
+			{
+				sprintf(c8Str, "mute");
+			}
 			lv_label_set_text(pGroup->pTipsLabel, c8Str);
+
+			if (pGroup->pUniformVolume != NULL)
+			{
+				lv_obj_align(pGroup->pTipsLabel, pGroup->pCtrlMode, LV_ALIGN_OUT_TOP_MID, 0, -100);
+			}
+			else
+			{
+				lv_obj_align(pGroup->pTipsLabel, pGroup->pCtrlMode, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+			}
+
 			lv_anim_reflush(pGroup->pTipsAnim, NULL, -500, 0);
 		}
 
@@ -606,12 +865,173 @@ int32_t ReleaseVolumeCtrlGroup(
 		lv_obj_t **p2ObjTmp = (lv_obj_t **)pGroup;
 		for (i = 0; i < 4; i++)
 		{
-			lv_group_remove_obj(p2ObjTmp[i]);
+			if (p2ObjTmp[i] != NULL)
+			{
+				lv_group_remove_obj(p2ObjTmp[i]);
+			}
 		}
 
 	}
 
 	return 0;
+}
+
+int32_t CreateVolumeCtrlGroupMono(
+	lv_obj_t *pParent,
+	lv_group_t *pGlobalGroup,
+	uint16_t u16XPos,
+
+	StVolumeCtrlGroup *pGroup,
+	uint8_t u8Index,
+	const uint8_t *pCtrlModeIndex,
+	uint8_t u8MaxCtrlMode,
+	const char *pTitle,
+	const char **p2CtrlModeName)
+{
+	lv_obj_t *pObjTmp;
+	if ((pGroup == NULL) || (pParent == NULL) || 
+		(pCtrlModeIndex == NULL) || (p2CtrlModeName == NULL))
+	{
+		return -1;
+	}
+
+	if (u16XPos > LV_HOR_RES)
+	{
+		return -1;
+	}
+
+	memset(pGroup, 0, sizeof(StVolumeCtrlGroup));
+
+	if (u8MaxCtrlMode > (uint8_t)_Audio_Ctrl_Mode_Reserved)
+	{
+		u8MaxCtrlMode = (uint8_t)_Audio_Ctrl_Mode_Reserved;
+	}
+	pGroup->u16XPos = u16XPos;
+
+	pGroup->u8Index = u8Index;
+	pGroup->u8MaxCtrlMode = u8MaxCtrlMode;
+	pGroup->pCtrlModeIndex = pCtrlModeIndex;
+	pGroup->pTitle = pTitle;
+
+	{/* control mode object */
+		char c8Str[96];
+		uint32_t i;
+		c8Str[0] = 0;
+		for (i = 0; i < u8MaxCtrlMode; i++)
+		{
+			if (i != 0)
+			{
+				strcat(c8Str, "\n");
+			}
+			strcat(c8Str, p2CtrlModeName[pGroup->pCtrlModeIndex[i]]);
+		}
+
+		pObjTmp = lv_ddlist_create(pParent, NULL);
+
+		if (pObjTmp == NULL)
+		{
+			goto err;
+		}
+		pGroup->pCtrlMode = pObjTmp;
+
+		lv_obj_set_pos(pObjTmp, u16XPos, 290 + 25);
+		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(c8Str));
+		lv_ddlist_set_move_dirction(pObjTmp, true);
+
+#if 1
+		lv_label_set_align(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_ALIGN_CENTER);
+
+		/*
+		* on change, some wrong happened
+		lv_label_set_body_draw(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+		true);*/
+#endif
+
+		lv_label_set_long_mode(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_LONG_BREAK);
+
+		lv_obj_set_width(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			100);
+	}
+#if 1
+	{/* left volume object */
+		pObjTmp = lv_slider_create(pParent, NULL);
+		if (pObjTmp == NULL)
+		{
+			goto err;
+		}
+
+		lv_obj_set_size(pObjTmp, SLIDER_WIDTH * 2, 256);
+		lv_slider_set_range(pObjTmp, 0, 255);
+		lv_slider_set_knob_radio(pObjTmp, KNOB_WIDTH * 2, KNOB_HEIGHT);
+		lv_slider_set_knob_in(pObjTmp, true);
+		lv_slider_set_knob_drag_only(pObjTmp, true);
+		lv_obj_align(pObjTmp, pGroup->pCtrlMode, LV_ALIGN_OUT_TOP_MID, 0, -20);
+
+		pGroup->pLeftVolume = pObjTmp;
+
+	}
+
+
+	{
+		pGroup->boIsFixUniformVoume = true;
+	}
+
+	{
+		lv_obj_t *pObjTmp = lv_label_create(pParent, NULL);
+		if (pObjTmp == NULL)
+		{
+			goto err;
+		}
+
+		lv_label_set_align(pObjTmp, LV_LABEL_ALIGN_CENTER);
+
+		if (pTitle == NULL)
+		{
+			char c8Str[32];
+			sprintf(c8Str, "%d", u8Index);
+			lv_label_set_text(pObjTmp, CHS_TO_UTF8(c8Str));
+		}
+		else
+		{
+			lv_label_set_text(pObjTmp, CHS_TO_UTF8(pTitle));
+		}
+		lv_obj_align(pObjTmp, pGroup->pCtrlMode, LV_ALIGN_OUT_TOP_MID, 0, -260 - 25);
+	}
+#endif
+
+
+	lv_slider_set_action(pGroup->pLeftVolume, ActionSliderCB);
+
+	lv_ddlist_set_action(pGroup->pCtrlMode, ActionCtrlModeDDlist);
+	lv_obj_set_top(pGroup->pCtrlMode, true);
+
+	{
+		uint32_t i;
+		lv_obj_t **p2ObjTmp = (lv_obj_t **)pGroup;
+		for (i = 0; i < 4; i++)
+		{
+			if (p2ObjTmp[i] != NULL)
+			{
+				lv_obj_set_free_ptr(p2ObjTmp[i], pGroup);
+				if (pGlobalGroup != NULL)
+				{
+					lv_group_add_obj(pGlobalGroup, p2ObjTmp[i]);
+				}
+			}
+		}
+		lv_obj_set_free_num(pGroup->pLeftVolume, _OBJ_TYPE_SLIDER);
+		lv_obj_set_free_num(pGroup->pCtrlMode, _OBJ_TYPE_DDLIST);
+
+	}
+
+	return 0;
+
+err:
+
+	return -1;
+
 }
 
 
@@ -829,6 +1249,7 @@ int32_t CreateVolumeCtrlGroup(
 
 		lv_obj_set_free_num(pGroup->pLeftVolume, _OBJ_TYPE_SLIDER);
 		lv_obj_set_free_num(pGroup->pRightVolume, _OBJ_TYPE_SLIDER);
+		lv_obj_set_free_num(pGroup->pCtrlMode, _OBJ_TYPE_DDLIST);
 	}
 
 	return 0;
@@ -1012,9 +1433,9 @@ int32_t CreateMemoryCtrl(
 		pGroup->pFactorySet = pObjTmp;
 
 		pObjTmp = lv_label_create(pGroup->pFactorySet, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8( "工厂设置"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8( "复位"));
 
-		lv_obj_align(pGroup->pFactorySet, pGroup->pMemoryCtrl, LV_ALIGN_OUT_RIGHT_TOP, 20, 0);
+		lv_obj_align(pGroup->pFactorySet, pGroup->pMemoryCtrl, LV_ALIGN_OUT_RIGHT_TOP, 65, 0);
 
 		lv_btn_set_action(pGroup->pFactorySet, LV_BTN_ACTION_CLICK, ActionFactoryCB);
 	}
@@ -1028,6 +1449,7 @@ int32_t CreateMemoryCtrl(
 	lv_obj_set_free_ptr(pGroup->pMemoryCtrl, pGroup);
 	lv_obj_set_free_ptr(pGroup->pFactorySet, pGroup);
 	lv_obj_set_free_num(pGroup->pFactorySet, _OBJ_TYPE_BTN);
+	lv_obj_set_free_num(pGroup->pMemoryCtrl, _OBJ_TYPE_DDLIST);
 
 
 	return 0;
@@ -1313,7 +1735,7 @@ int32_t CreateOutputEnableCtrl(
 		uint16_t /*i, */j;
 		const char *const pOutName[ENABLE_OUTPUT_CTRL] =
 		{
-			"PC", "AUX", "MUX",
+			"PC", "AUX", "MIX",
 		};
 		for (j = 0; j < ENABLE_OUTPUT_CTRL; j++)
 		{
@@ -1383,11 +1805,11 @@ int32_t ReleaseTableInput1To2(lv_obj_t *pTabParent)
 }
 int32_t CreateTableInput1To2(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
-	CreateVolumeCtrlGroup(pTabParent, pGroup, 135, &stVolumeInput1, _Channel_AIN_1,
-		c_u8CtrlMode4, sizeof(c_u8CtrlMode4), "输入1", true);
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 135, &stVolumeInput1, _Channel_AIN_1,
+		c_u8CtrlModeSpecialLeft, sizeof(c_u8CtrlModeSpecialLeft), "输入1", c_pCtrlModeSpecial);
 
-	CreateVolumeCtrlGroup(pTabParent, pGroup, 470, &stVolumeInput2, _Channel_AIN_2,
-		c_u8CtrlMode4, sizeof(c_u8CtrlMode4), "输入2", true);
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 470, &stVolumeInput2, _Channel_AIN_2,
+		c_u8CtrlModeSpecialRight, sizeof(c_u8CtrlModeSpecialRight), "输入2", c_pCtrlModeSpecial);
 
 	return 0;
 }
@@ -1395,18 +1817,23 @@ int32_t CreateTableInput1To2(lv_obj_t *pTabParent, lv_group_t *pGroup)
 int32_t RebulidVolumeCtrlValue(uint16_t u16Index)
 {
 	const StVolumeCtrlGroup *pGroup = NULL;
-	if (u16Index >= _Channel_Reserved)
+
+	u16Index = ChannelToReal(u16Index);
+
+	if (u16Index >= TOTAL_CHANNEL)
 	{
 		return -1;
 	}
 
 	pGroup = c_pValumeCtrlArr[u16Index];
 
-	if (lv_slider_get_value(pGroup->pLeftVolume) != s_stTotalCtrlMemroy.stVolume[u16Index].u8Channel1)
+	if ((pGroup->pLeftVolume != NULL) &&
+		(lv_slider_get_value(pGroup->pLeftVolume) != s_stTotalCtrlMemroy.stVolume[u16Index].u8Channel1))
 	{
 		lv_slider_set_value(pGroup->pLeftVolume, s_stTotalCtrlMemroy.stVolume[u16Index].u8Channel1);
 	}
-	if (lv_slider_get_value(pGroup->pRightVolume) != s_stTotalCtrlMemroy.stVolume[u16Index].u8Channel2)
+	if ((pGroup->pRightVolume != NULL) && 
+		(lv_slider_get_value(pGroup->pRightVolume) != s_stTotalCtrlMemroy.stVolume[u16Index].u8Channel2))
 	{
 		lv_slider_set_value(pGroup->pRightVolume, s_stTotalCtrlMemroy.stVolume[u16Index].u8Channel2);
 	}
@@ -1425,7 +1852,7 @@ int32_t RebulidVolumeCtrlValue(uint16_t u16Index)
 			lv_ddlist_set_selected(pGroup->pCtrlMode, u16Selected);
 		}
 	}
-	if (!pGroup->boIsFixUniformVoume)
+	if ((!pGroup->boIsFixUniformVoume) && (pGroup->pUniformVolume != NULL))
 	{
 #if 1
 		if (lv_sw_get_state(pGroup->pUniformVolume) != s_stTotalUnifromCheckState.boUniformCheckState[u16Index])
@@ -1482,14 +1909,14 @@ int32_t ReleaseTableInput3To5(lv_obj_t *pTabParent)
 
 int32_t CreateTableInput3To5(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
-	CreateVolumeCtrlGroup(pTabParent, pGroup, 30, &stVolumeInput3, _Channel_AIN_3,
-		c_u8CtrlMode4, sizeof(c_u8CtrlMode4), "输入3", true);
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 30, &stVolumeInput3, _Channel_AIN_3,
+		c_u8CtrlModeSpecialLeft, sizeof(c_u8CtrlModeSpecialLeft), "输入3", c_pCtrlModeSpecial);
 
-	CreateVolumeCtrlGroup(pTabParent, pGroup, 30 + 270, &stVolumeInput4, _Channel_AIN_4,
-		c_u8CtrlMode4, sizeof(c_u8CtrlMode4), "输入4", true);
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 30 + 270, &stVolumeInput4, _Channel_AIN_4,
+		c_u8CtrlModeSpecialRight, sizeof(c_u8CtrlModeSpecialRight), "输入4", c_pCtrlModeSpecial);
 
-	CreateVolumeCtrlGroup(pTabParent, pGroup, 30 + 270 * 2, &stVolumeInput5, _Channel_AIN_5,
-		c_u8CtrlMode4, sizeof(c_u8CtrlMode4), "输入5", true);
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 30 + 270 * 2, &stVolumeInput5, _Channel_AIN_5,
+		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "输入5", c_pCtrlMode);
 
 	return 0;
 }
@@ -1507,25 +1934,25 @@ int32_t RebulidTableInput3To5Vaule(void)
 	return 0;
 }
 
-int32_t ReleaseTableInputPCCtrl(lv_obj_t *pTabParent)
+int32_t ReleaseTableI2SCtrl(lv_obj_t *pTabParent)
 {
 	ReleaseVolumeCtrlGroup(&stVolumeInputMux);
 	ReleaseVolumeCtrlGroup(&stVolumeInputPC);
 	return 0;
 }
 
-int32_t CreateTableInputPCCtrl(lv_obj_t *pTabParent, lv_group_t *pGroup)
+int32_t CreateTableI2SCtrl(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
 	CreateVolumeCtrlGroup(pTabParent, pGroup, 135, &stVolumeInputMux, _Channel_AIN_Mux,
-		c_u8CtrlMode4, sizeof(c_u8CtrlMode4), "总输入", false);
+		c_u8CtrlMode4, sizeof(c_u8CtrlMode4), "MIX", false);
 
 	CreateVolumeCtrlGroup(pTabParent, pGroup, 470, &stVolumeInputPC, _Channel_PC,
-		c_u8CtrlMode7, sizeof(c_u8CtrlMode7), "PC输入", false);
+		c_u8CtrlMode7, sizeof(c_u8CtrlMode7), "PC", false);
 
 	return 0;
 }
 
-int32_t RebulidTableInputPCCtrlVaule(void)
+int32_t RebulidTableI2SCtrlVaule(void)
 {
 	if (s_pTableView == NULL)
 	{
@@ -1547,14 +1974,14 @@ int32_t ReleaseTableOutputCtrl(lv_obj_t *pTabParent)
 
 int32_t CreateTableOutputCtrl(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
-	CreateVolumeCtrlGroup(pTabParent, pGroup, 30, &stVolumeOutputHeaderPhone, _Channel_HeaderPhone,
+	CreateVolumeCtrlGroup(pTabParent, pGroup, 135, &stVolumeOutputHeaderPhone, _Channel_HeaderPhone,
 		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "耳机", false);
 
-	CreateVolumeCtrlGroup(pTabParent, pGroup, 30 + 270, &stVolumeOutputInnerSpeaker, _Channel_InnerSpeaker,
-		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "扬声器", false);
-
-	CreateVolumeCtrlGroup(pTabParent, pGroup, 30 + 270 * 2, &stVolumeOutput, _Channel_NormalOut,
+	CreateVolumeCtrlGroup(pTabParent, pGroup, 470, &stVolumeOutputInnerSpeaker, _Channel_InnerSpeaker,
 		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "输出", false);
+
+	//CreateVolumeCtrlGroup(pTabParent, pGroup, 30 + 270 * 2, &stVolumeOutput, _Channel_NormalOut,
+	//	c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "输出", false);
 	return 0;
 }
 
@@ -1567,7 +1994,7 @@ int32_t RebulidTableOutputVaule(void)
 
 	RebulidVolumeCtrlValue(_Channel_HeaderPhone);
 	RebulidVolumeCtrlValue(_Channel_InnerSpeaker);
-	RebulidVolumeCtrlValue(_Channel_NormalOut);
+	//RebulidVolumeCtrlValue(_Channel_NormalOut);
 	return 0;
 }
 
@@ -1602,6 +2029,37 @@ int32_t RebulidTableOtherVaule(void)
 	RebulidOutputEnableCtrlVaule(&s_stOutputEnableCtrlGroup);
 	return 0;
 }
+
+int32_t CreateTablePCVolumeCtrl(lv_obj_t *pTabParent, lv_group_t *pGroup)
+{
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 135, &stVolumePCCtrlRecord, _Channel_PC_Ctrl_Record,
+		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "录制", c_pCtrlModeSpecial);
+
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 470, &stVolumePCCtrlPlay, _Channel_PC_Ctrl_Play,
+		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "播放", c_pCtrlModeSpecial);
+
+	return 0;
+}
+
+int32_t RebulidTablePCVolumeCtrlVaule(void)
+{
+	if (s_pTableView == NULL)
+	{
+		return -1;
+	}
+
+	RebulidVolumeCtrlValue(_Channel_PC_Ctrl_Play);
+	RebulidVolumeCtrlValue(_Channel_PC_Ctrl_Record);
+
+	return 0;
+}
+int32_t ReleaseTablePCVolumeCtrl(lv_obj_t *pTabParent)
+{
+	ReleaseVolumeCtrlGroup(&stVolumePCCtrlPlay);
+	ReleaseVolumeCtrlGroup(&stVolumePCCtrlRecord);
+	return 0;
+}
+
 
 
 lv_color_t CreateLogoColor(lv_color24_t color, uint32_t opa)
@@ -1844,6 +2302,7 @@ int32_t CreateKeyBoardCtrl(lv_obj_t *pParent,
 
 	lv_sw_set_action(pGroup->pPowerCtrl, ActionKeyboardPowerCB);
 	lv_ddlist_set_action(pGroup->pConnectCtrl, ActionKeyboardConnectCB);
+	lv_obj_set_free_num(pGroup->pConnectCtrl, _OBJ_TYPE_DDLIST);
 
 	return 0;
 err:
@@ -1889,13 +2348,177 @@ int32_t RebulidTablePeripheralVaule(void)
 	return 0;
 }
 
+lv_res_t ActionScreenProtectTimeCB(lv_obj_t *pObj)
+{
+	StScreenProtectCtrl *pGroup = lv_obj_get_free_ptr(pObj);
+
+	pGroup->u8CurTimeIndex = (uint8_t)lv_ddlist_get_selected(pObj);
+
+	SendScreenProtectTimeCmd(pGroup->u8CurTimeIndex);
+
+	printf("set the screen protect time %s\n", c_pScreenProtectTime[pGroup->u8CurTimeIndex]);
+
+	return LV_RES_OK;
+}
+
+
+lv_res_t ActionScreenProtectModeCB(lv_obj_t *pObj)
+{
+	StScreenProtectCtrl *pGroup = lv_obj_get_free_ptr(pObj);
+
+	pGroup->u8CurModeIndex = (uint8_t)lv_ddlist_get_selected(pObj);
+
+	SendScreenProtectModeCmd(pGroup->u8CurModeIndex);
+
+	printf("set the screen protect mode %s\n", c_pScreenProtectMode[pGroup->u8CurModeIndex]);
+
+	return LV_RES_OK;
+}
+
+
+int32_t CreateScreenProtectCtrl(lv_obj_t *pParent,
+	lv_group_t *pGlobalGroup,
+	uint16_t u16XPos, uint16_t u16YPos,
+	StScreenProtectCtrl *pGroup)
+{
+	lv_obj_t *pObjTmp;
+
+	if ((pGroup == NULL) || (pParent == NULL))
+	{
+		return -1;
+	}
+
+	{
+		pObjTmp = lv_label_create(pParent, NULL);
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8("屏幕保护"));
+		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
+	}
+
+	{
+		lv_obj_t *pObjTmp = NULL;
+		char c8Str[96];
+		uint32_t i;
+		c8Str[0] = 0;
+		for (i = 0; i < _ScreenProtect_Reserved; i++)
+		{
+			if (i != 0)
+			{
+				strcat(c8Str, "\n");
+			}
+			strcat(c8Str, c_pScreenProtectTime[i]);
+		}
+
+		
+		pObjTmp = lv_ddlist_create(pParent, NULL);
+		if (pObjTmp == NULL)
+		{
+			goto err;
+		}
+		pGroup->pTimeCtrl = pObjTmp;
+
+		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos + 40);
+
+		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(c8Str));
+
+		lv_label_set_align(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_ALIGN_CENTER);
+
+		lv_label_set_long_mode(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_LONG_BREAK);
+
+		lv_obj_set_width(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label, 120);
+
+		if (pGlobalGroup != NULL)
+		{
+			lv_group_add_obj(pGlobalGroup, pObjTmp);
+		}
+
+	}
+
+	{
+		char c8Str[96];
+		uint32_t i;
+		c8Str[0] = 0;
+		for (i = 0; i < _ScreenProtect_Mode_Reserved; i++)
+		{
+			if (i != 0)
+			{
+				strcat(c8Str, "\n");
+			}
+			strcat(c8Str, c_pScreenProtectMode[i]);
+		}
+
+		pObjTmp = lv_ddlist_create(pParent, NULL);
+		if (pObjTmp == NULL)
+		{
+			goto err;
+		}
+		pGroup->pModeCtrl = pObjTmp;
+
+		lv_obj_set_pos(pObjTmp, u16XPos + 180, u16YPos + 40);
+
+
+		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(c8Str));
+
+		lv_label_set_align(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_ALIGN_CENTER);
+
+		lv_label_set_long_mode(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_LONG_BREAK);
+
+		lv_obj_set_width(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label, 80);
+
+		if (pGlobalGroup != NULL)
+		{
+			lv_group_add_obj(pGlobalGroup, pObjTmp);
+		}
+	}
+
+	lv_obj_set_free_ptr(pGroup->pTimeCtrl, pGroup);
+	lv_obj_set_free_ptr(pGroup->pModeCtrl, pGroup);
+
+	lv_obj_set_free_num(pGroup->pTimeCtrl, _OBJ_TYPE_DDLIST);
+	lv_obj_set_free_num(pGroup->pModeCtrl, _OBJ_TYPE_DDLIST);
+
+	lv_ddlist_set_action(pGroup->pTimeCtrl, ActionScreenProtectTimeCB);
+	lv_ddlist_set_action(pGroup->pModeCtrl, ActionScreenProtectModeCB);
+
+	return 0;
+err:
+	return -1;
+}
+
+
+int32_t RebuildScreenProtectCtrlValue(StScreenProtectCtrl *pGroup)
+{
+	lv_ddlist_set_selected(pGroup->pTimeCtrl, pGroup->u8CurTimeIndex);
+	lv_ddlist_set_selected(pGroup->pModeCtrl, pGroup->u8CurModeIndex);
+
+	return 0;
+}
+
+int32_t CreateTableSystemSetCtrl(lv_obj_t *pParent, lv_group_t *pGroup)
+{
+	CreateScreenProtectCtrl(pParent, pGroup, 20, 20, &s_stScreenProtectCtrl);
+	return 0;
+}
+
+int32_t RebulidTableSystemSetVaule(void)
+{
+	RebuildScreenProtectCtrlValue(&s_stScreenProtectCtrl);
+	return 0;
+}
+
+
+
 const PFUN_ReleaseTable c_pFUN_ReleaseTable[_Tab_Reserved] = 
 {
 	ReleaseTableInput1To2,
 	ReleaseTableInput3To5,
-	ReleaseTableInputPCCtrl,
+	ReleaseTableI2SCtrl,
 	ReleaseTableOutputCtrl,
 	ReleaseTableOtherCtrl,
+	ReleaseTablePCVolumeCtrl,
 	NULL,
 };
 
@@ -1903,22 +2526,24 @@ const PFUN_CreateTable c_pFUN_CreateTable[_Tab_Reserved] =
 {
 	CreateTableInput1To2,
 	CreateTableInput3To5,
-	CreateTableInputPCCtrl,
+	CreateTableI2SCtrl,
 	CreateTableOutputCtrl,
 	CreateTableOtherCtrl,
+	CreateTablePCVolumeCtrl,
 	CreateTablePeripheralCtrl,
-	NULL,
+	CreateTableSystemSetCtrl,
 };
 
 const PFUN_RebulidTableValue c_pFun_RebulidTableValue[_Tab_Reserved] =
 {
 	RebulidTableInput1To2Vaule,
 	RebulidTableInput3To5Vaule,
-	RebulidTableInputPCCtrlVaule,
+	RebulidTableI2SCtrlVaule,
 	RebulidTableOutputVaule,
 	RebulidTableOtherVaule,
+	RebulidTablePCVolumeCtrlVaule,
 	RebulidTablePeripheralVaule,
-	NULL,
+	RebulidTableSystemSetVaule,
 };
 
 
@@ -2061,11 +2686,6 @@ int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel)
 		case _Fun_AudioVolume: 
 		case _Fun_AudioMode:
 		{
-			if (u32Channel >= _Channel_Reserved)
-			{
-				return -1;
-			}
-
 			if (u32Channel <= _Channel_AIN_2)
 			{
 				if (u16ActiveTableIndex != _Tab_Input_1_2)
@@ -2082,14 +2702,25 @@ int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel)
 			}
 			else if (u32Channel <= _Channel_PC)
 			{
-				if (u16ActiveTableIndex != _Tab_Input_PC_Ctrl)
+				if (u16ActiveTableIndex != _Tab_Input_I2S_Ctrl)
 				{
 					return 0;
 				}
 			}
-			else
+			else if (u32Channel <= _Channel_InnerSpeaker)
 			{
 				if (u16ActiveTableIndex != _Tab_Output)
+				{
+					return 0;
+				}
+			}
+			else if (u32Channel <= _Channel_Reserved)
+			{
+				return -1;
+			}
+			else if (u32Channel <= _Channel_PC_Ctrl_Record)
+			{
+				if (u16ActiveTableIndex != _Tab_PC_Volume_Ctrl)
 				{
 					return 0;
 				}
@@ -2126,6 +2757,43 @@ void GroupFocusCB(lv_group_t * pGroup)
 	lv_obj_get_type(pObj, &stType);
 	printf("object is: %s\n", stType.type[0]);
 
+}
+
+
+lv_res_t ActionTabPagePressRelease(struct _lv_obj_t * obj)
+{
+	lv_obj_t *pChild = lv_obj_get_child(obj, NULL);
+	if (pChild == NULL)
+	{
+		return LV_RES_OK;
+	}
+
+	pChild = lv_obj_get_child(pChild, NULL);
+	if (pChild == NULL)
+	{
+		return LV_RES_OK;
+	}
+
+	pChild = lv_obj_get_child(pChild, NULL);
+
+	while(pChild != NULL)
+	{
+#if (defined _WIN32) && 0
+
+		lv_obj_type_t stType = { NULL };
+		lv_obj_get_type(pChild, &stType);
+		printf("child has: %s\n", stType.type[0]);
+#endif
+		if (lv_obj_get_free_num(pChild) == _OBJ_TYPE_DDLIST)
+		{
+			lv_ddlist_close(pChild, true);
+		}
+
+		pChild = lv_obj_get_child(obj, pChild);
+	};
+
+	
+	return LV_RES_OK;
 }
 
 
@@ -2202,6 +2870,7 @@ int32_t CreateTableView(void)
 	for (i = 0; i < _Tab_Reserved; i++)
 	{
 		pTab[i] = lv_tabview_add_tab(pTableView, CHS_TO_UTF8(c_pTableName[i]));
+		lv_page_set_rel_action(pTab[i], ActionTabPagePressRelease);
 	}
 	for (i = 0; i < _Tab_Reserved; i++)
 	{
@@ -2212,9 +2881,7 @@ int32_t CreateTableView(void)
 
 
 	s_pTableView = pTableView;
-
-
-	CreateTable(pTab[_Tab_Input_PC_Ctrl], _Tab_Input_PC_Ctrl);
+	CreateTable(pTab[_Tab_Input_I2S_Ctrl], _Tab_Input_I2S_Ctrl);
 
 #if 0
 	{
@@ -2236,13 +2903,11 @@ int32_t CreateTableView(void)
 	}
 #endif
 
-	lv_tabview_set_tab_act(pTableView, _Tab_Input_PC_Ctrl, false);
+	lv_tabview_set_tab_act(pTableView, _Tab_Input_I2S_Ctrl, false);
 
 	lv_tabview_set_tab_load_action(pTableView, ActionTabview);
 
 	//s_pTableView = pTableView;
-	
-	//RebulidTableInputPCCtrlVaule();
 
 	return 0;
 }

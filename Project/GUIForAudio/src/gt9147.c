@@ -188,6 +188,9 @@ void GT9147_EXIT_IRQHandler(void)
 	}
 } 
 
+__weak void SrceenProtectReset(void)
+{
+}
 
 bool GT9147GetPoint(uint8_t u8Mode)
 {
@@ -235,6 +238,7 @@ bool GT9147GetPoint(uint8_t u8Mode)
 			
 		}
 		s_u8PointCnt = u8Tmp;
+		SrceenProtectReset();
 	}	
 	else
 	{
