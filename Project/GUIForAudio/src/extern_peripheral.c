@@ -165,7 +165,7 @@ void KeyboardConnectInit(void)
 
 void KeyboardConnectSetMode(uint8_t u8Mode)
 {
-	GPIO_WriteBit(GPIOA, GPIO_Pin_15, u8Mode == 0 ? Bit_SET : Bit_RESET);		
+	GPIO_WriteBit(GPIOA, GPIO_Pin_15, u8Mode != 0 ? Bit_SET : Bit_RESET);		
 }
 
 
