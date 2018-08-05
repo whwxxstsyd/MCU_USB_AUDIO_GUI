@@ -37,6 +37,13 @@ char *GetFakeUTF8ForCHS(const char *pStr, int32_t s32StrLen);
 #define CHS_TO_UTF8(pStr)			GetFakeUTF8ForCHS(pStr, -1)
 
 
+static struct {
+	lv_style_t bg;
+	lv_style_t indic;
+	lv_style_t knob;
+}s_stStyleSlideDisable;
+
+
 const char *c_pCtrlMode[_Audio_Ctrl_Mode_Reserved] =
 {
 	"直连",		//"Normal",
@@ -1177,6 +1184,10 @@ int32_t CreateVolumeCtrlGroup(
 		{
 			lv_sw_on(pObjTmp);
 			lv_obj_set_click(pObjTmp, false);
+			lv_sw_set_style(pObjTmp, (lv_sw_style_t)LV_SLIDER_STYLE_BG, &s_stStyleSlideDisable.bg);
+			lv_sw_set_style(pObjTmp, (lv_sw_style_t)LV_SLIDER_STYLE_INDIC, &s_stStyleSlideDisable.indic);
+			lv_sw_set_style(pObjTmp, LV_SW_STYLE_KNOB_OFF, &s_stStyleSlideDisable.knob);
+			lv_sw_set_style(pObjTmp, LV_SW_STYLE_KNOB_ON, &s_stStyleSlideDisable.knob);
 		}
 
 #else
@@ -1978,7 +1989,7 @@ int32_t CreateTableOutputCtrl(lv_obj_t *pTabParent, lv_group_t *pGroup)
 		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "耳机", false);
 
 	CreateVolumeCtrlGroup(pTabParent, pGroup, 470, &stVolumeOutputInnerSpeaker, _Channel_InnerSpeaker,
-		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "输出", false);
+		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "输出", true);
 
 	//CreateVolumeCtrlGroup(pTabParent, pGroup, 30 + 270 * 2, &stVolumeOutput, _Channel_NormalOut,
 	//	c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "输出", false);
@@ -2797,6 +2808,26 @@ lv_res_t ActionTabPagePressRelease(struct _lv_obj_t * obj)
 }
 
 
+int32_t SlideDisableStyleInit(void)
+{
+	lv_style_copy(&s_stStyleSlideDisable.bg, (lv_theme_get_current()->slider.bg));
+	lv_style_copy(&s_stStyleSlideDisable.indic, (lv_theme_get_current()->slider.indic));
+	lv_style_copy(&s_stStyleSlideDisable.knob, (lv_theme_get_current()->slider.knob));
+	
+	s_stStyleSlideDisable.bg.body.border.color = LV_COLOR_HEX3(0xDDD);
+		s_stStyleSlideDisable.bg.body.main_color = LV_COLOR_HEX3(0xCCC);//lv_color_hsv_to_rgb(120, 40, 60);
+	
+	s_stStyleSlideDisable.indic.body.main_color = 
+	s_stStyleSlideDisable.indic.body.grad_color = LV_COLOR_HEX3(0xCCC); // lv_color_hsv_to_rgb(120, 40, 60);
+
+	s_stStyleSlideDisable.knob.body.main_color =
+	s_stStyleSlideDisable.knob.body.grad_color = LV_COLOR_HEX3(0xCCC); // lv_color_hsv_to_rgb(120, 40, 60);
+
+	return 0;
+
+}
+
+
 int32_t CreateTableView(void)
 {
 	lv_theme_t * lv_theme_zen_init(uint16_t hue, lv_font_t *font);
@@ -2812,6 +2843,7 @@ int32_t CreateTableView(void)
 
 	lv_theme_set_current(s_pTheme);
 
+	SlideDisableStyleInit();
 	//lv_font_add(&lv_font_chs_20, LV_FONT_DEFAULT);
 
 /*
