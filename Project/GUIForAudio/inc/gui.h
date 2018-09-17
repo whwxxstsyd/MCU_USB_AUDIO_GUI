@@ -112,6 +112,11 @@ enum
 #endif
 
 
+#ifndef MEMORY_CHANNEL
+#define MEMORY_CHANNEL					8
+#endif
+
+
 typedef struct _tagStVolumeCtrlGroup
 {
 	lv_obj_t *pLeftVolume;
@@ -296,11 +301,11 @@ void SetAllPhantomPowerState(bool boState[PHANTOM_POWER_CTRL]);
 
 
 uint8_t GetInputEnableState(void);
-int32_t SetInputEnableState(uint8_t u8NewState);
-int32_t SendInputEnableStateCmd(uint8_t u8NewState);
+int32_t SetInputEnableState(uint8_t u8Index, uint8_t u8NewState);
+int32_t SendInputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState);
 uint8_t GetOutputEnableState(void);
-int32_t SetOutputEnableState(uint8_t u8NewState);
-int32_t SendOutputEnableStateCmd(uint8_t u8NewState);
+int32_t SetOutputEnableState(uint8_t u8Index, uint8_t u8NewState);
+int32_t SendOutputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState);
 
 
 int32_t SendMemeoryCtrlCmd(uint16_t u16Channel, bool boIsSave);

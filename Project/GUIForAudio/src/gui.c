@@ -405,13 +405,27 @@ uint8_t GetInputEnableState(void)
 	return s_stTotalCtrlMemroy.u8AINChannelEnableState;
 }
 
-int32_t SetInputEnableState(uint8_t u8NewState)
+int32_t SetInputEnableState(uint8_t u8Index, uint8_t u8NewState)
 {
-	s_stTotalCtrlMemroy.u8AINChannelEnableState = u8NewState;
+	if (u8Index >= ENABLE_INPUT_CTRL)
+	{
+		s_stTotalCtrlMemroy.u8AINChannelEnableState = u8NewState;
+	}
+	else
+	{
+		if (u8NewState != 0)
+		{
+			s_stTotalCtrlMemroy.u8AINChannelEnableState |= (1 << u8Index);		
+		}
+		else
+		{
+			s_stTotalCtrlMemroy.u8AINChannelEnableState &= (~(1 << u8Index));					
+		}
+	}
 	return 0;
 }
 
-__weak int32_t SendInputEnableStateCmd(uint8_t u8NewState)
+__weak int32_t SendInputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState)
 {
 	printf("%s, state %02x\n", __FUNCTION__, u8NewState);
 	return 0;
@@ -423,13 +437,28 @@ uint8_t GetOutputEnableState(void)
 	return s_stTotalCtrlMemroy.u8OutputChannelEnableState;
 }
 
-int32_t SetOutputEnableState(uint8_t u8NewState)
+int32_t SetOutputEnableState(uint8_t u8Index, uint8_t u8NewState)
 {
-	s_stTotalCtrlMemroy.u8OutputChannelEnableState = u8NewState;
+	if (u8Index >= ENABLE_OUTPUT_CTRL)
+	{
+		s_stTotalCtrlMemroy.u8OutputChannelEnableState = u8NewState;
+	}
+	else
+	{
+		if (u8NewState != 0)
+		{
+			s_stTotalCtrlMemroy.u8OutputChannelEnableState |= (1 << u8Index);		
+		}
+		else
+		{
+			s_stTotalCtrlMemroy.u8OutputChannelEnableState &= (~(1 << u8Index));					
+		}
+		
+	}
 	return 0;
 }
 
-__weak int32_t SendOutputEnableStateCmd(uint8_t u8NewState)
+__weak int32_t SendOutputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState)
 {
 	printf("%s, state %02x\n", __FUNCTION__, u8NewState);
 	return 0;
@@ -1414,7 +1443,7 @@ int32_t CreateMemoryCtrl(
 		int32_t i;
 		char c8Options[128];
 		c8Options[0] = 0;
-		for (i = 0; i < 8; i++)
+		for (i = 0; i < MEMORY_CHANNEL; i++)
 		{
 			char c8Str[32];
 			sprintf(c8Str, "´æ´¢ %d", i + 1);
@@ -1598,8 +1627,8 @@ lv_res_t ActionInputEnableCB(lv_obj_t *pObj)
 			{
 				u8State &= (~(1 << i));
 			}
-			SetInputEnableState(u8State);
-			SendInputEnableStateCmd(u8State);
+			SetInputEnableState(~0, u8State);
+			SendInputEnableStateCmd(i, u8State);
 			printf("set the %dth input channel %s\n", i, lv_sw_get_state(pObj) ? "ON" : "OFF");
 			
 			break;
@@ -1708,8 +1737,8 @@ lv_res_t ActionOutputEnableCB(lv_obj_t *pObj)
 			{
 				u8State &= (~(1 << i));
 			}
-			SetOutputEnableState(u8State);
-			SendOutputEnableStateCmd(u8State);
+			SetOutputEnableState(~0, u8State);
+			SendOutputEnableStateCmd(i, u8State);
 
 			printf("set the %dth output channel %s\n", i, lv_sw_get_state(pObj) ? "ON" : "OFF");
 			break;

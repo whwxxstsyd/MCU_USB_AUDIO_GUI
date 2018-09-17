@@ -31,6 +31,7 @@
 #include "message.h"
 #include "message_2.h"
 #include "message_3.h"
+#include "message_usb.h"
 #include "flash_ctrl.h"
 #include "extern_io_ctrl.h"
 
@@ -54,7 +55,7 @@ u8 g_u8CamAddr = 0;
 
 EmProtocol g_emProtocol = _Protocol_YNA;
 u32 g_u32BoolIsEncode = 0;
-
+u8 g_u8MIDIChannel = 0;
 
 
 int32_t CycleMsgInit(StCycleBuf *pCycleBuf, void *pBuf, uint32_t u32Length)
@@ -1241,8 +1242,8 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 			{
 				if ((pMsg[_YNA_Data1] == 0x00) || (pMsg[_YNA_Data1] == 0x81))
 				{
-					SetInputEnableState(pMsg[_YNA_Data2]);
-					SetOutputEnableState(pMsg[_YNA_Data3]);
+					SetInputEnableState(~0, pMsg[_YNA_Data2]);
+					SetOutputEnableState(~0, pMsg[_YNA_Data3]);
 					ReflushActiveTable(_Fun_InputEnable, 0);
 					boNeedCopy = false;
 				}
@@ -1496,7 +1497,263 @@ void DeviceGetCurState(void)
 	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 }
 
+int32_t SendAudioCtrlModeCmdEx(uint16_t u16Channel, EmAudioCtrlMode emMode, uint32_t u32Flag)
+{
+	if ((u32Flag & (FLAG_IO_UART1 | FLAG_IO_UART3)) != 0)
+	{
+		StMixAudioCtrlMode stValue = {u16Channel, emMode};
+		void *pCmd;
+		uint32_t u32CmdLen = 0;
+		uint16_t u16Cmd;
+		if (u16Channel < TOTAL_MODE_CTRL_IN)
+		{
+			u16Cmd = 0x0640;
+		}
+		else if (u16Channel < TOTAL_MODE_CTRL)
+		{
+			u16Cmd = 0x0641;		
+		}
+		else
+		{
+			u16Cmd = 0x0642;
+		}
+		pCmd = YNAMakeAnArrayVarialbleCmd(u16Cmd, &stValue, 
+					1, sizeof(StMixAudioCtrlMode), &u32CmdLen);
+		
+		if (pCmd != NULL)
+		{
+			if ((u32Flag & FLAG_IO_UART1) != 0)
+			{
+				CopyToUart1Message(pCmd, u32CmdLen);
+			}
+			
+			if ((u32Flag & FLAG_IO_UART3) != 0)
+			{
+				CopyToUart3Message(pCmd, u32CmdLen);
+			}
+			
+			{
+				free(pCmd);
+				return -1;
+			}
+		}
+	}
+	
+	if ((u32Flag & FLAG_IO_USB_MIDI) != 0)
+	{
+		u8 u8Midi[4] = {0x09, 0x90};
+		u8 u8KK = 0;
+	
+		if (u16Channel < TOTAL_MODE_CTRL_IN)
+		{
+			u8KK = 0x20 + u16Channel - 0;
+		}
+		else if (u16Channel < TOTAL_MODE_CTRL)
+		{
+			u8KK = 0x30 + u16Channel - TOTAL_MODE_CTRL_IN;
+		}
+		else
+		{
+			u8KK = 0x40 + u16Channel - _Channel_PC_Ctrl;
+		}
 
+		u8Midi[1] |= (g_u8MIDIChannel & 0x0F);
+		u8Midi[2] = u8KK;
+		u8Midi[3] = (u8)(emMode);
+		
+		CopyToUSBMessage(u8Midi, 4, _IO_USB_ENDP1);		
+	}	
+	
+	return 0;
+}
+
+int32_t SendAudioVolumeCmdEx(uint16_t u16Channel, StVolume stVolume, uint32_t u32Flag)
+{
+
+	if ((u32Flag & (FLAG_IO_UART1 | FLAG_IO_UART3)) != 0)
+	{
+	
+		StMixAudioVolume stValue = {u16Channel, stVolume.u8Channel1, stVolume.u8Channel2};
+		void *pCmd;
+		uint32_t u32CmdLen = 0;
+		pCmd = YNAMakeAnArrayVarialbleCmd(0x0680, &stValue, 
+					1, sizeof(StMixAudioVolume), &u32CmdLen);
+		
+		if (pCmd != NULL)
+		{
+			if ((u32Flag & FLAG_IO_UART1) != 0)
+			{
+				CopyToUart1Message(pCmd, u32CmdLen);
+			}
+			
+			if ((u32Flag & FLAG_IO_UART3) != 0)
+			{
+				CopyToUart3Message(pCmd, u32CmdLen);
+			}
+			
+			{
+				free(pCmd);
+				return -1;
+			}
+
+		}
+	}
+	
+	if ((u32Flag & FLAG_IO_USB_MIDI) != 0)
+	{
+		u8 u8Midi[4] = {0x0B, 0xB0};
+		u8 u8CC = 0;
+	
+		if (u16Channel < TOTAL_MODE_CTRL_IN)
+		{
+			u8CC = 0x20 + u16Channel - 0;
+		}
+		else if (u16Channel < TOTAL_MODE_CTRL)
+		{
+			u8CC = 0x30 + u16Channel - TOTAL_MODE_CTRL_IN;
+		}
+		else
+		{
+			u8CC = 0x40 + u16Channel - _Channel_PC_Ctrl;
+		}
+
+		u8Midi[1] |= (g_u8MIDIChannel & 0x0F);
+		u8Midi[2] = u8CC;
+		u8Midi[3] = ((stVolume.u8Channel1 + stVolume.u8Channel2) / 4) & 0x7F;	/* 2 * 2 = 4 */
+		
+		CopyToUSBMessage(u8Midi, 4, _IO_USB_ENDP1);		
+	}
+	
+	return 0;	
+}
+
+int32_t SendInputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t u32Flag)
+{
+
+	if ((u32Flag & (FLAG_IO_UART1 | FLAG_IO_UART3)) != 0)
+	{
+		uint8_t u8Cmd[PROTOCOL_YNA_DECODE_LENGTH];
+		
+		u8Cmd[_YNA_Sync] = 0xAA;
+		u8Cmd[_YNA_Mix] = 0x06;
+		
+		u8Cmd[_YNA_Cmd] = 0x50;
+		u8Cmd[_YNA_Data1] = 0x81;
+		u8Cmd[_YNA_Data2] = GetInputEnableState();
+		u8Cmd[_YNA_Data3] = GetOutputEnableState();
+
+		YNAGetCheckSum(u8Cmd);
+		if ((u32Flag & FLAG_IO_UART1) != 0)
+		{
+			CopyToUart1Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+		}
+		
+		u8Cmd[_YNA_Data1] = 0x00;
+		YNAGetCheckSum(u8Cmd);
+		if ((u32Flag & FLAG_IO_UART1) != 0)
+		{
+			CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+		}
+	}
+	
+	if ((u32Flag & FLAG_IO_USB_MIDI) != 0)
+	{
+		u8 u8MidiOn[4] = {0x09, 0x90};
+		u8 u8MidiOff[4] = {0x08, 0x80};
+		int32_t i, b = 0, e = ENABLE_INPUT_CTRL;
+		if (u8Index < ENABLE_INPUT_CTRL)
+		{
+			b = u8Index;
+			e = u8Index + 1;
+		}
+		
+		for (i = b; i < e; i++)
+		{
+			if ((u8NewState & (1 << i)) != 0)
+			{
+				u8MidiOn[1] |= (g_u8MIDIChannel & 0x0F);
+				u8MidiOn[2] = 0x50 + i;
+				u8MidiOn[3] = 0x7F;
+				CopyToUSBMessage(u8MidiOn, 4, _IO_USB_ENDP1);					
+			}
+			else
+			{
+				u8MidiOff[2] = 0x50 + i;
+				u8MidiOff[3] = 0x00;
+				CopyToUSBMessage(u8MidiOff, 4, _IO_USB_ENDP1);					
+				
+			}
+		}
+	}
+
+	return 0;
+}
+
+int32_t SendOutputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t u32Flag)
+{
+
+	if ((u32Flag & (FLAG_IO_UART1 | FLAG_IO_UART3)) != 0)
+	{
+		uint8_t u8Cmd[PROTOCOL_YNA_DECODE_LENGTH];
+		
+		u8Cmd[_YNA_Sync] = 0xAA;
+		u8Cmd[_YNA_Mix] = 0x06;
+		
+		u8Cmd[_YNA_Cmd] = 0x50;
+		u8Cmd[_YNA_Data1] = 0x81;
+		u8Cmd[_YNA_Data2] = GetInputEnableState();
+		u8Cmd[_YNA_Data3] = GetOutputEnableState();
+
+		YNAGetCheckSum(u8Cmd);
+		if ((u32Flag & FLAG_IO_UART1) != 0)
+		{
+			CopyToUart1Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+		}
+		
+		u8Cmd[_YNA_Data1] = 0x00;
+		YNAGetCheckSum(u8Cmd);
+		if ((u32Flag & FLAG_IO_UART1) != 0)
+		{
+			CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+		}
+	}
+	
+	if ((u32Flag & FLAG_IO_USB_MIDI) != 0)
+	{
+		u8 u8MidiOn[4] = {0x09, 0x90};
+		u8 u8MidiOff[4] = {0x08, 0x80};
+		int32_t i, b = 0, e = ENABLE_OUTPUT_CTRL;
+		if (u8Index < ENABLE_OUTPUT_CTRL)
+		{
+			b = u8Index;
+			e = u8Index + 1;
+		}
+		u8MidiOn[1] |= (g_u8MIDIChannel & 0x0F);
+		u8MidiOff[1] |= (g_u8MIDIChannel & 0x0F);
+		
+		for (i = b; i < e; i++)
+		{
+			if ((u8NewState & (1 << i)) != 0)
+			{
+				u8MidiOn[2] = 0x60 + i;
+				u8MidiOn[3] = 0x7F;
+				CopyToUSBMessage(u8MidiOn, 4, _IO_USB_ENDP1);					
+			}
+			else
+			{
+				u8MidiOff[2] = 0x60 + i;
+				u8MidiOff[3] = 0x00;
+				CopyToUSBMessage(u8MidiOff, 4, _IO_USB_ENDP1);					
+				
+			}
+		}
+	}
+
+	return 0;
+}
+
+
+/* GUI ÃüÁî·¢ËÍ */
 
 int32_t SendAudioCtrlModeCmd(uint16_t u16Channel, EmAudioCtrlMode emMode)
 {
@@ -1577,7 +1834,7 @@ int32_t SendPhantomPowerStateCmd(uint16_t u16Channel, bool boIsEnable)
 	
 }
 
-int32_t SendInputEnableStateCmd(uint8_t u8NewState)
+int32_t SendInputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState)
 {
 	uint8_t u8Cmd[PROTOCOL_YNA_DECODE_LENGTH];
 	
@@ -1598,9 +1855,9 @@ int32_t SendInputEnableStateCmd(uint8_t u8NewState)
 
 	return 0;
 }
-int32_t SendOutputEnableStateCmd(uint8_t u8NewState)
+int32_t SendOutputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState)
 {
-	return SendInputEnableStateCmd(u8NewState);
+	return SendInputEnableStateCmd(u8Index, u8NewState);
 }
 
 int32_t SendMemeoryCtrlCmd(uint16_t u16Channel, bool boIsSave)
@@ -1690,6 +1947,9 @@ void LoadPowerOffMemoryToDevice(void)
 {
 	LoadMemoryToDevice(&(g_stSave.stMemory));
 }
+
+/* GUI ÃüÁî·¢ËÍ */
+
 
 void PowerOffMemoryFlush(void)	/* 100ms flush */
 {
@@ -1822,7 +2082,7 @@ __weak uint8_t GetInputEnableState(void)
 	return 0;
 }
 
-__weak int32_t SetInputEnableState(uint8_t u8NewState)
+__weak int32_t SetInputEnableState(uint8_t u8Index, uint8_t u8NewState)
 {
 	return 0;
 }
@@ -1832,7 +2092,7 @@ __weak uint8_t GetOutputEnableState(void)
 	return 0;
 }
 
-__weak int32_t SetOutputEnableState(uint8_t u8NewState)
+__weak int32_t SetOutputEnableState(uint8_t u8Index, uint8_t u8NewState)
 {
 	return 0;
 }
