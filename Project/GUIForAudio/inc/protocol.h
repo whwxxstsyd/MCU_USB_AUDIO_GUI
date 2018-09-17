@@ -50,6 +50,8 @@ enum
 	_IO_UART1,
 	_IO_UART2,
 	_IO_USB,
+	_IO_USB_ENDP1,
+	_IO_USB_ENDP2,
 	
 	_IO_Reserved,
 };
@@ -115,6 +117,7 @@ typedef enum _tagEmProtocol
 	_Protocol_RQ,
 	_Protocol_SB,
 	_Protocol_SB_HID,
+	_Protocol_MIDI,
 	
 	_Protocol_Reserved,	
 }EmProtocol;

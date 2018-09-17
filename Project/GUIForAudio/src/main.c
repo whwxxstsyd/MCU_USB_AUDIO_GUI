@@ -22,6 +22,7 @@
 #include "message.h"
 #include "message_2.h"
 #include "message_3.h"
+#include "message_USB.h"
 
 
 #include "user_init.h"
@@ -91,6 +92,8 @@ int main (void)
 
 	SysTickInit();
 	
+	/* must after SysTickInit */
+	MessageUSBInit();
 	
 	LCDInit();
 
@@ -154,6 +157,8 @@ int main (void)
 			StIOFIFO *pMsgIn = MessageUartFlush(false);
 			StIOFIFO *pMsg2In = MessageUart2Flush(false);
 			StIOFIFO *pMsg3In = MessageUart3Flush(false);
+			void *pMsgUSB = MessageUSBFlush(false);
+			
 			void *pKeyIn = KeyBufGetBuf();
 
 			if (pKeyIn != NULL)
@@ -216,6 +221,9 @@ int main (void)
 			MessageUart2Release(pMsg2In);
 			
 			KeyBufGetEnd(pKeyIn);
+			
+			MessageUSBRelease(pMsgUSB);	
+
 
 			if (SysTimeDiff(u32DeviceKeepAliveTime, g_u32SysTickCnt) >= 5 * 1000)
 			{		
