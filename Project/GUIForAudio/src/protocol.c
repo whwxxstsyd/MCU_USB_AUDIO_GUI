@@ -1757,6 +1757,10 @@ int32_t SendOutputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t
 
 int32_t SendAudioCtrlModeCmd(uint16_t u16Channel, EmAudioCtrlMode emMode)
 {
+#if 0
+	return SendAudioCtrlModeCmdEx(u16Channel, emMode, 
+				FLAG_IO_UART1 | FLAG_IO_UART3 | FLAG_IO_USB_MIDI);
+#else
 	StMixAudioCtrlMode stValue = {u16Channel, emMode};
 	void *pCmd;
 	uint32_t u32CmdLen = 0;
@@ -1788,6 +1792,7 @@ int32_t SendAudioCtrlModeCmd(uint16_t u16Channel, EmAudioCtrlMode emMode)
 		return 0;
 	}
 	return -1;
+#endif	
 }
 
 int32_t SendAudioVolumeCmd(uint16_t u16Channel, StVolume stVolume)

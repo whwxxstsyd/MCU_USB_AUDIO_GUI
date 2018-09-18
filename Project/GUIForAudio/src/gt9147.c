@@ -7,8 +7,8 @@
 #include "lcd.h"
 #include "gt9147.h"
 
-#define GT9147_CTRL_PIN				GPIO_Pin_2
-#define GT9147_CTRL_PIN_PORT		GPIOB
+#define GT9147_CTRL_PIN				GPIO_Pin_11
+#define GT9147_CTRL_PIN_PORT		GPIOF
 
 #define GT9147_INT_PIN				GPIO_Pin_10
 #define GT9147_INT_PIN_PORT			GPIOF
