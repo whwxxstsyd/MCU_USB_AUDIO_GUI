@@ -278,6 +278,8 @@ int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel);
 void SetKeySpeek(uint16_t u16Speed);
 void SetKeyValue(uint32_t u32Key, bool boIsPress);
 
+int32_t ChannelToReal(uint16_t u16Channel);
+
 
 int32_t GetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode *pMode);
 int32_t SetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode emMode);

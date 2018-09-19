@@ -58,6 +58,14 @@ u32 g_u32BoolIsEncode = 0;
 u8 g_u8MIDIChannel = 0;
 
 
+int32_t SendAudioCtrlModeCmdEx(uint16_t u16Channel, EmAudioCtrlMode emMode, uint32_t u32Flag);
+int32_t SendAudioVolumeCmdEx(uint16_t u16Channel, StVolume stVolume, uint32_t u32Flag);
+int32_t SendInputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t u32Flag);
+int32_t SendOutputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t u32Flag);
+int32_t SendPhantomPowerStateCmdEx(uint16_t u16Channel, bool boIsEnable, uint32_t u32Flag);
+
+
+
 int32_t CycleMsgInit(StCycleBuf *pCycleBuf, void *pBuf, uint32_t u32Length)
 {
 	if ((pCycleBuf == NULL) || (pBuf == NULL) || (u32Length == 0))
@@ -1235,6 +1243,9 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 					u8 u8Array = pMsg[_YNA_Data1] >> 4;
 					bool boIsEnable = pMsg[_YNA_Data2] == 0x00 ? true : false;
 					SetPhantomPowerState(u8Array, boIsEnable);
+					ReflushActiveTable(_Fun_PhantomPower, u8Array);
+
+					SendPhantomPowerStateCmdEx(u8Array, boIsEnable, FLAG_IO_USB_MIDI);
 				}
 				break;
 			}
@@ -1245,6 +1256,8 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 					SetInputEnableState(~0, pMsg[_YNA_Data2]);
 					SetOutputEnableState(~0, pMsg[_YNA_Data3]);
 					ReflushActiveTable(_Fun_InputEnable, 0);
+					SendInputEnableStateCmdEx(~0, pMsg[_YNA_Data2], FLAG_IO_USB_MIDI);
+					SendOutputEnableStateCmdEx(~0, pMsg[_YNA_Data3], FLAG_IO_USB_MIDI);
 					boNeedCopy = false;
 				}
 				else if (pMsg[_YNA_Data1] == 0x01)
@@ -1379,6 +1392,9 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 					{
 						SetAudioCtrlMode(pMode[i].u8Index, (EmAudioCtrlMode)(pMode[i].u8Mode));
 						ReflushActiveTable(_Fun_AudioMode, pMode[i].u8Index);
+			
+						SendAudioCtrlModeCmdEx(pMode[i].u8Index, 
+							(EmAudioCtrlMode)(pMode[i].u8Mode), FLAG_IO_USB_MIDI);
 					}
 					break;
 				}
@@ -1390,6 +1406,9 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 					{
 						SetPhantomPowerState(pMode[i].u8Index, pMode[i].u8Enable);
 						ReflushActiveTable(_Fun_PhantomPower, pMode[i].u8Index);
+						
+						SendPhantomPowerStateCmdEx(pMode[i].u8Index, 
+									pMode[i].u8Enable, FLAG_IO_USB_MIDI);
 					}
 					break;
 				}
@@ -1409,6 +1428,9 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 						stVolume.u8Channel2 = pVolume[i].u8Right;
 						SetAudioVolume(pVolume[i].u8Index, stVolume);
 						ReflushActiveTable(_Fun_AudioVolume, pVolume[i].u8Index);
+						
+						SendAudioVolumeCmdEx(pVolume[i].u8Index, stVolume,
+							FLAG_IO_USB_MIDI);
 					}
 					break;
 				}
@@ -1513,9 +1535,13 @@ int32_t SendAudioCtrlModeCmdEx(uint16_t u16Channel, EmAudioCtrlMode emMode, uint
 		{
 			u16Cmd = 0x0641;		
 		}
-		else
+		else if (u16Channel <= _Channel_PC_Ctrl_Record && u16Channel >= _Channel_PC_Ctrl_Play)
 		{
 			u16Cmd = 0x0642;
+		}
+		else 
+		{
+			return -1;
 		}
 		pCmd = YNAMakeAnArrayVarialbleCmd(u16Cmd, &stValue, 
 					1, sizeof(StMixAudioCtrlMode), &u32CmdLen);
@@ -1534,7 +1560,6 @@ int32_t SendAudioCtrlModeCmdEx(uint16_t u16Channel, EmAudioCtrlMode emMode, uint
 			
 			{
 				free(pCmd);
-				return -1;
 			}
 		}
 	}
@@ -1546,20 +1571,29 @@ int32_t SendAudioCtrlModeCmdEx(uint16_t u16Channel, EmAudioCtrlMode emMode, uint
 	
 		if (u16Channel < TOTAL_MODE_CTRL_IN)
 		{
-			u8KK = 0x20 + u16Channel - 0;
+			/* 0 * _Audio_Ctrl_Mode_Reserved 0 * 8 = 0 */
+			u8KK = 0x00 + u16Channel * 8 + emMode;
 		}
 		else if (u16Channel < TOTAL_MODE_CTRL)
 		{
-			u8KK = 0x30 + u16Channel - TOTAL_MODE_CTRL_IN;
+			/* TOTAL_MODE_CTRL_IN * _Audio_Ctrl_Mode_Reserved 7 * 8 = 56 */
+			u8KK = 56 + (u16Channel - TOTAL_MODE_CTRL_IN) * 8 + emMode;
+		}
+		else if (u16Channel <= _Channel_PC_Ctrl_Record && u16Channel >= _Channel_PC_Ctrl_Play)
+		{
+			/* TOTAL_MODE_CTRL * _Audio_Ctrl_Mode_Reserved 10 * 8 = 80 */
+			u8KK = 80 + (u16Channel - _Channel_PC_Ctrl) * 8 + emMode;
 		}
 		else
 		{
-			u8KK = 0x40 + u16Channel - _Channel_PC_Ctrl;
+			/* (TOTAL_MODE_CTRL + 2) * _Audio_Ctrl_Mode_Reserved 12 * 8 = 96 */
+			
+			return -1;
 		}
 
 		u8Midi[1] |= (g_u8MIDIChannel & 0x0F);
 		u8Midi[2] = u8KK;
-		u8Midi[3] = (u8)(emMode);
+		u8Midi[3] = 127;
 		
 		CopyToUSBMessage(u8Midi, 4, _IO_USB_ENDP1);		
 	}	
@@ -1570,6 +1604,15 @@ int32_t SendAudioCtrlModeCmdEx(uint16_t u16Channel, EmAudioCtrlMode emMode, uint
 int32_t SendAudioVolumeCmdEx(uint16_t u16Channel, StVolume stVolume, uint32_t u32Flag)
 {
 
+	{
+		u16 u16Tmp = ChannelToReal(u16Channel);
+
+		if ((u16Tmp >= TOTAL_CHANNEL))
+		{
+			return -1;
+		}
+	}
+	
 	if ((u32Flag & (FLAG_IO_UART1 | FLAG_IO_UART3)) != 0)
 	{
 	
@@ -1593,7 +1636,6 @@ int32_t SendAudioVolumeCmdEx(uint16_t u16Channel, StVolume stVolume, uint32_t u3
 			
 			{
 				free(pCmd);
-				return -1;
 			}
 
 		}
@@ -1612,9 +1654,13 @@ int32_t SendAudioVolumeCmdEx(uint16_t u16Channel, StVolume stVolume, uint32_t u3
 		{
 			u8CC = 0x30 + u16Channel - TOTAL_MODE_CTRL_IN;
 		}
-		else
+		else if (u16Channel <= _Channel_PC_Ctrl_Record && u16Channel >= _Channel_PC_Ctrl_Play)
 		{
 			u8CC = 0x40 + u16Channel - _Channel_PC_Ctrl;
+		}
+		else
+		{
+			return -1;
 		}
 
 		u8Midi[1] |= (g_u8MIDIChannel & 0x0F);
@@ -1666,19 +1712,20 @@ int32_t SendInputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t 
 			b = u8Index;
 			e = u8Index + 1;
 		}
+		u8MidiOn[1] |= (g_u8MIDIChannel & 0x0F);
+		u8MidiOff[1] |= (g_u8MIDIChannel & 0x0F);
 		
 		for (i = b; i < e; i++)
 		{
 			if ((u8NewState & (1 << i)) != 0)
 			{
-				u8MidiOn[1] |= (g_u8MIDIChannel & 0x0F);
-				u8MidiOn[2] = 0x50 + i;
+				u8MidiOn[2] = 96 + i;
 				u8MidiOn[3] = 0x7F;
 				CopyToUSBMessage(u8MidiOn, 4, _IO_USB_ENDP1);					
 			}
 			else
 			{
-				u8MidiOff[2] = 0x50 + i;
+				u8MidiOff[2] = 96 + i;
 				u8MidiOff[3] = 0x00;
 				CopyToUSBMessage(u8MidiOff, 4, _IO_USB_ENDP1);					
 				
@@ -1735,13 +1782,13 @@ int32_t SendOutputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t
 		{
 			if ((u8NewState & (1 << i)) != 0)
 			{
-				u8MidiOn[2] = 0x60 + i;
+				u8MidiOn[2] = 104 + i;
 				u8MidiOn[3] = 0x7F;
 				CopyToUSBMessage(u8MidiOn, 4, _IO_USB_ENDP1);					
 			}
 			else
 			{
-				u8MidiOff[2] = 0x60 + i;
+				u8MidiOff[2] = 104 + i;
 				u8MidiOff[3] = 0x00;
 				CopyToUSBMessage(u8MidiOff, 4, _IO_USB_ENDP1);					
 				
@@ -1752,12 +1799,69 @@ int32_t SendOutputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t
 	return 0;
 }
 
+int32_t SendPhantomPowerStateCmdEx(uint16_t u16Channel, bool boIsEnable, uint32_t u32Flag)
+{
+	if ((u16Channel >= PHANTOM_POWER_CTRL))
+	{
+		return -1;
+	}
+
+	if ((u32Flag & (FLAG_IO_UART1 | FLAG_IO_UART3)) != 0)
+	{
+
+		StMixAudioPhantomPowerMode stValue = {u16Channel, boIsEnable};
+		void *pCmd;
+		uint32_t u32CmdLen = 0;
+		pCmd = YNAMakeAnArrayVarialbleCmd(0x0646, &stValue, 
+					1, sizeof(StMixAudioPhantomPowerMode), &u32CmdLen);
+		
+		if (pCmd != NULL)
+		{
+			if ((u32Flag & FLAG_IO_UART1) != 0)
+			{
+				CopyToUart1Message(pCmd, u32CmdLen);
+			}
+			
+			if ((u32Flag & FLAG_IO_UART3) != 0)
+			{
+				CopyToUart3Message(pCmd, u32CmdLen);
+			}
+			
+			{
+				free(pCmd);
+			}
+		}
+	}
+	if ((u32Flag & FLAG_IO_USB_MIDI) != 0)
+	{
+		u8 u8MidiOn[4] = {0x09, 0x90};
+		u8 u8MidiOff[4] = {0x08, 0x80};
+		
+		u8MidiOn[1] |= (g_u8MIDIChannel & 0x0F);
+		u8MidiOff[1] |= (g_u8MIDIChannel & 0x0F);
+		
+		if (boIsEnable)
+		{
+			u8MidiOn[2] = 112 + u16Channel;
+			u8MidiOn[3] = 0x7F;
+			CopyToUSBMessage(u8MidiOn, 4, _IO_USB_ENDP1);					
+		}
+		else
+		{
+			u8MidiOff[2] = 112 + u16Channel;
+			u8MidiOff[3] = 0x00;
+			CopyToUSBMessage(u8MidiOff, 4, _IO_USB_ENDP1);					
+			
+		}
+	}
+	return 0;		
+}
 
 /* GUI √¸¡Ó∑¢ÀÕ */
 
 int32_t SendAudioCtrlModeCmd(uint16_t u16Channel, EmAudioCtrlMode emMode)
 {
-#if 0
+#if 1
 	return SendAudioCtrlModeCmdEx(u16Channel, emMode, 
 				FLAG_IO_UART1 | FLAG_IO_UART3 | FLAG_IO_USB_MIDI);
 #else
@@ -1797,6 +1901,10 @@ int32_t SendAudioCtrlModeCmd(uint16_t u16Channel, EmAudioCtrlMode emMode)
 
 int32_t SendAudioVolumeCmd(uint16_t u16Channel, StVolume stVolume)
 {
+#if 1
+	return SendAudioVolumeCmdEx(u16Channel, stVolume, 
+			FLAG_IO_UART1 | FLAG_IO_UART3 | FLAG_IO_USB_MIDI);
+#else
 	StMixAudioVolume stValue = {u16Channel, stVolume.u8Channel1, stVolume.u8Channel2};
 	void *pCmd;
 	uint32_t u32CmdLen = 0;
@@ -1815,9 +1923,15 @@ int32_t SendAudioVolumeCmd(uint16_t u16Channel, StVolume stVolume)
 		return 0;
 	}
 	return -1;	
+#endif
 }
 int32_t SendPhantomPowerStateCmd(uint16_t u16Channel, bool boIsEnable)
 {
+#if 1
+	return SendPhantomPowerStateCmdEx(u16Channel, boIsEnable,
+			FLAG_IO_UART1 | FLAG_IO_UART3 | FLAG_IO_USB_MIDI);
+#else
+
 	StMixAudioPhantomPowerMode stValue = {u16Channel, boIsEnable};
 	void *pCmd;
 	uint32_t u32CmdLen = 0;
@@ -1837,10 +1951,16 @@ int32_t SendPhantomPowerStateCmd(uint16_t u16Channel, bool boIsEnable)
 	}
 	return -1;	
 	
+#endif	
 }
 
 int32_t SendInputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState)
 {
+#if 1
+	return SendInputEnableStateCmdEx(u8Index, u8NewState,
+			FLAG_IO_UART1 | FLAG_IO_UART3 | FLAG_IO_USB_MIDI);
+#else
+
 	uint8_t u8Cmd[PROTOCOL_YNA_DECODE_LENGTH];
 	
 	u8Cmd[_YNA_Sync] = 0xAA;
@@ -1859,10 +1979,16 @@ int32_t SendInputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState)
 	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 
 	return 0;
+#endif
 }
 int32_t SendOutputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState)
 {
+#if 1
+	return SendOutputEnableStateCmdEx(u8Index, u8NewState,
+			FLAG_IO_UART1 | FLAG_IO_UART3 | FLAG_IO_USB_MIDI);
+#else
 	return SendInputEnableStateCmd(u8Index, u8NewState);
+#endif
 }
 
 int32_t SendMemeoryCtrlCmd(uint16_t u16Channel, bool boIsSave)
@@ -2018,6 +2144,10 @@ __weak int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel)
 	return 0;
 }
 
+__weak int32_t ChannelToReal(uint16_t u16Channel)
+{
+	return 0;
+}
 
 __weak int32_t GetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode *pMode)
 {
