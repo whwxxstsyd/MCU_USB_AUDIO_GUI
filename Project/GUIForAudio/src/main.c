@@ -218,6 +218,12 @@ int main (void)
 				//u32DeviceKeepAliveTime = g_u32SysTickCnt;
 			}
 			
+			if (pMsgUSB != NULL)
+			{
+				PCEchoProcess(pMsgUSB, NULL);
+			}
+			
+			
 			MessageUart2Release(pMsg2In);
 			
 			KeyBufGetEnd(pKeyIn);

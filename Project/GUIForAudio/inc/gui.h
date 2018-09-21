@@ -264,7 +264,7 @@ typedef struct _tagStKeyboardCtrl
 	uint8_t u8CurConnect;
 }StKeyboardCtrl;
 
-typedef struct _tagStScreenProtedtCtrl
+typedef struct _tagStScreenProtectCtrl
 {
 	lv_obj_t *pTimeCtrl;
 	lv_obj_t *pModeCtrl;
@@ -273,12 +273,20 @@ typedef struct _tagStScreenProtedtCtrl
 	uint8_t u8CurModeIndex;
 }StScreenProtectCtrl;
 
+typedef struct _tagStMIDIChannelCtrl
+{
+	lv_obj_t *pMIDIChannelCtrl;
+
+	uint8_t u8CurMIDIChannelIndex;
+}StMIDIChannelCtrl;
+
 int32_t CreateTableView(void);
 int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel);
 void SetKeySpeek(uint16_t u16Speed);
 void SetKeyValue(uint32_t u32Key, bool boIsPress);
 
 int32_t ChannelToReal(uint16_t u16Channel);
+int32_t RealToChannel(uint16_t u16Channel);
 
 
 int32_t GetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode *pMode);
@@ -335,10 +343,10 @@ int32_t GetScreenProtectModeIndex(uint8_t *pIndex);
 int32_t SetScreenProtectTimeIndex(uint8_t u8Index);
 int32_t SetScreenProtectModeIndex(uint8_t u8Index);
 
-
 int32_t SendScreenProtectTimeCmd(uint8_t u8Index);
 int32_t SendScreenProtectModeCmd(uint8_t u8Index);
 
-
+int32_t GetMIDIChannelIndex(uint8_t *pIndex);
+int32_t SetMIDIChannelIndex(uint8_t u8Index);
 
 #endif // GUI_H_

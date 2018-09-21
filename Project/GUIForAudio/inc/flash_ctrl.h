@@ -129,6 +129,7 @@ typedef struct _tagStPowerOffMemory
 	uint8_t u8KeyboardConnectMode;
 	uint8_t u8ScreenProtectTimeIndex;
 	uint8_t u8ScreenProtectModeIndex;
+	uint8_t u8MIDIChannelIndex;
 }StPowerOffMemory;
 
 typedef struct _tagStSave

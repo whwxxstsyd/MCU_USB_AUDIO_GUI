@@ -229,6 +229,7 @@ static StLogoColorCtrl s_stLogoColorCtrl = { {NULL,}, 0xFF };
 static StKeyboardCtrl s_stKeyboardCtrl = { NULL, NULL, true, 0 };
 
 static StScreenProtectCtrl s_stScreenProtectCtrl = { 0 };
+static StMIDIChannelCtrl s_stMIDIChannelCtrl = { 0 };
 
 int32_t ChannelToReal(uint16_t u16Channel)
 {
@@ -244,6 +245,25 @@ int32_t ChannelToReal(uint16_t u16Channel)
 
 	return -1;
 }
+
+int32_t RealToChannel(uint16_t u16Channel)
+{
+	if (u16Channel >= TOTAL_CHANNEL)
+	{
+		return -1;
+	}
+	if (u16Channel < _Channel_Reserved)
+	{
+		return u16Channel;
+	}
+	else 
+	{
+		return u16Channel - _Channel_Reserved + _Channel_PC_Ctrl;
+	}
+	
+
+}
+
 
 int32_t GetAudioCtrlMode(uint16_t u16Channel, EmAudioCtrlMode *pMode)
 {
@@ -507,6 +527,11 @@ __weak int32_t 	SendScreenProtectModeCmd(uint8_t u8Index)
 	return 0;
 }
 
+__weak int32_t 	SendMIDIChannelCmd(uint8_t u8Index)
+{
+	printf("%s, state: %d\n", __FUNCTION__, u8Index);
+	return 0;
+}
 
 int32_t GetUnionVolumeValue(uint16_t u16Channel, bool *pValue)
 {
@@ -637,6 +662,30 @@ int32_t SetScreenProtectModeIndex(uint8_t u8Index)
 	return 0;
 }
 
+
+int32_t GetMIDIChannelIndex(uint8_t *pIndex)
+{
+	if (pIndex == NULL)
+	{
+		return -1;
+	}
+	*pIndex = s_stMIDIChannelCtrl.u8CurMIDIChannelIndex;
+	return 0;
+}
+
+
+int32_t SetMIDIChannelIndex(uint8_t u8Index)
+{
+	if (u8Index >= 16)
+	{
+		return -1;
+	}
+	s_stMIDIChannelCtrl.u8CurMIDIChannelIndex = u8Index;
+
+	SendMIDIChannelCmd(u8Index);
+
+	return 0;
+}
 
 
 
@@ -1845,7 +1894,7 @@ int32_t ReleaseTableInput1To2(lv_obj_t *pTabParent)
 }
 int32_t CreateTableInput1To2(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
-	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 135, &stVolumeInput1, _Channel_AIN_1,
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 145, &stVolumeInput1, _Channel_AIN_1,
 		c_u8CtrlModeSpecialLeft, sizeof(c_u8CtrlModeSpecialLeft), "输入1", c_pCtrlModeSpecial);
 
 	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 470, &stVolumeInput2, _Channel_AIN_2,
@@ -1949,13 +1998,13 @@ int32_t ReleaseTableInput3To5(lv_obj_t *pTabParent)
 
 int32_t CreateTableInput3To5(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
-	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 30, &stVolumeInput3, _Channel_AIN_3,
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 50, &stVolumeInput3, _Channel_AIN_3,
 		c_u8CtrlModeSpecialLeft, sizeof(c_u8CtrlModeSpecialLeft), "输入3", c_pCtrlModeSpecial);
 
-	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 30 + 270, &stVolumeInput4, _Channel_AIN_4,
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 50 + 270, &stVolumeInput4, _Channel_AIN_4,
 		c_u8CtrlModeSpecialRight, sizeof(c_u8CtrlModeSpecialRight), "输入4", c_pCtrlModeSpecial);
 
-	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 30 + 270 * 2, &stVolumeInput5, _Channel_AIN_5,
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 50 + 270 * 2, &stVolumeInput5, _Channel_AIN_5,
 		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "输入5", c_pCtrlMode);
 
 	return 0;
@@ -2072,7 +2121,7 @@ int32_t RebulidTableOtherVaule(void)
 
 int32_t CreateTablePCVolumeCtrl(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
-	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 135, &stVolumePCCtrlRecord, _Channel_PC_Ctrl_Record,
+	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 145, &stVolumePCCtrlRecord, _Channel_PC_Ctrl_Record,
 		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "录制", c_pCtrlModeSpecial);
 
 	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 470, &stVolumePCCtrlPlay, _Channel_PC_Ctrl_Play,
@@ -2529,6 +2578,90 @@ err:
 }
 
 
+lv_res_t ActionMIDIChannelCB(lv_obj_t *pObj)
+{
+	StMIDIChannelCtrl *pGroup = lv_obj_get_free_ptr(pObj);
+
+	pGroup->u8CurMIDIChannelIndex = (uint8_t)lv_ddlist_get_selected(pObj);
+
+	SendMIDIChannelCmd(pGroup->u8CurMIDIChannelIndex);
+
+	printf("set MIDI channel %d\n", pGroup->u8CurMIDIChannelIndex);
+
+	return LV_RES_OK;
+}
+
+int32_t CreateMIDIChannelCtrl(lv_obj_t *pParent,
+	lv_group_t *pGlobalGroup,
+	uint16_t u16XPos, uint16_t u16YPos,
+	StMIDIChannelCtrl *pGroup)
+{
+	lv_obj_t *pObjTmp;
+
+	if ((pGroup == NULL) || (pParent == NULL))
+	{
+		return -1;
+	}
+
+	{
+		pObjTmp = lv_label_create(pParent, NULL);
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8("MIDI通道"));
+		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos + 10);
+	}
+
+	{
+		lv_obj_t *pObjTmp = NULL;
+		char c8Str[128];
+		char c8StrTmp[8];
+		uint32_t i;
+		c8Str[0] = 0;
+		for (i = 0; i < 15; i++)
+		{
+			sprintf(c8StrTmp, "%d\n", i + 1);
+			strcat(c8Str, c8StrTmp);
+		}
+		sprintf(c8StrTmp, "%d", i + 1);
+		strcat(c8Str, c8StrTmp);
+
+		pObjTmp = lv_ddlist_create(pParent, NULL);
+		if (pObjTmp == NULL)
+		{
+			goto err;
+		}
+		pGroup->pMIDIChannelCtrl = pObjTmp;
+
+		lv_obj_set_pos(pObjTmp, u16XPos + 130, u16YPos);
+
+		lv_ddlist_set_fix_height(pObjTmp, 200);
+
+		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(c8Str));
+
+		lv_label_set_align(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_ALIGN_CENTER);
+
+		lv_label_set_long_mode(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
+			LV_LABEL_LONG_BREAK);
+
+		lv_obj_set_width(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label, 130);
+
+		if (pGlobalGroup != NULL)
+		{
+			lv_group_add_obj(pGlobalGroup, pObjTmp);
+		}
+
+	}
+
+
+	lv_obj_set_free_ptr(pGroup->pMIDIChannelCtrl, pGroup);
+
+	lv_obj_set_free_num(pGroup->pMIDIChannelCtrl, _OBJ_TYPE_DDLIST);
+
+	lv_ddlist_set_action(pGroup->pMIDIChannelCtrl, ActionMIDIChannelCB);
+
+	return 0;
+err:
+	return -1;
+}
 int32_t RebuildScreenProtectCtrlValue(StScreenProtectCtrl *pGroup)
 {
 	lv_ddlist_set_selected(pGroup->pTimeCtrl, pGroup->u8CurTimeIndex);
@@ -2537,8 +2670,15 @@ int32_t RebuildScreenProtectCtrlValue(StScreenProtectCtrl *pGroup)
 	return 0;
 }
 
+int32_t RebuildMIDIChannelCtrlValue(StMIDIChannelCtrl *pGroup)
+{
+	lv_ddlist_set_selected(pGroup->pMIDIChannelCtrl, pGroup->u8CurMIDIChannelIndex);
+	return 0;
+}
+
 int32_t CreateTableSystemSetCtrl(lv_obj_t *pParent, lv_group_t *pGroup)
 {
+	CreateMIDIChannelCtrl(pParent, pGroup, 20, 130, &s_stMIDIChannelCtrl);
 	CreateScreenProtectCtrl(pParent, pGroup, 20, 20, &s_stScreenProtectCtrl);
 	return 0;
 }
@@ -2546,6 +2686,7 @@ int32_t CreateTableSystemSetCtrl(lv_obj_t *pParent, lv_group_t *pGroup)
 int32_t RebulidTableSystemSetVaule(void)
 {
 	RebuildScreenProtectCtrlValue(&s_stScreenProtectCtrl);
+	RebuildMIDIChannelCtrlValue(&s_stMIDIChannelCtrl);
 	return 0;
 }
 
