@@ -188,12 +188,9 @@ void GT9147_EXIT_IRQHandler(void)
 	}
 } 
 
-__weak void SrceenProtectReset(void)
-{
-}
-
 bool GT9147GetPoint(uint8_t u8Mode)
 {
+	void SrceenProtectReset(void);
 	u8 u8Tmp = 0;
 	if (!s_boNeedGetPoint)
 	{

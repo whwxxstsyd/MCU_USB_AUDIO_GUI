@@ -18,7 +18,7 @@
 
 #include "lvgl/lvgl.h"
 
-#define USE_LVGL	1
+#define USE_LVGL	0
 
 #ifdef _WIN32
 #define __weak

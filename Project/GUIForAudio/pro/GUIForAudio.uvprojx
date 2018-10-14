@@ -137,7 +137,7 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -553,6 +553,21 @@
               <FileName>message_usb.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\message_usb.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\spi_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash_bmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\flash_bmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>test.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\test.c</FilePath>
             </File>
           </Files>
         </Group>

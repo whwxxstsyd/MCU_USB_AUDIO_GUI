@@ -38,7 +38,9 @@
 
 #include "extern_peripheral.h"
 
+#include "spi_flash.h"
 
+#include "flash_bmp.h"
 
 void EnableWatchDog(void)
 {
@@ -66,6 +68,8 @@ void EnableWatchDog(void)
 	IWDG_Enable();	
 }
 
+
+
 int main (void)
 {
 	u32 u32Time = 0;
@@ -82,6 +86,8 @@ int main (void)
 	ReadSaveData();
 	KeyLedInit();
 	CodeSwitchInit();
+	
+	SPIFlashInit();
 	
 	MessageUartInit();
 	MessageUart2Init();
@@ -101,6 +107,12 @@ int main (void)
 	GT9147Init();
 	
 	ChangeLedBlinkState(0, 0, true);
+#if 1
+	{
+		void Test(void);
+		Test();
+	}
+#endif
 	
 #if USE_LVGL
 	LvglInit();

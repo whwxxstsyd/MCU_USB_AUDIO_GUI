@@ -220,21 +220,32 @@ const uint8_t Joystick_ConfigDescriptor[JOYSTICK_SIZ_CONFIG_DESC] =
     /******************** Descriptor of Joystick endpoint ********************/
     0x07,          /*bLength: Endpoint Descriptor size*/
     ENDPOINT_DESCRIPTOR, /*bDescriptorType:*/
-
     0x82,          /*bEndpointAddress: Endpoint Address (IN)*/
     0x03,          /*bmAttributes: Interrupt endpoint*/
-    0x03,          /*wMaxPacketSize: 3 Byte max */
+    0x40,          /*wMaxPacketSize: 64 Byte max */
     0x00,
-    0x20,          /*bInterval: Polling Interval (32 ms)*/
+    0x0A,          /*bInterval: Polling Interval (10 ms)*/
     /* total 126 bytes above */
+	
+	/******************** Descriptor of Joystick KeyBoard endpoint ********************/
+    0x07,          /*bLength: Endpoint Descriptor size*/
+    ENDPOINT_DESCRIPTOR, /*bDescriptorType:*/
+    0x02,          /*bEndpointAddress: Endpoint Address (OUT)*/
+    0x03,          /*bmAttributes: Interrupt endpoint*/
+    0x40,          /*wMaxPacketSize: 64 Byte max */
+    0x00,
+    0x0A,          /*bInterval: Polling Interval (10 ms)*/
+    /* total 133 bytes above */
+
 };
 
 const uint8_t Joystick_ReportDescriptor[JOYSTICK_REPORT_DESC_SIZE] =
 {
-	/**for joystick 30*	*/
+	/**for joystick 32*	*/
     0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
     0x09, 0x04,                    // USAGE (Joystick)
     0xa1, 0x01,                    // COLLECTION (Application)
+	0x85, JOYSTICK_REPORT_ID,      //   REPORT_ID (2)
     0x05, 0x01,                    //   USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                    //   USAGE (Pointer)
     0xa1, 0x00,                    //   COLLECTION (Physical)
@@ -247,7 +258,26 @@ const uint8_t Joystick_ReportDescriptor[JOYSTICK_REPORT_DESC_SIZE] =
     0x95, 0x03,                    //     REPORT_COUNT (3)		 
     0x81, 0x02,                    //     INPUT (Data,Var,Abs)
     0xc0,						   //   END_COLLECTION
-    0xc0                          // END_COLLECTION
+    0xc0,                          // END_COLLECTION
+
+	/**35**/
+	0x06, 0xFF, 0x00,     		   /* USAGE_PAGE (Vendor Page: 0xFF00) */
+	0x09, 0x01,                    // USAGE (Consumer Control)
+	0xa1, 0x01,                    // COLLECTION (Application)
+	0x85, REPORT_ID,               //   REPORT_ID (1)
+	0x19, 0x01,                    //   USAGE_MINIMUM (1)
+	0x29, 0x08,    		           //   USAGE_MAXIMUM (8)
+	0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+	0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+	0x95, REPORT_IN_SIZE,          //   REPORT_COUNT (19)
+	0x75, 0x08,                    //   REPORT_SIZE (1 Byte)
+	0x81, 0x02,                    //   INPUT (Data,Ary,Abs)
+	0x19, 0x01,                    //   USAGE_MINIMUM (1)
+	0x29, 0x08,    		           //   USAGE_MAXIMUM (8)
+	0x95, REPORT_OUT_SIZE,         //   REPORT_COUNT (9)
+	0x75, 0x08,                    //   REPORT_SIZE (1 Byte)
+	0x91, 0x02,                    //   OUTPUT (Data,Ary,Abs)
+	0xc0,                          // END_COLLECTION 
 
 };
 

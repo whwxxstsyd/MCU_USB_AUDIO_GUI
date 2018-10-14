@@ -41,12 +41,12 @@
 //#define USB_INTERFACE_DESCRIPTOR_TYPE           0x04
 //#define USB_ENDPOINT_DESCRIPTOR_TYPE            0x05
 #define MIDI_SIZ_CONFIG_DESC_INNER				101
-#define JOYSTICK_SIZ_CONFIG_DESC_INNER			25
+#define JOYSTICK_SIZ_CONFIG_DESC_INNER			32
 #define JOYSTICK_CONFIG_DESC_OFFSET				MIDI_SIZ_CONFIG_DESC_INNER
 
 
 #define JOYSTICK_SIZ_DEVICE_DESC                18
-#define JOYSTICK_SIZ_CONFIG_DESC                126
+#define JOYSTICK_SIZ_CONFIG_DESC                133
 #define JOYSTICK_SIZ_STRING_LANGID              4
 #define JOYSTICK_SIZ_STRING_VENDOR              26
 #define JOYSTICK_SIZ_STRING_PRODUCT             40
@@ -63,6 +63,14 @@
 
 #define STANDARD_ENDPOINT_DESC_SIZE             0x09
 
+
+#define JOYSTICK_REPORT_ID						2
+
+#define REPORT_ID								1
+#define REPORT_IN_SIZE							8					/* for PC */
+#define REPORT_OUT_SIZE							8					/* for PC */
+#define REPORT_IN_SIZE_WITH_ID					REPORT_IN_SIZE + 1 	/* for PC */
+#define REPORT_OUT_SIZE_WITH_ID					REPORT_OUT_SIZE + 1 /* for PC */
 
 
 //定义的端点类型
@@ -124,7 +132,7 @@
 #define HID_DESCRIPTOR_TYPE			0x21
 #define REPORT_DESCRIPTOR_TYPE		0x22
 
-#define JOYSTICK_REPORT_DESC_SIZE	30
+#define JOYSTICK_REPORT_DESC_SIZE	67
 
 /* Exported functions ------------------------------------------------------- */
 extern const uint8_t Joystick_DeviceDescriptor[JOYSTICK_SIZ_DEVICE_DESC];
