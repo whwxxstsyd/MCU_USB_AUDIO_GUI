@@ -888,10 +888,24 @@ void LCDDMAWriteSameValue(u16 u16Value, u32 u32Len)
 	}
 }
 
+
+void LCDFill(int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint16_t u16Color)
+{
+	int32_t s32Length = (x2 - x1 + 1) * (y2 - y1 + 1);
+
+	LCDSetCursor(x1, y1);	//设置光标位置 
+	LCDSetXEnd(x2);
+	LCDWriteRAMPrepare();     //开始写入GRAM	 	  
+	LCDDMAWriteSameValue(u16Color, s32Length);	
+
+}
+
+
 //清屏函数
 //color:要清屏的填充色
 void LCDClear(u16 u16Color)
 {
+	LCDFill(0, 0, LCD_WIDTH, LCD_HEIGHT, u16Color);
 #if 0
 	u32 i=0;      
 
@@ -901,7 +915,8 @@ void LCDClear(u16 u16Color)
 	{
 		LCD->LCDRam = u16Color;	   
 	}
-#else
+#endif
+#if 0
 	LCDSetCursor(0,0);	//设置光标位置 
 	LCDSetXEnd(LCD_WIDTH - 1);
 	LCDWriteRAMPrepare();     //开始写入GRAM	 	  

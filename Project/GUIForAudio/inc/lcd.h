@@ -131,8 +131,8 @@ void LCDDMAWrite(const u16 *pBuf, u32 u32Len);
 void LCDDMAWriteSameValue(u16 u16Value, u32 u32Len);
 
 void LCDClear(u16 u16Color);
+void LCDFill(int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint16_t u16Color);
 #if 0
-void LCDFill(u16 u16MinX, u16 u16MinY, u16 u16MaxX, u16 u16MaxY, u16 u16Color);
 void LCDFillWithRam(u16 u16MinX, u16 u16MinY, u16 u16MaxX, u16 u16MaxY,  u16 *pRam); 
 void LCDDrawLine(u16 x1, u16 y1, u16 x2, u16 y2, u16 u16Color);
 void LCDDrawRectangle(u16 u16MinX, u16 u16MinY, u16 u16MaxX, u16 u16MaxY, u16 u16Color);

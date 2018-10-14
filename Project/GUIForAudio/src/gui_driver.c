@@ -14,7 +14,7 @@
 #include "gui.h"
 #include "screen_protect.h"
 
-#if USE_LVGL
+#if USE_LVGL || 0
 
 #if 1
 /* Flush the content of the internal buffer the specific area on the display

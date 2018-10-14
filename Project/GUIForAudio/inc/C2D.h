@@ -123,6 +123,7 @@ void LCD_HL_FillRect(int x0, int y0, int x1, int y1);
 
 void LCD_DrawVLine(int x, int y0, int y1);
 void LCD_DrawHLine(int x, int y0, int y1);
+void LCD_FillRect(int x0, int y0, int x1, int y1);
 
 
 extern struct GUI_CONTEXT GUI_Context;

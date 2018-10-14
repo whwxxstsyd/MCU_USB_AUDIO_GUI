@@ -117,12 +117,12 @@ int main (void)
 #if USE_LVGL
 	LvglInit();
 	GUI_Init();
+#endif	
 
 	LOGOCoordsInit();
 	LOGODraw();
 	Delay(3 * 1000);
 
-#endif	
 
 	LoadPowerOffMemoryToDevice();
 	

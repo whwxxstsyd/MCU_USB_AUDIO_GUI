@@ -7,7 +7,7 @@
 #include "logo.h"
 
 
-#if USE_LVGL
+#if USE_LVGL || 1
 
 typedef struct _tagStPentagon
 {
