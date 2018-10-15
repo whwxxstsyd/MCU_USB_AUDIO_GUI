@@ -45,11 +45,11 @@ typedef struct _tagStBMPLineInfo
 
 enum
 {
-	_BMP_Load_Invalid = -1,
 	_BMP_Load_FileHeader = 0,	/* BITMAPFILEHEADER */
 	_BMP_Load_InfoHeader,		/* BITMAPINFOHEADER */
 	_BMP_Load_Line,				/* StBMPLineInfo */
 	_BMP_Load_End,				/* StBMPLineInfo */
+	_BMP_Load_Invalid,
 };
 
 
@@ -82,5 +82,6 @@ typedef struct _tagStSPIFlashBMPLoadCtrl
 int32_t SPIFlashBMPLoadStart(StSPIFlashBMPLoadCtrl *pCtrl, 
 	uint32_t u32Addr, PFUN_BMPLoadCallback pFCB, void *pContext);
 int32_t SPIFlashBMPLoadFlush(StSPIFlashBMPLoadCtrl *pCtrl);
+int32_t SPIFlashBMPLoadEnd(StSPIFlashBMPLoadCtrl *pCtrl);
 
 #endif

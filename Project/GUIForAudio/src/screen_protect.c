@@ -95,6 +95,8 @@ static void SrceenProtectStop(void)
 	
 	LCDSetBackLight(1);
 
+	LOGODrawStop();
+
 	SrceenProtectReset();
 	s_stScreenProtect.boCurState = false;
 	lv_obj_invalidate(lv_scr_act());
@@ -139,6 +141,9 @@ void SrceenProtectFlush(void)
 		SrceenProtectStop();
 		s_stScreenProtect.u8ForceProtect = 0;
 	}
+	
+	LOGODrawFlush();
+
 }
 
 

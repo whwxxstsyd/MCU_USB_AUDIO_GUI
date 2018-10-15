@@ -35,7 +35,7 @@
 #include "flash_bmp.h"
 
 
-int32_t BMPLoadCallback(int32_t s32Type, void *pData, uint32_t u32Len, void *pContext)
+static int32_t BMPLoadCallback(int32_t s32Type, void *pData, uint32_t u32Len, void *pContext)
 {
 	if (s32Type == _BMP_Load_Line)
 	{
@@ -55,7 +55,7 @@ int32_t BMPLoadCallback(int32_t s32Type, void *pData, uint32_t u32Len, void *pCo
 
 void Test(void)
 {
-#if 1
+#if 0
 	{
 		StSPIFlashBMPLoadCtrl stCtrl;
 		int32_t s32FlushCnt = 0;
@@ -87,7 +87,7 @@ void Test(void)
 	}
 #endif
 	
-#if 0
+#if 1
 	{
 		BITMAPFILEHEADER stBmpHeader = { 0 };
 		BITMAPINFOHEADER stInfoHeader = { 0 };
@@ -280,8 +280,8 @@ void Test(void)
 				u8Data[i] = i;
 			}
 		}
-		SPIFlashEraseSector(4096);
-		while (SPIFlashWriteNoCheck(u8Data, 4096, 64) != 0)
+		SPIFlashEraseSector(0);
+		while (SPIFlashWriteNoCheck(u8Data, 0, 64) != 0)
 		{
 		
 		}
@@ -293,7 +293,7 @@ void Test(void)
 				u8Data[i] = 63 - i;
 			}
 		}
-		while (SPIFlashRead(u8Data, 4096, 64) != 0)
+		while (SPIFlashRead(u8Data, 0, 64) != 0)
 		{
 		
 		}

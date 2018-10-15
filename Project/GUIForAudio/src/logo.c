@@ -2,9 +2,11 @@
 #include <string.h>
 #include <stdint.h>
 #include "C2D.h"
+#include "lcd.h"
 #include "lvgl/lvgl.h"
 #include "gui.h"
 #include "logo.h"
+#include "flash_bmp.h"
 
 
 #if USE_LVGL || 1
@@ -120,7 +122,7 @@ void LOGOCoordsInit(void)
 }
 
 
-void LOGODraw(void)
+void DefaultLOGODraw(void)
 {
 
 	uint32_t i;
@@ -147,5 +149,97 @@ void LOGODraw(void)
 	}
 
 }
+
+
+static StSPIFlashBMPLoadCtrl s_stBmpLogoCtrl = {0};
+
+static int32_t BMPLoadCallback(int32_t s32Type, void *pData, uint32_t u32Len, void *pContext)
+{
+	if (s32Type == _BMP_Load_InfoHeader)
+	{
+		BITMAPINFOHEADER *pInfo = (BITMAPINFOHEADER *)pData;
+		if (pInfo->biWidth != LCD_WIDTH)
+		{
+			return -1;
+		}
+		
+		{
+			int32_t s32Height = pInfo->biHeight;
+			if (s32Height < 0)
+			{
+				s32Height = 0 - s32Height;
+			}
+			
+			if (s32Height != LCD_HEIGHT)
+			{
+				return -1;
+			}
+		}
+	}
+	else if (s32Type == _BMP_Load_Line)
+	{
+		StBMPLineInfo *pInfo = (StBMPLineInfo *)pData;
+		
+		int32_t s32Length = pInfo->u16LineEnd - pInfo->u16LineBegin;
+
+		LCDSetCursor(pInfo->u16LineBegin, pInfo->u16LineIndex);	//设置光标位置 
+		LCDSetXEnd(pInfo->u16LineEnd);
+		LCDWriteRAMPrepare();     //开始写入GRAM	 	  
+		LCDDMAWrite((const uint16_t *)pInfo->pLine, s32Length);	
+		
+	}
+	
+	return 0;
+}
+
+int32_t LOGODraw(void)
+{
+	
+	int32_t ret = SPIFlashBMPLoadStart(&s_stBmpLogoCtrl, 0, BMPLoadCallback, NULL);
+	if (ret != 0)
+	{
+		SPIFlashBMPLoadEnd(&s_stBmpLogoCtrl);
+		DefaultLOGODraw();
+		return 1;
+	}
+	return 0;
+}
+
+int32_t LOGODrawFlush(void)
+{
+	int32_t ret = SPIFlashBMPLoadFlush(&s_stBmpLogoCtrl);
+	if (ret < 0) 
+	{
+		SPIFlashBMPLoadEnd(&s_stBmpLogoCtrl);
+		DefaultLOGODraw();	
+		return 1;
+	}
+	
+	return ret;
+}
+
+int32_t LOGODrawStop(void)
+{
+	SPIFlashBMPLoadEnd(&s_stBmpLogoCtrl);
+		
+	return 0;
+}
+
+
+int32_t LOGODrawNoFlush(void)
+{
+	int32_t ret = LOGODraw();
+	if (ret != 0)
+	{
+		return 0;
+	}
+	
+	while (LOGODrawFlush() == 0);
+	
+	return 0;
+}
+
+
+
 #endif
 

@@ -52,14 +52,14 @@ int32_t SPIFlashBMPLoadStart(StSPIFlashBMPLoadCtrl *pCtrl,
 int32_t SPIFlashBMPLoadFlush(StSPIFlashBMPLoadCtrl *pCtrl)
 {
 	if (pCtrl == NULL || 
-		(pCtrl->s32CtrlType <= _BMP_Load_Invalid))
+		(pCtrl->s32CtrlType < _BMP_Load_FileHeader))
 	{
 		return -1;
 	}
 	
 	if (pCtrl->s32CtrlType >= _BMP_Load_End)
 	{
-		return _BMP_Load_End;
+		return pCtrl->s32CtrlType;
 	}
 	
 	if (pCtrl->s32CtrlType == _BMP_Load_FileHeader)
@@ -215,6 +215,17 @@ int32_t SPIFlashBMPLoadFlush(StSPIFlashBMPLoadCtrl *pCtrl)
 end:
 	return pCtrl->ret;
 } 
+
+int32_t SPIFlashBMPLoadEnd(StSPIFlashBMPLoadCtrl *pCtrl)
+{
+	if (pCtrl != NULL)
+	{
+		pCtrl->s32CtrlType = _BMP_Load_Invalid;
+	}
+	
+	return 0;
+}
+
 
 
 int32_t SPIFlashBMPLoad(uint32_t u32Addr, PFUN_BMPLoadCallback pFCB, void *pContext)

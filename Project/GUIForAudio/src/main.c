@@ -107,7 +107,7 @@ int main (void)
 	GT9147Init();
 	
 	ChangeLedBlinkState(0, 0, true);
-#if 1
+#if 0
 	{
 		void Test(void);
 		Test();
@@ -120,7 +120,7 @@ int main (void)
 #endif	
 
 	LOGOCoordsInit();
-	LOGODraw();
+	LOGODrawNoFlush();
 	Delay(3 * 1000);
 
 
