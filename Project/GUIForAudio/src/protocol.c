@@ -43,7 +43,7 @@
 
 #include "protocol.h"
 #include "extern_peripheral.h"
-
+#include "spi_flash.h"
 
 //#include "I2C.h"
 //#include "wm8776.h"
@@ -693,8 +693,144 @@ void CopyToUartMessage(const StIOTCB *pIOTCB, void *pData, u32 u32Length)
 }
 
 
+
+typedef enum
+{
+	_UG_Invalide,
+	_UG_BeginUpgrade,
+	_UG_PrepareUpgrade,
+	_UG_GetBufferCapacity,
+	_UG_UpgradePosition,
+	_UG_FileInfo,
+	_UG_GetPacket,
+	_UG_GetFileComplete,
+	_UG_GetLIC,
+	_UG_NeedReset,
+	_UG_Complete,
+}EMUGStatus;
+
+typedef struct _tagStUGFileInfo
+{
+	uint32_t u32FileLength;
+	uint32_t u32CRC32;
+}StUGFileInfo;
+
+typedef struct _tagStUGPacketInfo
+{
+	uint32_t u32FileOffset;
+	uint32_t u32PacketLength;	/* must not bigger than 65535 */
+}StUGPacketInfo;
+
+
+typedef struct _tagStSPIFlashUpgrade
+{
+	EMUGStatus emStatus;
+	uint32_t u32CurGetOffset;
+	uint32_t u32OrgCmdTime;
+	const StIOTCB *pIOTCB;
+	StFlashBigDataCtrl stFlashCtrl;
+}StSPIFlashUpgrade;
+
+static StSPIFlashUpgrade s_stSPIFlashUpgrade;
+
+#define SPI_FLASH_GET_SIZE		256
+#define SPI_FLASH_UPGRADE_TIME	3000
+
+int32_t SPIFlashUpgradeSetPosition(StSPIFlashUpgrade *pCtrl, uint32_t u32Position)
+{
+	memset(pCtrl, 0, sizeof(StSPIFlashUpgrade));
+	return SPIFlashBigDataReadWriteBegin(&pCtrl->stFlashCtrl, u32Position, 1000);
+}
+
+int32_t SPIFlashUpgradeSetTotalSize(StSPIFlashUpgrade *pCtrl, uint32_t u32Size)
+{
+	SPIFlashBigDataSetTotalSize(&pCtrl->stFlashCtrl, u32Size);
+	pCtrl->emStatus = _UG_GetPacket;
+	return 0;
+}
+
+int32_t SPIFlashUpgradeSetIOCtrl(StSPIFlashUpgrade *pCtrl, const StIOTCB *pIOTCB)
+{
+	pCtrl->pIOTCB = pIOTCB;
+	return 0;
+}
+
+int32_t SPIFlashUpgradeSetOffset(StSPIFlashUpgrade *pCtrl, uint32_t u32Offset)
+{
+	pCtrl->u32CurGetOffset = u32Offset;
+	
+	return 0;
+}
+
+int32_t SPIFlashUpgradeSetState(StSPIFlashUpgrade *pCtrl, EMUGStatus emState)
+{
+	pCtrl->emStatus = emState;
+	
+	return 0;
+}
+int32_t SPIFlashUpgradeWrite(StSPIFlashUpgrade *pCtrl, void *pData, uint32_t u32Len)
+{
+	return SPIFlashBigDataWriteNoBreak(&pCtrl->stFlashCtrl, pData, u32Len);
+}
+
+
+int32_t SPIFlashUpgradeFlushBegin(StSPIFlashUpgrade *pCtrl)
+{
+	pCtrl->u32OrgCmdTime = g_u32SysTickCnt - 2 * SPI_FLASH_UPGRADE_TIME;
+	return 0;
+}
+
+
+
+int32_t SPIFlashUpgradeFlush(StSPIFlashUpgrade *pCtrl)
+{
+	if (pCtrl->emStatus == _UG_GetPacket)
+	{
+		if (SysTimeDiff(pCtrl->u32OrgCmdTime, g_u32SysTickCnt) >= SPI_FLASH_UPGRADE_TIME)
+		{
+			StUGPacketInfo stInfo;
+			void *pCmd = NULL;
+			uint32_t u32CmdLength = 0;
+			stInfo.u32FileOffset = pCtrl->u32CurGetOffset;
+			stInfo.u32PacketLength = SPI_FLASH_GET_SIZE;
+			if ((pCtrl->stFlashCtrl.u32TotalSize - stInfo.u32FileOffset) < SPI_FLASH_GET_SIZE)
+			{
+				stInfo.u32PacketLength = 
+					pCtrl->stFlashCtrl.u32TotalSize - stInfo.u32FileOffset;
+			}
+			
+			pCmd = YNAMakeASimpleVarialbleCmd(0x8007, 
+					&stInfo, sizeof(StUGPacketInfo), &u32CmdLength);
+					
+			if (pCmd != NULL)
+			{
+				if (pCtrl->pIOTCB != NULL)
+				{
+					if(pCtrl->pIOTCB->pFunMsgWrite(pCmd, true, _IO_Reserved, u32CmdLength) != 0)
+					{
+						free(pCmd);
+					}
+				}
+				else
+				{
+					free(pCmd);
+				}
+				pCtrl->u32OrgCmdTime = g_u32SysTickCnt;
+			}
+			
+		}
+	}
+	
+	return 0;
+}
+
+void UpgradeFlush(void)
+{
+	SPIFlashUpgradeFlush(&s_stSPIFlashUpgrade);
+}
+
+
 u8 u8YNABuf[PROTOCOL_YNA_ENCODE_LENGTH];
-u8 u8SBBuf[PROTOCOL_SB_LENGTH];
 
 int32_t BaseCmdProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 {
@@ -751,6 +887,18 @@ int32_t BaseCmdProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 					boNeedCopy = false;
 					pEcho = YNAMakeASimpleVarialbleCmd(0x8003, 
 							&stUID, sizeof(StUID), &u32EchoLength);
+					break;
+				}
+				case 0x04:	/* just echo the same command */
+				{
+					u8EchoBase[_YNA_Data3] = pMsg[_YNA_Data3];
+					pEcho = (uint8_t *)malloc(PROTOCOL_YNA_DECODE_LENGTH);
+					if (pEcho == NULL)
+					{
+						boHasEcho = false;
+						break;
+					}
+					u32EchoLength = PROTOCOL_YNA_DECODE_LENGTH;						
 					break;
 				}
 				case 0x05:	/* return the BufLength */
@@ -838,10 +986,14 @@ int32_t BaseCmdProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 		u32TotalLength -= 2; /* CRC16 */
 		while (u32ReadLength < u32TotalLength)
 		{
+			uint8_t u8EchoBase[PROTOCOL_YNA_DECODE_LENGTH] = {0};
 			uint8_t *pEcho = NULL;
 			uint32_t u32EchoLength = 0;
 			bool boHasEcho = true;
+			bool boNeedCopy = false;
+			
 			uint16_t u16Command = 0, u16Count = 0, u16Length = 0;
+			
 			LittleAndBigEndianTransfer((char *)(&u16Command),
 				(char *)pVariableCmd, 2);
 			LittleAndBigEndianTransfer((char *)(&u16Count),
@@ -849,8 +1001,60 @@ int32_t BaseCmdProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 			LittleAndBigEndianTransfer((char *)(&u16Length),
 				(char *)pVariableCmd + 4, 2);
 
+			u8EchoBase[_YNA_Sync] = 0xAA;
+			u8EchoBase[_YNA_Mix] = 0x0C;
+			u8EchoBase[_YNA_Cmd] = 0x80;
+			u8EchoBase[_YNA_Data1] = 0x01;
+
 			switch (u16Command)
 			{
+				case 0x8006:
+				{
+					StUGFileInfo stInfo;
+					memcpy(&stInfo, pVariableCmd + 6, sizeof(StUGFileInfo));
+
+					SPIFlashUpgradeSetTotalSize(&s_stSPIFlashUpgrade, stInfo.u32FileLength);
+					SPIFlashUpgradeSetIOCtrl(&s_stSPIFlashUpgrade, pIOTCB);
+					SPIFlashUpgradeSetState(&s_stSPIFlashUpgrade, _UG_GetPacket);
+					
+					u8EchoBase[_YNA_Data3] = 0x06;
+					boNeedCopy = true;
+					pEcho = (uint8_t *)malloc(PROTOCOL_YNA_DECODE_LENGTH);
+					break;
+				}
+				case 0x8007:
+				{
+					StUGPacketInfo stInfo;
+					void *pData = (pVariableCmd + 6 + sizeof(StUGPacketInfo));
+				
+					memcpy(&stInfo, pVariableCmd + 6, sizeof(StUGPacketInfo));
+
+					
+					if (stInfo.u32PacketLength > SPI_FLASH_GET_SIZE)
+					{
+						break;
+					}
+					/* <TODO> write flash */
+					SPIFlashUpgradeWrite(&s_stSPIFlashUpgrade, pData, stInfo.u32PacketLength);
+					
+					SPIFlashUpgradeSetOffset(&s_stSPIFlashUpgrade, stInfo.u32FileOffset
+						+ stInfo.u32PacketLength);
+					SPIFlashUpgradeFlushBegin(&s_stSPIFlashUpgrade);
+					
+					u8EchoBase[_YNA_Data3] = 0x07;
+					
+					if ((stInfo.u32FileOffset + stInfo.u32PacketLength) >=
+						s_stSPIFlashUpgrade.stFlashCtrl.u32TotalSize)
+					{
+						u8EchoBase[_YNA_Data3] = 0x08;
+						SPIFlashUpgradeSetState(&s_stSPIFlashUpgrade, _UG_Complete);				
+					}						
+
+					boNeedCopy = true;
+					pEcho = (uint8_t *)malloc(PROTOCOL_YNA_DECODE_LENGTH);
+					
+					break;
+				}
 				case 0x800A:
 				{
 					/* check the crc32 and UUID, and BTEA and check the number */
@@ -878,12 +1082,31 @@ int32_t BaseCmdProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 					boGetVaildBaseCmd = true;
 					break;
 				}
+				case 0x800D:
+				{
+					uint32_t *pData = (uint32_t *)(pVariableCmd + 6);
+
+					SPIFlashUpgradeSetPosition(&s_stSPIFlashUpgrade, *pData);
+					
+					u8EchoBase[_YNA_Data3] = 0x0D;
+					boNeedCopy = true;
+					pEcho = (uint8_t *)malloc(PROTOCOL_YNA_DECODE_LENGTH);
+					break;					
+				}
+
 				default:
 					break;
 			}
 			
 			if (boHasEcho && pEcho != NULL)
 			{
+				if (boNeedCopy)
+				{
+					YNAGetCheckSum(u8EchoBase);
+					memcpy(pEcho, u8EchoBase, PROTOCOL_YNA_DECODE_LENGTH);
+					u32EchoLength = PROTOCOL_YNA_DECODE_LENGTH;
+				}
+
 				if (pIOTCB == NULL)
 				{
 					free(pEcho);

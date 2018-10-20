@@ -438,6 +438,17 @@ int32_t SPIFlashBigDataReadWriteBegin(StFlashBigDataCtrl *pCtrl,
 	pCtrl->u32State = _Flash_BigData_Start;
 	return 0;
 }
+
+int32_t SPIFlashBigDataSetTotalSize(StFlashBigDataCtrl *pCtrl, uint32_t u32TotalSize)
+{
+	if (pCtrl == NULL)
+	{
+		return -1;
+	}
+	pCtrl->u32TotalSize = u32TotalSize;
+	return 0;
+}
+
 /* return real write count */
 int32_t SPIFlashBigDataWrite(StFlashBigDataCtrl *pCtrl, 
 	uint8_t *pData, int32_t s32Size)

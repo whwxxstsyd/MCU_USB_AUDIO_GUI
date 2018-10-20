@@ -45,6 +45,10 @@ typedef struct _tagStFlashBigDataCtrl
 
 int32_t SPIFlashBigDataReadWriteBegin(StFlashBigDataCtrl *pCtrl, 
 	uint32_t u32StartAddr, uint32_t u32TotalSize);
+	
+int32_t SPIFlashBigDataSetTotalSize(StFlashBigDataCtrl *pCtrl, 
+	uint32_t u32TotalSize);
+
 int32_t SPIFlashBigDataWrite(StFlashBigDataCtrl *pCtrl, 
 	uint8_t *pData, int32_t s32Size);
 int32_t SPIFlashBigDataRead(StFlashBigDataCtrl *pCtrl, 

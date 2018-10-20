@@ -251,7 +251,11 @@ int main (void)
 
 		}
 #endif	
-		PowerOffMemoryFlush();		
+		PowerOffMemoryFlush();	
+		{
+			void UpgradeFlush(void);
+			UpgradeFlush();
+		}		
     }
 }
 
