@@ -410,6 +410,9 @@ bool boIsFlashCanUse(void)
 }
 
 
+#define WR_TIMEOUT		2000
+
+
 int32_t SPIFlashBigDataReadWriteBegin(StFlashBigDataCtrl *pCtrl, 
 	uint32_t u32StartAddr, uint32_t u32TotalSize)
 {	
@@ -514,9 +517,11 @@ int32_t SPIFlashBigDataWriteNoBreak(StFlashBigDataCtrl *pCtrl,
 {
 	int32_t s32Count = 0;
 	uint8_t *u8Write = pData;
+	uint32_t u32BeginTime = g_u32SysTickCnt;
 	
 	
-	while(s32Count < s32Size)
+	while((s32Count < s32Size) && 
+		(SysTimeDiff(u32BeginTime, g_u32SysTickCnt) < WR_TIMEOUT))
 	{
 		int32_t ret = SPIFlashBigDataWrite(pCtrl, u8Write + s32Count,
 			s32Size - s32Count);
@@ -543,6 +548,7 @@ int32_t SPIFlashBigDataRead(StFlashBigDataCtrl *pCtrl,
 	uint8_t *pData, int32_t s32Size)
 {
 	int32_t ret = 0;
+	uint32_t u32BeginTime = g_u32SysTickCnt;
 	if (pCtrl == NULL || pData == NULL || s32Size <= 0)
 	{
 		return -1;
@@ -552,7 +558,7 @@ int32_t SPIFlashBigDataRead(StFlashBigDataCtrl *pCtrl,
 		return -1;
 	}
 
-	while (1)
+	while (SysTimeDiff(u32BeginTime, g_u32SysTickCnt) < WR_TIMEOUT)
 	{
 		ret = SPIFlashRead(pData, pCtrl->u32CurWRAddr, s32Size);
 		if (ret == 0)
@@ -562,7 +568,7 @@ int32_t SPIFlashBigDataRead(StFlashBigDataCtrl *pCtrl,
 			return s32Size;
 		}	
 	}
-	return ret;
+	return s32Size;
 
 }
 

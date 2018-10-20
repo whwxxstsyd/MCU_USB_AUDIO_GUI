@@ -768,6 +768,12 @@ int32_t SPIFlashUpgradeSetState(StSPIFlashUpgrade *pCtrl, EMUGStatus emState)
 	
 	return 0;
 }
+
+EMUGStatus SPIFlashUpgradeGetState(StSPIFlashUpgrade *pCtrl)
+{
+	return pCtrl->emStatus;
+}
+
 int32_t SPIFlashUpgradeWrite(StSPIFlashUpgrade *pCtrl, void *pData, uint32_t u32Len)
 {
 	return SPIFlashBigDataWriteNoBreak(&pCtrl->stFlashCtrl, pData, u32Len);
@@ -867,6 +873,21 @@ int32_t BaseCmdProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 				{
 					//SetOptionByte(OPTION_UPGRADE_DATA);
 					//boNeedReset = true;
+					
+					if (pMsg[_YNA_Data1] == 0x10)
+					{
+						SPIFlashUpgradeSetState(&s_stSPIFlashUpgrade, _UG_BeginUpgrade);
+					}
+					
+					u8EchoBase[_YNA_Data3] = pMsg[_YNA_Data3];
+					pEcho = (uint8_t *)malloc(PROTOCOL_YNA_DECODE_LENGTH);
+					if (pEcho == NULL)
+					{
+						boHasEcho = false;
+						break;
+					}
+					u32EchoLength = PROTOCOL_YNA_DECODE_LENGTH;						
+					break;
 				}
 				case 0x02:	/* just echo the same command */
 				{
@@ -1026,6 +1047,11 @@ int32_t BaseCmdProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 				{
 					StUGPacketInfo stInfo;
 					void *pData = (pVariableCmd + 6 + sizeof(StUGPacketInfo));
+					
+					if (SPIFlashUpgradeGetState(&s_stSPIFlashUpgrade) != _UG_GetPacket)
+					{
+						break;
+					}
 				
 					memcpy(&stInfo, pVariableCmd + 6, sizeof(StUGPacketInfo));
 
@@ -1047,7 +1073,7 @@ int32_t BaseCmdProcess(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 						s_stSPIFlashUpgrade.stFlashCtrl.u32TotalSize)
 					{
 						u8EchoBase[_YNA_Data3] = 0x08;
-						SPIFlashUpgradeSetState(&s_stSPIFlashUpgrade, _UG_Complete);				
+						SPIFlashUpgradeSetState(&s_stSPIFlashUpgrade, _UG_Invalide);				
 					}						
 
 					boNeedCopy = true;
