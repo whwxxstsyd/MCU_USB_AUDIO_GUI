@@ -158,32 +158,41 @@ static int32_t BMPLoadCallback(int32_t s32Type, void *pData, uint32_t u32Len, vo
 	if (s32Type == _BMP_Load_InfoHeader)
 	{
 		BITMAPINFOHEADER *pInfo = (BITMAPINFOHEADER *)pData;
-		if (pInfo->biWidth != LCD_WIDTH)
+		int32_t s32Height = pInfo->biHeight;
+		int32_t s32Width = pInfo->biWidth;
+		if (s32Width > LCD_WIDTH)
+		{
+			return -1;
+		}
+		if (s32Height < 0)
+		{
+			s32Height = 0 - s32Height;
+		}
+		
+		if (s32Height > LCD_HEIGHT)
 		{
 			return -1;
 		}
 		
+		if (s32Width < LCD_WIDTH || s32Height < LCD_HEIGHT)
 		{
-			int32_t s32Height = pInfo->biHeight;
-			if (s32Height < 0)
-			{
-				s32Height = 0 - s32Height;
-			}
-			
-			if (s32Height != LCD_HEIGHT)
-			{
-				return -1;
-			}
+			LCDClear(0);
 		}
+		
 	}
 	else if (s32Type == _BMP_Load_Line)
 	{
-		StBMPLineInfo *pInfo = (StBMPLineInfo *)pData;
+		StSPIFlashBMPLoadCtrl *pCtrl = (StSPIFlashBMPLoadCtrl *)pContext;
 		
+		StBMPLineInfo *pInfo = (StBMPLineInfo *)pData;
+		int32_t s32XOffset = ((LCD_WIDTH - pCtrl->s32Width) / 2);
+		int32_t s32YOffset = ((LCD_HEIGHT - pCtrl->s32Height) / 2);
 		int32_t s32Length = pInfo->u16LineEnd - pInfo->u16LineBegin;
 
-		LCDSetCursor(pInfo->u16LineBegin, pInfo->u16LineIndex);	//设置光标位置 
-		LCDSetXEnd(pInfo->u16LineEnd);
+		LCDSetCursor(pInfo->u16LineBegin + s32XOffset, 
+				pInfo->u16LineIndex + s32YOffset);	//设置光标位置 
+				
+		LCDSetXEnd(pInfo->u16LineEnd + s32XOffset);
 		LCDWriteRAMPrepare();     //开始写入GRAM	 	  
 		LCDDMAWrite((const uint16_t *)pInfo->pLine, s32Length);	
 		
@@ -195,7 +204,7 @@ static int32_t BMPLoadCallback(int32_t s32Type, void *pData, uint32_t u32Len, vo
 int32_t LOGODraw(void)
 {
 	
-	int32_t ret = SPIFlashBMPLoadStart(&s_stBmpLogoCtrl, 0, BMPLoadCallback, NULL);
+	int32_t ret = SPIFlashBMPLoadStart(&s_stBmpLogoCtrl, 0, BMPLoadCallback, &s_stBmpLogoCtrl);
 	if (ret != 0)
 	{
 		SPIFlashBMPLoadEnd(&s_stBmpLogoCtrl);
