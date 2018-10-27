@@ -19,6 +19,9 @@ void LPDTest(void);
 void KeyboardPowerInit(void);
 void KeyboardPowerEnable(bool boIsEnable);
 
+void PCKeyboardPowerInit(void);
+void PCKeyboardPowerEnable(bool boIsEnable);
+
 void KeyboardConnectInit(void);
 void KeyboardConnectSetMode(uint8_t u8Mode);
 void ExternPeripheralInit(void);

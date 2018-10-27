@@ -117,6 +117,13 @@ enum
 #endif
 
 
+typedef struct _tagStVolumeCtrlEnable
+{
+	uint8_t boIsVolumeCtrlDisable : 1;
+	uint8_t boIsCtrlModeDisable : 1;
+	uint8_t boIsUniformVoumeDisable : 1;
+}StVolumeCtrlEnable;
+
 typedef struct _tagStVolumeCtrlGroup
 {
 	lv_obj_t *pLeftVolume;
@@ -136,7 +143,7 @@ typedef struct _tagStVolumeCtrlGroup
 
 	const char *pTitle;
 
-	bool boIsFixUniformVoume;
+	StVolumeCtrlEnable stEnableState;
 
 }StVolumeCtrlGroup;
 
@@ -230,6 +237,8 @@ enum
 	_Logo_Color_Red,
 	_Logo_Color_Green,
 	_Logo_Color_Blue,
+	_Logo_Color_Viola,
+	_Logo_Color_Jacinth,
 	_Logo_Color_White,
 	_Logo_Color_Reserved,
 	//_Logo_Color_Black,
@@ -264,6 +273,13 @@ typedef struct _tagStKeyboardCtrl
 	uint8_t u8CurConnect;
 }StKeyboardCtrl;
 
+typedef struct _tagStPCKeyboardCtrl
+{
+	lv_obj_t *pPowerCtrl;
+
+	bool boIsPowerOn;
+}StPCKeyboardCtrl;
+
 typedef struct _tagStScreenProtectCtrl
 {
 	lv_obj_t *pTimeCtrl;
@@ -281,6 +297,7 @@ typedef struct _tagStMIDIChannelCtrl
 }StMIDIChannelCtrl;
 
 int32_t CreateTableView(void);
+int32_t ReflushCurrentActiveTable(uint16_t u16ActiveTableIndex);
 int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel);
 void SetKeySpeek(uint16_t u16Speed);
 void SetKeyValue(uint32_t u32Key, bool boIsPress);
@@ -309,6 +326,11 @@ int32_t SendPhantomPowerStateCmd(uint16_t u16Channel, bool boIsEnable);
 void GetAllPhantomPowerState(bool boState[PHANTOM_POWER_CTRL]);
 void SetAllPhantomPowerState(bool boState[PHANTOM_POWER_CTRL]);
 
+int32_t SetVolumeCtrlState(uint16_t u16Channel, StVolumeCtrlEnable *pState);
+int32_t GetVolumeCtrlState(uint16_t u16Channel, StVolumeCtrlEnable *pState);
+
+int32_t SetAllVolumeUniformState(uint16_t u16Status);
+int32_t GetAllVolumeUniformState(uint16_t *pStatus);
 
 uint8_t GetInputEnableState(void);
 int32_t SetInputEnableState(uint8_t u8Index, uint8_t u8NewState);

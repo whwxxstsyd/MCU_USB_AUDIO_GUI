@@ -142,14 +142,31 @@ void KeyboardPowerInit(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Speed =   GPIO_Speed_50MHz;
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-	GPIO_Init(GPIOE, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+	GPIO_Init(GPIOG, &GPIO_InitStructure);
 	
 }
 
 void KeyboardPowerEnable(bool boIsEnable)
 {
-	GPIO_WriteBit(GPIOE, GPIO_Pin_2, boIsEnable ? Bit_RESET : Bit_SET);	
+	GPIO_WriteBit(GPIOG, GPIO_Pin_8, boIsEnable ? Bit_SET : Bit_RESET);	
+}
+
+void PCKeyboardPowerInit(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed =   GPIO_Speed_50MHz;
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+	
+}
+
+void PCKeyboardPowerEnable(bool boIsEnable)
+{
+	GPIO_WriteBit(GPIOE, GPIO_Pin_2, boIsEnable ? Bit_SET : Bit_RESET);	
 }
 
 void KeyboardConnectInit(void)
@@ -176,6 +193,9 @@ void ExternPeripheralInit(void)
 	
 	KeyboardPowerInit();
 	KeyboardPowerEnable(true);
+	
+	PCKeyboardPowerInit();
+	PCKeyboardPowerEnable(true);
 	
 	KeyboardConnectInit();
 	KeyboardConnectSetMode(0);

@@ -1580,6 +1580,56 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 #endif				
 				break;
 			}
+			case 0xC1:
+			{
+				switch (pMsg[_YNA_Data1])
+				{
+					case 0x00:
+					{
+						uint16_t u16Status = 0;
+						u16Status = pMsg[_YNA_Data2];
+						u16Status <<= 8;
+						u16Status |= pMsg[_YNA_Data3];
+												
+						SetAllVolumeUniformState(u16Status);					
+						ReflushCurrentActiveTable(~0);
+
+						boHasEcho = false;
+						boNeedCopy = false;
+						
+						break;
+					}
+					case 0x01:
+					{
+						uint16_t u16Status = 0;
+												
+						GetAllVolumeUniformState(&u16Status);					
+						u8EchoBase[_YNA_Cmd] = 0xC1;
+						u8EchoBase[_YNA_Data1] = 0x00;
+						u8EchoBase[_YNA_Data2] = u16Status >> 8;
+						u8EchoBase[_YNA_Data3] = u16Status;
+
+						break;
+					}
+					case (0x10 + _Channel_AIN_Mux):
+					{
+						StVolumeCtrlEnable stEnable;
+						memcpy(&stEnable, pMsg + _YNA_Data3, sizeof(StVolumeCtrlEnable));
+						
+						SetVolumeCtrlState(_Channel_AIN_Mux, &stEnable);
+						ReflushCurrentActiveTable(~0);
+
+						boHasEcho = false;
+						boNeedCopy = false;
+						break;
+					}
+					default:
+						boHasEcho = false;
+						boNeedCopy = false;
+						break;
+				}
+				break;
+			}
 			default:
 				boHasEcho = false;
 				boNeedCopy = false;
@@ -2317,6 +2367,28 @@ int32_t SendAudioCtrlModeCmd(uint16_t u16Channel, EmAudioCtrlMode emMode)
 #endif	
 }
 
+int32_t SendUniformCheckState(uint16_t u16Channel, uint16_t u16State)
+{
+	uint8_t u8Cmd[PROTOCOL_YNA_DECODE_LENGTH];
+	
+	uint16_t u16Status = 0;
+							
+	GetAllVolumeUniformState(&u16Status);
+	
+	u8Cmd[_YNA_Sync] = 0xAA;
+	u8Cmd[_YNA_Mix] = 0x06;
+	
+	u8Cmd[_YNA_Cmd] = 0xC1;
+	u8Cmd[_YNA_Data1] = 0x00;
+	u8Cmd[_YNA_Data2] = u16Status >> 8;
+	u8Cmd[_YNA_Data3] = u16Status;
+
+	YNAGetCheckSum(u8Cmd);
+	CopyToUart1Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+
+	return 0;
+}
+
 int32_t SendAudioVolumeCmd(uint16_t u16Channel, StVolume stVolume)
 {
 #if 1
@@ -2460,6 +2532,12 @@ int32_t SendKeyboardPowerCmd(bool boIsPowerOn)
 int32_t SendKeyboardConnectCmd(uint8_t u8CurConnect)
 {
 	KeyboardConnectSetMode(u8CurConnect);
+	return 0;
+}
+
+int32_t SendPCKeyboardPowerCmd(uint8_t u8CurConnect)
+{
+	PCKeyboardPowerEnable(u8CurConnect);
 	return 0;
 }
 
