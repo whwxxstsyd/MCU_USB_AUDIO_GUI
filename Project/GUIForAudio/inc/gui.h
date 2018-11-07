@@ -154,6 +154,21 @@ typedef struct _tagStVolume
 	uint8_t u8Channel2;
 }StVolume;
 
+typedef struct _tagStPCAudioDeviceSelectCtrlGroup
+{
+	lv_obj_t *pCtrl;
+	lv_obj_t *pLabel;
+	uint8_t u8Select;
+
+	uint8_t u8Index;
+	char *pStr;
+}StPCAudioDeviceSelectCtrlGroup;
+
+typedef struct _tagStPCAudioDeviceSelectCtrlState
+{
+	uint8_t u8Select[TOTAL_PC_CTRL_VOLUME_CHANNEL];
+}StPCAudioDeviceSelectCtrlState;
+
 typedef struct _tagStMemory
 {
 	StVolume stVolume[TOTAL_CHANNEL];
@@ -167,7 +182,6 @@ typedef struct _tagStUniformCheckState
 {
 	bool boUniformCheckState[TOTAL_CHANNEL];
 }StUniformCheckState;
-
 
 
 typedef struct _tagStMemoryCtrlGroup
@@ -338,6 +352,12 @@ int32_t SendInputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState);
 uint8_t GetOutputEnableState(void);
 int32_t SetOutputEnableState(uint8_t u8Index, uint8_t u8NewState);
 int32_t SendOutputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState);
+
+
+int32_t SetAudioDeviceList(uint8_t u8Channel, const char *pAudioDeviceList, int32_t s32Length);
+int32_t SetAudioDeviceListIndex(uint8_t u8Channel, uint8_t u8Index);
+int32_t GetAudioDeviceListIndex(uint8_t u8Channel, uint8_t *pIndex);
+int32_t SendPCAudioDeviceSelectCmd(uint16_t u16Channel, uint8_t u8Select);
 
 
 int32_t SendMemeoryCtrlCmd(uint16_t u16Channel, bool boIsSave);

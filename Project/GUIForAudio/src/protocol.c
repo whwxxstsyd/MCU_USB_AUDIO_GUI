@@ -1623,6 +1623,16 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 						boNeedCopy = false;
 						break;
 					}
+					case 0x20:
+					{
+						SetAudioDeviceListIndex(_Channel_PC_Ctrl_Play, pMsg[_YNA_Data2]);
+						SetAudioDeviceListIndex(_Channel_PC_Ctrl_Record, pMsg[_YNA_Data3]);
+						ReflushActiveTable(_Fun_AudioVolume, _Channel_PC_Ctrl_Record);
+						
+						boHasEcho = false;
+						boNeedCopy = false;
+						break;
+					}
 					default:
 						boHasEcho = false;
 						boNeedCopy = false;
@@ -1730,6 +1740,27 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 						
 						SendAudioVolumeCmdEx(pVolume[i].u8Index, stVolume,
 							FLAG_IO_USB_MIDI);
+					}
+					break;
+				}
+				case 0x06C1:
+				{
+					uint8_t *pCmd = pVariableCmd + 6;
+					uint16_t u16Offset = 0;
+					while (u16Offset < u16Length)
+					{
+						uint8_t u8Len = pCmd[1];
+						if (pCmd[0] == 0x25)
+						{
+							SetAudioDeviceList(_Channel_PC_Ctrl_Play, (const char *)pCmd + 2, u8Len);
+						}
+						else if (pCmd[0] == 0x26)
+						{
+							SetAudioDeviceList(_Channel_PC_Ctrl_Record, (const char *)pCmd + 2, u8Len);
+							
+						}
+						u16Offset += (u8Len + 2);
+						pCmd += (u8Len + 2);
 					}
 					break;
 				}
@@ -2204,6 +2235,7 @@ int32_t SendInputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t 
 	return 0;
 }
 
+
 int32_t SendOutputEnableStateCmdEx(uint8_t u8Index, uint8_t u8NewState, uint32_t u32Flag)
 {
 
@@ -2481,6 +2513,24 @@ int32_t SendOutputEnableStateCmd(uint8_t u8Index, uint8_t u8NewState)
 #endif
 }
 
+int32_t SendPCAudioDeviceSelectCmd(uint16_t u16Channel, uint8_t u8Select)
+{
+	uint8_t u8Cmd[PROTOCOL_YNA_DECODE_LENGTH];
+	
+	u8Cmd[_YNA_Sync] = 0xAA;
+	u8Cmd[_YNA_Mix] = 0x06;
+	
+	u8Cmd[_YNA_Cmd] = 0xC1;
+	u8Cmd[_YNA_Data1] = 0x20;
+	
+	GetAudioDeviceListIndex(_Channel_PC_Ctrl_Play, u8Cmd + _YNA_Data2);
+	GetAudioDeviceListIndex(_Channel_PC_Ctrl_Record, u8Cmd + _YNA_Data3);
+	
+	YNAGetCheckSum(u8Cmd);
+	CopyToUart1Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
+	return 0;
+}
+
 int32_t SendMemeoryCtrlCmd(uint16_t u16Channel, bool boIsSave)
 {
 	uint8_t u8Cmd[PROTOCOL_YNA_DECODE_LENGTH];
@@ -2745,6 +2795,18 @@ __weak int32_t SetOutputEnableState(uint8_t u8Index, uint8_t u8NewState)
 	return 0;
 }
 
+__weak int32_t SetAudioDeviceList(uint8_t u8Channel, const char *pAudioDeviceList, int32_t s32Length)
+{
+	return 0;
+}
+__weak int32_t SetAudioDeviceListIndex(uint8_t u8Channel, uint8_t u8Index)
+{
+	return 0;
+}
+__weak int32_t GetAudioDeviceListIndex(uint8_t u8Channel, uint8_t *pIndex)
+{
+	return 0;
+}
 
 
 __weak int32_t GetUnionVolumeValue(uint16_t u16Channel, bool *pValue)
