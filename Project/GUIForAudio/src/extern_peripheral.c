@@ -135,7 +135,7 @@ void LDPTest(void)
 	u8Tmp++;
 }
 
-void KeyboardPowerInit(void)
+void PCKeyboardPowerInit(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -147,12 +147,12 @@ void KeyboardPowerInit(void)
 	
 }
 
-void KeyboardPowerEnable(bool boIsEnable)
+void PCKeyboardPowerEnable(bool boIsEnable)
 {
 	GPIO_WriteBit(GPIOG, GPIO_Pin_8, boIsEnable ? Bit_SET : Bit_RESET);	
 }
 
-void PCKeyboardPowerInit(void)
+void KeyboardPowerInit(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -164,7 +164,7 @@ void PCKeyboardPowerInit(void)
 	
 }
 
-void PCKeyboardPowerEnable(bool boIsEnable)
+void KeyboardPowerEnable(bool boIsEnable)
 {
 	GPIO_WriteBit(GPIOE, GPIO_Pin_2, boIsEnable ? Bit_SET : Bit_RESET);	
 }
