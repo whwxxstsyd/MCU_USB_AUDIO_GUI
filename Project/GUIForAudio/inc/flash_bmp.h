@@ -31,6 +31,22 @@ typedef struct tagBITMAPINFOHEADER{
         DWORD      biClrImportant;
 } BITMAPINFOHEADER;
 
+typedef struct tagBITMAPINFOHEADERWithMask{
+        DWORD      biSize;
+        LONG       biWidth;
+        LONG       biHeight;
+        WORD       biPlanes;
+        WORD       biBitCount;
+        DWORD      biCompression;
+        DWORD      biSizeImage;
+        LONG       biXPelsPerMeter;
+        LONG       biYPelsPerMeter;
+        DWORD      biClrUsed;
+        DWORD      biClrImportant;
+		DWORD      biMask[4];
+
+}BITMAPINFOHEADERWithMask;
+
 #pragma pack()
 
 

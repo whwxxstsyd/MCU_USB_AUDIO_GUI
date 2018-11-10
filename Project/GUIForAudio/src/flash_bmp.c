@@ -95,9 +95,9 @@ int32_t SPIFlashBMPLoadFlush(StSPIFlashBMPLoadCtrl *pCtrl)
 	}	
 	else if (pCtrl->s32CtrlType == _BMP_Load_InfoHeader)
 	{
-		BITMAPINFOHEADER *pHeader = (BITMAPINFOHEADER *)pCtrl->pData;
+		BITMAPINFOHEADERWithMask *pHeader = (BITMAPINFOHEADERWithMask *)pCtrl->pData;
 		
-		pCtrl->s32Count = SPIFlashBigDataRead(&pCtrl->stCtrl, pCtrl->pData, sizeof(BITMAPINFOHEADER)); 
+		pCtrl->s32Count = SPIFlashBigDataRead(&pCtrl->stCtrl, pCtrl->pData, sizeof(BITMAPINFOHEADERWithMask)); 
 		if (pCtrl->s32Count < 0)
 		{	
 			pCtrl->ret	= pCtrl->s32Count;

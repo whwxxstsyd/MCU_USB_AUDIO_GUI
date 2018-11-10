@@ -49,7 +49,7 @@
 //#include "wm8776.h"
 
 
-#define APP_VERSOIN	"YA_GUI_AUDIO_181108"
+#define APP_VERSOIN	"YA_GUI_AUDIO_181110"
 
 u8 g_u8CamAddr = 0;
 

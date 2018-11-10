@@ -157,7 +157,7 @@ static int32_t BMPLoadCallback(int32_t s32Type, void *pData, uint32_t u32Len, vo
 {
 	if (s32Type == _BMP_Load_InfoHeader)
 	{
-		BITMAPINFOHEADER *pInfo = (BITMAPINFOHEADER *)pData;
+		BITMAPINFOHEADERWithMask *pInfo = (BITMAPINFOHEADERWithMask *)pData;
 		int32_t s32Height = pInfo->biHeight;
 		int32_t s32Width = pInfo->biWidth;
 		if (s32Width > LCD_WIDTH)
@@ -174,9 +174,9 @@ static int32_t BMPLoadCallback(int32_t s32Type, void *pData, uint32_t u32Len, vo
 			return -1;
 		}
 		
-		if (s32Width < LCD_WIDTH || s32Height < LCD_HEIGHT)
+		//if (s32Width < LCD_WIDTH || s32Height < LCD_HEIGHT)
 		{
-			LCDClear(0);
+			LCDClear(pInfo->biMask[3]);
 		}
 		
 	}
