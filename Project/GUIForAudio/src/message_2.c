@@ -82,7 +82,7 @@ static void UARTInit(void)
 	GPIO_Init(MSG_PORT, &GPIO_InitStructure);
 	
 	NVIC_InitStructure.NVIC_IRQChannel = MSG_UART_IRQ_CHANNEL; 
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 4;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);

@@ -2109,6 +2109,8 @@ int32_t CreateOutputEnableCtrl(
 			lv_obj_align(pLab, pObjTmp, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
 		}
+		/* AUX */
+		EnableSwitch(pGroup->pCBArr[1], false);
 	}
 
 	return 0;

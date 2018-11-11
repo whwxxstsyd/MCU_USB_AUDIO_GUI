@@ -49,7 +49,7 @@
 //#include "wm8776.h"
 
 
-#define APP_VERSOIN	"YA_GUI_AUDIO_181110"
+#define APP_VERSOIN	"YA_GUI_AUDIO_181111"
 
 u8 g_u8CamAddr = 0;
 
@@ -1700,11 +1700,13 @@ bool PCEchoProcessYNA(StIOFIFO *pFIFO, const StIOTCB *pIOTCB)
 					for (i = 0; i < u16Count; i++)
 					{
 						SetAudioCtrlMode(pMode[i].u8Index, (EmAudioCtrlMode)(pMode[i].u8Mode));
-						ReflushActiveTable(_Fun_AudioMode, pMode[i].u8Index);
+						//ReflushActiveTable(_Fun_AudioMode, pMode[i].u8Index);
 			
 						SendAudioCtrlModeCmdEx(pMode[i].u8Index, 
 							(EmAudioCtrlMode)(pMode[i].u8Mode), FLAG_IO_USB_MIDI);
 					}
+					ReflushCurrentActiveTable(~0);
+					
 					break;
 				}
 				case 0x0646:
@@ -2695,6 +2697,10 @@ __weak void SetLvglKey(uint32_t u32Key, bool boIsPress)
 __weak void SetKeyValue(uint32_t u32Key, bool boIsPress)
 {
 
+}
+__weak int32_t ReflushCurrentActiveTable(uint16_t u16ActiveTableIndex)
+{
+	return 0;
 }
 
 __weak int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel)
