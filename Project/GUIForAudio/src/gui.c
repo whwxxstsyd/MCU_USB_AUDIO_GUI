@@ -3660,7 +3660,7 @@ int32_t CreateTableView(void)
 
 
 	s_pTableView = pTableView;
-	CreateTable(pTab[_Tab_Input_I2S_Ctrl], _Tab_Input_I2S_Ctrl);
+	CreateTable(pTab[_Tab_PC_Volume_Ctrl], _Tab_PC_Volume_Ctrl);
 
 #if 0
 	{
@@ -3682,7 +3682,7 @@ int32_t CreateTableView(void)
 	}
 #endif
 
-	lv_tabview_set_tab_act(pTableView, _Tab_Input_I2S_Ctrl, false);
+	lv_tabview_set_tab_act(pTableView, _Tab_PC_Volume_Ctrl, false);
 
 	lv_tabview_set_tab_load_action(pTableView, ActionTabview);
 

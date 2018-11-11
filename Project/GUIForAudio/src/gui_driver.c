@@ -217,8 +217,8 @@ static void hal_init(void)
     indev_drv.user_data = (void *) 0;
 	lv_indev_drv_register(&indev_drv);
 	
-    indev_drv.user_data = (void *) 1;
-	lv_indev_drv_register(&indev_drv);
+    //indev_drv.user_data = (void *) 1;
+	//lv_indev_drv_register(&indev_drv);
 }
 
 
