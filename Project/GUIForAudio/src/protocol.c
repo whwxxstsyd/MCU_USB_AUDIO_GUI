@@ -49,7 +49,7 @@
 //#include "wm8776.h"
 
 
-#define APP_VERSOIN	"YA_GUI_AUDIO_181111"
+#define APP_VERSOIN	"YA_GUI_AUDIO_181201"
 
 u8 g_u8CamAddr = 0;
 
@@ -2554,6 +2554,10 @@ int32_t SendMemeoryCtrlCmd(uint16_t u16Channel, bool boIsSave)
 	u8Cmd[_YNA_Data3] = 0x00;
 
 	YNAGetCheckSum(u8Cmd);
+	if(u16Channel == 0xFF)
+	{
+		CopyToUart1Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);	
+	}
 	CopyToUart3Message(u8Cmd, PROTOCOL_YNA_DECODE_LENGTH);
 	
 	if (!boIsSave)
@@ -2616,6 +2620,7 @@ void SaveMemoryFromDevice(StPowerOffMemory *pMem)
 	GetKeyboardConnectMode(&(pMem->u8KeyboardConnectMode));	
 	GetScreenProtectTimeIndex(&(pMem->u8ScreenProtectTimeIndex));
 	GetMIDIChannelIndex(&(pMem->u8MIDIChannelIndex));
+	GetLanguageIndex(&(pMem->u8LanguageIndex));
 }
 
 void LoadMemoryToDevice(StPowerOffMemory *pMem)
@@ -2632,6 +2637,7 @@ void LoadMemoryToDevice(StPowerOffMemory *pMem)
 	SetScreenProtectTimeIndex(pMem->u8ScreenProtectTimeIndex);
 	SetScreenProtectModeIndex(pMem->u8ScreenProtectModeIndex);
 	SetMIDIChannelIndex(pMem->u8MIDIChannelIndex);
+	SetLanguageIndex(pMem->u8LanguageIndex);
 }
 
 void LoadPowerOffMemoryToDevice(void)
@@ -2882,6 +2888,11 @@ __weak int32_t GetMIDIChannelIndex(uint8_t *pIndex)
 	return 0;
 }
 __weak int32_t SetMIDIChannelIndex(uint8_t u8Index)
+{
+	return -1;
+}
+
+__weak int32_t SetLanguageIndex(uint8_t u8Index)
 {
 	return -1;
 }

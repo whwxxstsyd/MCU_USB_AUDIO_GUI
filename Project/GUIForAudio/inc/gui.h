@@ -310,9 +310,37 @@ typedef struct _tagStMIDIChannelCtrl
 	uint8_t u8CurMIDIChannelIndex;
 }StMIDIChannelCtrl;
 
-int32_t CreateTableView(void);
+typedef struct _tagStLanguageCtrl
+{
+	lv_obj_t *pLanguageCtrl;
+
+	uint8_t u8LanguageIndex;
+}StLanguageCtrl;
+
+
+#ifndef EMLANGUAGEID
+#define EMLANGUAGEID
+typedef enum _tagEmLanguageID
+{
+	_Language_Begin = 0,
+
+	_Language_CHS = _Language_Begin,
+	_Language_English,
+
+	_Language_Reserved,
+}EmLanguageID;
+
+#endif
+
+int32_t CreateTableInit(void);
+int32_t CreateTableView(uint16_t u16InitTableIndex);
+int32_t DestroyTableView(void);
 int32_t ReflushCurrentActiveTable(uint16_t u16ActiveTableIndex);
 int32_t ReflushActiveTable(uint32_t u32Fun, uint32_t u32Channel);
+
+int32_t ReflushLanguageInit(void);
+int32_t ReflushLanguage(void);
+
 void SetKeySpeek(uint16_t u16Speed);
 void SetKeyValue(uint32_t u32Key, bool boIsPress);
 
@@ -390,5 +418,8 @@ int32_t SendScreenProtectModeCmd(uint8_t u8Index);
 
 int32_t GetMIDIChannelIndex(uint8_t *pIndex);
 int32_t SetMIDIChannelIndex(uint8_t u8Index);
+
+int32_t GetLanguageIndex(uint8_t *pIndex);
+int32_t SetLanguageIndex(uint8_t u8Index);
 
 #endif // GUI_H_

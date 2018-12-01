@@ -152,7 +152,7 @@
           <Type>0</Type>
           <LineNumber>176</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134223264</Address>
+          <Address>134223336</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -162,6 +162,38 @@
           <Filename>..\src\IOCtrl.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\GUIForAudio\../src/IOCtrl.c\176</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>448</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134222536</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\src\flash_ctrl.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\GUIForAudio\../src/flash_ctrl.c\448</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>492</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134222718</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\src\flash_ctrl.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\GUIForAudio\../src/flash_ctrl.c\492</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -195,7 +227,7 @@
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>0</SubType>
-          <ItemText>s_c8CycleBuf</ItemText>
+          <ItemText>EEPROM_ADDRESS</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
@@ -268,7 +300,7 @@
 
   <Group>
     <GroupName>App</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -588,7 +620,7 @@
 
   <Group>
     <GroupName>gui</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -2056,7 +2088,7 @@
 
   <Group>
     <GroupName>USB_Config</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

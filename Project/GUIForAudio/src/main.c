@@ -128,7 +128,9 @@ int main (void)
 	
 #if USE_LVGL
 	{
-		CreateTableView();
+		ReflushLanguageInit();
+		CreateTableInit();
+		CreateTableView(~0);
 	}
 #endif	
 	//EnableWatchDog();
@@ -153,6 +155,7 @@ int main (void)
 		}
 #if USE_LVGL
 		SrceenProtectFlush();
+		ReflushLanguage();
 #endif	
 
 		if (SysTimeDiff(u32Time, g_u32SysTickCnt) > 100)
