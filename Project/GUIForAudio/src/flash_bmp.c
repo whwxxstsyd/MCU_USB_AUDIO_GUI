@@ -59,6 +59,11 @@ int32_t SPIFlashBMPLoadFlush(StSPIFlashBMPLoadCtrl *pCtrl)
 	
 	if (pCtrl->s32CtrlType >= _BMP_Load_End)
 	{
+		if (pCtrl->pData != NULL)
+		{
+			free (pCtrl->pData);
+			pCtrl->pData = NULL;
+		}
 		return pCtrl->s32CtrlType;
 	}
 	
@@ -140,8 +145,7 @@ int32_t SPIFlashBMPLoadFlush(StSPIFlashBMPLoadCtrl *pCtrl)
 		}
 		if ((pLineInfo->u16LineIndex >= pCtrl->s32Height))
 		{
-			pCtrl->s32CtrlType = _BMP_Load_End;
-			free (pCtrl->pData);
+			SPIFlashBMPLoadEnd(pCtrl);
 			goto end;
 		}
 		if (!pCtrl->boIsYP)
@@ -220,6 +224,11 @@ int32_t SPIFlashBMPLoadEnd(StSPIFlashBMPLoadCtrl *pCtrl)
 {
 	if (pCtrl != NULL)
 	{
+		if (pCtrl->pData != NULL)
+		{
+			free (pCtrl->pData);
+			pCtrl->pData = NULL;
+		}
 		pCtrl->s32CtrlType = _BMP_Load_Invalid;
 	}
 	

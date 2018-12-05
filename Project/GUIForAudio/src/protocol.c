@@ -48,8 +48,8 @@
 //#include "I2C.h"
 //#include "wm8776.h"
 
-
-#define APP_VERSOIN	"YA_GUI_AUDIO_181201"
+const char *c_pVersion = "YA_GUI_AUDIO_181201";
+#define APP_VERSOIN	c_pVersion
 
 u8 g_u8CamAddr = 0;
 
