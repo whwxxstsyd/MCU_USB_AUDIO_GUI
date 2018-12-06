@@ -12,6 +12,12 @@
 
 #if USE_LVGL
 
+extern const char *c_pVersion;
+
+#ifdef _WIN32
+const char *c_pVersion = "Version Info20181205"; 
+#endif
+
 #ifndef _WIN32
 #define printf(x, ...)
 #endif
@@ -29,6 +35,7 @@ enum
 	_OBJ_TYPE_SLIDER = 0x80,
 	_OBJ_TYPE_BTN,
 	_OBJ_TYPE_DDLIST,
+	_OBJ_TYPE_MBox,
 };
 
 extern lv_font_t lv_font_chs_24;
@@ -54,7 +61,15 @@ const char *c_pCtrlMode[_Language_Reserved][_Audio_Ctrl_Mode_Reserved] =
 		"右→左",		//"L Use R",
 		"混合",		//"Mux",
 	},
-
+	{
+		"直連",		//"Normal",
+		"左靜音",		//"L Mute",
+		"右靜音",		//"R Mute",
+		"靜音",		//"Mute",
+		"左→右",		//"R Use L",
+		"右→左",		//"L Use R",
+		"混合",		//"Mux",
+	},
 	{
 		"Normal",
 		"L Mute",
@@ -73,6 +88,15 @@ const char *c_pCtrlModeSpecial[_Language_Reserved][_Audio_Ctrl_Mode_Reserved] =
 		"差分右",		//"L Mute",
 		"差分左",		//"R Mute",
 		"静音",		//"Mute",
+		"左→右",		//"R Use L",
+		"右→左",		//"L Use R",
+		"混合",		//"Mux",
+	},/**/
+	{
+		"直連",		//"Normal",
+		"差分右",		//"L Mute",
+		"差分左",		//"R Mute",
+		"靜音",		//"Mute",
 		"左→右",		//"R Use L",
 		"右→左",		//"L Use R",
 		"混合",		//"Mux",
@@ -208,6 +232,18 @@ const char *c_pTableName[_Language_Reserved][_Tab_Reserved] =
 		//	"保留",
 	},
 	{
+		"輸入A",
+		"輸入B",
+		"I2S",
+		"輸出",
+		"其他",
+		"聲卡",
+		"外設",
+		"設置",
+		//	"音量采集",
+		//	"保留",
+	},
+	{
 		"In A",
 		"In B",
 		"I2S",
@@ -218,7 +254,7 @@ const char *c_pTableName[_Language_Reserved][_Tab_Reserved] =
 		"Config",
 		//	"音量采集",
 		//	"保留",
-	}
+	},
 
 };
 
@@ -234,6 +270,15 @@ const char *c_pScreenProtectTime[_Language_Reserved][_ScreenProtect_Reserved] =
 		"关闭",
 	},
 	{
+		"15 秒",
+		"30 秒",
+		"1 分鐘",
+		"2 分鐘",
+		"5 分鐘",
+		"10 分鐘",
+		"關閉",
+	},
+	{
 		"15 S",
 		"30 S",
 		"1 Min",
@@ -241,7 +286,8 @@ const char *c_pScreenProtectTime[_Language_Reserved][_ScreenProtect_Reserved] =
 		"5 Min",
 		"10 Min",
 		"OFF",
-	}
+	},
+
 };
 
 const char *c_pScreenProtectMode[_Language_Reserved][_ScreenProtect_Mode_Reserved] =
@@ -252,7 +298,11 @@ const char *c_pScreenProtectMode[_Language_Reserved][_ScreenProtect_Mode_Reserve
 	},
 	{
 		"LOGO",
-		"OFF SCRN"
+		"熄屏"
+	},
+	{
+		"LOGO",
+		"OFF"
 	},
 };
 
@@ -278,7 +328,195 @@ const uint8_t c_u8CtrlMode2[] =
 	0, 3
 };
 
+const char *pStrUniVol[_Language_Reserved] =
+{
+	"统一音量",
+	"統一音量",
+	"Uni-Vol",
+};
 
+const char *pStrLoad[_Language_Reserved] =
+{
+	"载入",
+	"載入",
+	"Load",
+};
+
+
+const char *pStrSave[_Language_Reserved] =
+{
+	"保存",
+	"保存",
+	"Save",
+
+};
+const char *pStrMemoryCtrl[_Language_Reserved] =
+{
+	"第%d组",
+	"第%d組",
+	"Array %d",
+
+};
+const char *pStrMemory[_Language_Reserved] =
+{
+	"记忆存储",
+	"記憶存儲",
+	"Memory",
+
+};
+const char *pStrReset[_Language_Reserved] =
+{
+	"复位",
+	"復位",
+	"Reset",
+
+};
+const char *pStrPhantomPower[_Language_Reserved] =
+{
+	"麦克电源(+48V)",
+	"麥克電源(+48V)",
+	"MIC Power(+48V)",
+
+};
+const char *pStrChannel[_Language_Reserved] =
+{
+	"通道%d",
+	"通道%d",
+	"CH %d",
+
+};
+const char *pStrInputEnable[_Language_Reserved] =
+{
+	"输入使能",
+	"輸入使能",
+	"Iuput Enable",
+
+};
+const char *pStrOutputEnable[_Language_Reserved] =
+{
+	"输出使能",
+	"輸出使能",
+	"Output Enable",
+
+};
+const char *pStrInput1[_Language_Reserved] =
+{
+	"通道1",
+	"通道1",
+	"CH 1",
+
+};
+const char *pStrInput2[_Language_Reserved] =
+{
+	"通道2",
+	"通道2",
+	"CH 2",
+
+};
+const char *pStrInput3[_Language_Reserved] =
+{
+	"通道3",
+	"通道3",
+	"CH 3",
+
+};
+const char *pStrInput4[_Language_Reserved] =
+{
+	"通道4",
+	"通道4",
+	"CH 4",
+
+};
+const char *pStrInput5[_Language_Reserved] =
+{
+	"通道5",
+	"通道5",
+	"CH 5",
+
+};
+const char *pStrHeadPhone[_Language_Reserved] =
+{
+	"耳机",
+	"耳機",
+	"HP",
+
+};
+const char *pStrOutput[_Language_Reserved] =
+{
+	"输出",
+	"輸出",
+	"Output",
+
+};
+const char *pStrRecord[_Language_Reserved] =
+{
+	"录制",
+	"錄製",
+	"Record",
+
+};
+const char *pStrPlay[_Language_Reserved] =
+{
+	"播放",
+	"播放",
+	"Play",
+
+};
+const char *pStrLOGOColor[_Language_Reserved] =
+{
+	"LOGO颜色",
+	"LOGO顏色",
+	"LOGO Color",
+
+};
+const char *pStrRecordKBCtrl[_Language_Reserved] =
+{
+	"导播键盘控制",
+	"導播鍵盤控制",
+	"Record KB Ctrl",
+
+};
+const char *pStrPower[_Language_Reserved] =
+{
+	"电源",
+	"電源",
+	"Power",
+
+};
+const char *pStrPCKBCtrl[_Language_Reserved] =
+{
+	"PC键盘控制",
+	"PC鍵盤控制",
+	"PC KB Ctrl",
+
+};
+const char *pStrScreenProtect[_Language_Reserved] =
+{
+	"屏幕保护",
+	"荧幕保護",
+	"Screen Protect",
+
+};
+const char *pStrMIDIChannel[_Language_Reserved] =
+{
+	"MIDI通道",
+	"MIDI通道",
+	"MIDI Channel",
+
+};
+const char *pStrLanguage[_Language_Reserved] =
+{
+	"语言",
+	"語言",
+	"Language",
+
+};
+const char *pStrLanguageArray[_Language_Reserved] =
+{
+	"简体中文\n繁体中文\n英文",
+	"簡體中文\n繁體中文\n英文",
+	"CHS\nCHT\nEnglish",
+};
 static lv_style_t s_stLogoStyle[_Logo_Color_Reserved][_Logo_State_Reserved] =
 {
 	0,
@@ -303,7 +541,7 @@ static StMIDIChannelCtrl s_stMIDIChannelCtrl = { 0 };
 static StLanguageCtrl s_stLanguageCtrl = { 0 };
 
 #define g_emLanguageID s_stLanguageCtrl.u8LanguageIndex
-
+#define SAFE_LANGUAGEID	(g_emLanguageID % _Language_Reserved)
 
 int32_t ChannelToReal(uint16_t u16Channel)
 {
@@ -1182,7 +1420,7 @@ lv_res_t ActionCtrlModeDDlist(struct _lv_obj_t * obj)
 	(void)pGroup;
 
 	printf("the %dth ddlist number is: %s(%d)\n", pGroup->u8Index,
-		c_pCtrlMode[g_emLanguageID % _Language_Reserved][pGroup->pCtrlModeIndex[lv_ddlist_get_selected(obj)]],
+		c_pCtrlMode[SAFE_LANGUAGEID][pGroup->pCtrlModeIndex[lv_ddlist_get_selected(obj)]],
 		lv_ddlist_get_selected(obj));
 
 	SetAudioCtrlMode(pGroup->u8Index,
@@ -1510,7 +1748,7 @@ int32_t CreateVolumeCtrlGroup(
 			{
 				strcat(c8Str, "\n");
 			}
-			strcat(c8Str, c_pCtrlMode[g_emLanguageID % _Language_Reserved][pGroup->pCtrlModeIndex[i]]);
+			strcat(c8Str, c_pCtrlMode[SAFE_LANGUAGEID][pGroup->pCtrlModeIndex[i]]);
 		}
 
 		pObjTmp = lv_ddlist_create(pParent, NULL);
@@ -1607,7 +1845,7 @@ int32_t CreateVolumeCtrlGroup(
 
 
 		pLab = lv_label_create(pParent, NULL);
-		lv_label_set_text(pLab, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Uni-Vol" : "统一音量"));
+		lv_label_set_text(pLab, CHS_TO_UTF8(pStrUniVol[SAFE_LANGUAGEID]));
 		lv_obj_align(pLab, pGroup->pCtrlMode, LV_ALIGN_IN_BOTTOM_RIGHT, 10, 53);
 		
 		if (boIsFixUniformVolume)
@@ -1754,18 +1992,19 @@ lv_res_t ActionMemoryCB(lv_obj_t * obj)
 
 	if (s_pMemoryMboxBTNs[0] == NULL)
 	{
-		strcpy(s_c8StrLoad, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Load" : "载入"));
-		strcpy(s_c8StrSave, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Save" : "保存"));
+		strcpy(s_c8StrLoad, CHS_TO_UTF8(pStrLoad[SAFE_LANGUAGEID]));
+		strcpy(s_c8StrSave, CHS_TO_UTF8(pStrSave[SAFE_LANGUAGEID]));
 		s_pMemoryMboxBTNs[0] = s_c8StrLoad;
 		s_pMemoryMboxBTNs[1] = s_c8StrSave;
 	}
 
 	lv_mbox_add_btns(pObjTmp, s_pMemoryMboxBTNs, NULL);
 	lv_obj_align(pObjTmp, obj, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-	sprintf(c8Str, g_emLanguageID == _Language_English ? "Memory %d" : "存储%d", pGroup->u8TmpMemorySelect + 1);
+	sprintf(c8Str, pStrMemoryCtrl[SAFE_LANGUAGEID], pGroup->u8TmpMemorySelect + 1);
 	lv_mbox_set_text(pObjTmp, CHS_TO_UTF8(c8Str));
 	lv_mbox_set_action(pObjTmp, ActionMemoryMBoxCB);
 	lv_obj_set_free_ptr(pObjTmp, pGroup);
+	lv_obj_set_free_num(pObjTmp, _OBJ_TYPE_MBox);
 	pGroup->pMBox = pObjTmp;
 
 	if (lv_obj_get_group(obj) != NULL)
@@ -1830,7 +2069,7 @@ int32_t CreateMemoryCtrl(
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Memory" : "记忆存储"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrMemory[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
 
 		pGroup->pLabel = pObjTmp;
@@ -1843,7 +2082,7 @@ int32_t CreateMemoryCtrl(
 		for (i = 0; i < MEMORY_CHANNEL; i++)
 		{
 			char c8Str[32];
-			sprintf(c8Str, g_emLanguageID == _Language_English ? "Memory %d" : "存储 %d", i + 1);
+			sprintf(c8Str, pStrMemoryCtrl[SAFE_LANGUAGEID], i + 1);
 			if (i != 0)
 			{
 				strcat(c8Options, "\n");
@@ -1870,7 +2109,7 @@ int32_t CreateMemoryCtrl(
 		pGroup->pFactorySet = pObjTmp;
 
 		pObjTmp = lv_label_create(pGroup->pFactorySet, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Reset" : "复位"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrReset[SAFE_LANGUAGEID]));
 
 		lv_obj_align(pGroup->pFactorySet, pGroup->pMemoryCtrl, LV_ALIGN_OUT_RIGHT_TOP, 65, 0);
 
@@ -1930,7 +2169,7 @@ int32_t CreatePhantomPowerCtrl(
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "PH Power" : "幻象电源"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrPhantomPower[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
 	}
 	{
@@ -1939,7 +2178,7 @@ int32_t CreatePhantomPowerCtrl(
 		{
 			char c8Str[32];
 			lv_obj_t *pLab;
-			sprintf(c8Str, g_emLanguageID == _Language_English ? "Arr %d" : "第%d组", j + 1);
+			sprintf(c8Str, pStrChannel[SAFE_LANGUAGEID], j + 1);
 #if 1
 			pObjTmp = lv_sw_create(pParent, NULL);
 			lv_obj_set_size(pObjTmp, SW_WIDTH, SW_HTIGHT);
@@ -2055,7 +2294,7 @@ int32_t CreateInputEnableCtrl(
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Iuput Enable" : "输入使能"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrInputEnable[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
 	}
 	{
@@ -2064,7 +2303,7 @@ int32_t CreateInputEnableCtrl(
 		{
 			lv_obj_t *pLab;
 			char c8Str[32];
-			sprintf(c8Str, g_emLanguageID == _Language_English ? "Arr %d" : "第%d组", j + 1);
+			sprintf(c8Str, pStrChannel[SAFE_LANGUAGEID], j + 1);
 			pObjTmp = lv_sw_create(pParent, NULL);
 			lv_obj_set_pos(pObjTmp, u16XPos + j % 2 * 180, u16YPos + 40 + ((j / 2) * 63));
 			lv_obj_set_size(pObjTmp, SW_WIDTH, SW_HTIGHT);
@@ -2165,7 +2404,7 @@ int32_t CreateOutputEnableCtrl(
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Output Enable" : "输出使能"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrOutputEnable[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
 	}
 	{
@@ -2246,10 +2485,10 @@ int32_t ReleaseTableInput1To2(lv_obj_t *pTabParent)
 int32_t CreateTableInput1To2(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
 	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 145, &stVolumeInput1, _Channel_AIN_1,
-		c_u8CtrlModeSpecialLeft, sizeof(c_u8CtrlModeSpecialLeft), g_emLanguageID == _Language_English ? "Input 1" : "输入1", c_pCtrlModeSpecial[g_emLanguageID % _Language_Reserved]);
+		c_u8CtrlModeSpecialLeft, sizeof(c_u8CtrlModeSpecialLeft), pStrInput1[SAFE_LANGUAGEID], c_pCtrlModeSpecial[SAFE_LANGUAGEID]);
 
 	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 470, &stVolumeInput2, _Channel_AIN_2,
-		c_u8CtrlModeSpecialRight, sizeof(c_u8CtrlModeSpecialRight), g_emLanguageID == _Language_English ? "Input 2" : "输入2", c_pCtrlModeSpecial[g_emLanguageID % _Language_Reserved]);
+		c_u8CtrlModeSpecialRight, sizeof(c_u8CtrlModeSpecialRight), pStrInput2[SAFE_LANGUAGEID], c_pCtrlModeSpecial[SAFE_LANGUAGEID]);
 
 	return 0;
 }
@@ -2350,13 +2589,13 @@ int32_t ReleaseTableInput3To5(lv_obj_t *pTabParent)
 int32_t CreateTableInput3To5(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
 	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 50, &stVolumeInput3, _Channel_AIN_3,
-		c_u8CtrlModeSpecialLeft, sizeof(c_u8CtrlModeSpecialLeft), g_emLanguageID == _Language_English ? "Input 3" : "输入3", c_pCtrlModeSpecial[g_emLanguageID % _Language_Reserved]);
+		c_u8CtrlModeSpecialLeft, sizeof(c_u8CtrlModeSpecialLeft), pStrInput3[SAFE_LANGUAGEID], c_pCtrlModeSpecial[SAFE_LANGUAGEID]);
 
 	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 50 + 270, &stVolumeInput4, _Channel_AIN_4,
-		c_u8CtrlModeSpecialRight, sizeof(c_u8CtrlModeSpecialRight), g_emLanguageID == _Language_English ? "Input 4" : "输入4", c_pCtrlModeSpecial[g_emLanguageID % _Language_Reserved]);
+		c_u8CtrlModeSpecialRight, sizeof(c_u8CtrlModeSpecialRight), pStrInput4[SAFE_LANGUAGEID], c_pCtrlModeSpecial[SAFE_LANGUAGEID]);
 
 	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 50 + 270 * 2, &stVolumeInput5, _Channel_AIN_5,
-		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), g_emLanguageID == _Language_English ? "Input 5" : "输入5", c_pCtrlMode[g_emLanguageID % _Language_Reserved]);
+		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), pStrInput5[SAFE_LANGUAGEID], c_pCtrlMode[SAFE_LANGUAGEID]);
 
 	return 0;
 }
@@ -2429,10 +2668,10 @@ int32_t ReleaseTableOutputCtrl(lv_obj_t *pTabParent)
 int32_t CreateTableOutputCtrl(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
 	CreateVolumeCtrlGroup(pTabParent, pGroup, 135, &stVolumeOutputHeaderPhone, _Channel_HeaderPhone,
-		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), g_emLanguageID == _Language_English ? "HP" : "耳机", false, true);
+		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), pStrHeadPhone[SAFE_LANGUAGEID], false, true);
 
 	CreateVolumeCtrlGroup(pTabParent, pGroup, 470, &stVolumeOutputInnerSpeaker, _Channel_InnerSpeaker,
-		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), g_emLanguageID == _Language_English ? "Output" : "输出", true, true);
+		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), pStrOutput[SAFE_LANGUAGEID], true, true);
 
 	//CreateVolumeCtrlGroup(pTabParent, pGroup, 30 + 270 * 2, &stVolumeOutput, _Channel_NormalOut,
 	//	c_u8CtrlMode2, sizeof(c_u8CtrlMode2), "输出", false);
@@ -2647,15 +2886,15 @@ int32_t RebulidPCAudioDeviceSelectCtrlValue(uint16_t u16Index)
 int32_t CreateTablePCVolumeCtrl(lv_obj_t *pTabParent, lv_group_t *pGroup)
 {
 	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 50, &stVolumePCCtrlRecord, _Channel_PC_Ctrl_Record,
-		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), g_emLanguageID == _Language_English ? "Record" : "录制", c_pCtrlModeSpecial[g_emLanguageID % _Language_Reserved]);
+		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), pStrRecord[SAFE_LANGUAGEID], c_pCtrlModeSpecial[SAFE_LANGUAGEID]);
 
 	CreateVolumeCtrlGroupMono(pTabParent, pGroup, 220, &stVolumePCCtrlPlay, _Channel_PC_Ctrl_Play,
-		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), g_emLanguageID == _Language_English ? "Play" : "播放", c_pCtrlModeSpecial[g_emLanguageID % _Language_Reserved]);
+		c_u8CtrlMode2, sizeof(c_u8CtrlMode2), pStrPlay[SAFE_LANGUAGEID], c_pCtrlModeSpecial[SAFE_LANGUAGEID]);
 
-	CreatePCAudioDeviceSelectCtrl(pTabParent, pGroup, 440, 7, g_emLanguageID == _Language_English ? "Record" : "录制",
+	CreatePCAudioDeviceSelectCtrl(pTabParent, pGroup, 440, 7, pStrRecord[SAFE_LANGUAGEID],
 		s_c8PhoneSelectStr, _Channel_PC_Ctrl_Record, &s_stPCPhoneSelectCtrlGroup);
 
-	CreatePCAudioDeviceSelectCtrl(pTabParent, pGroup, 440, 7 + 120, g_emLanguageID == _Language_English ? "Play" : "播放",
+	CreatePCAudioDeviceSelectCtrl(pTabParent, pGroup, 440, 7 + 120, pStrPlay[SAFE_LANGUAGEID],
 		s_c8SpeakerSelectStr, _Channel_PC_Ctrl_Play, &s_stPCSpeakerSelectCtrlGroup);
 	return 0;
 }
@@ -2795,7 +3034,7 @@ int32_t CreateLogoColorCtrl(lv_obj_t *pParent,
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "LOGO Color" : "LOGO颜色"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrLOGOColor[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
 	}
 
@@ -2876,7 +3115,7 @@ int32_t CreateKeyBoardCtrl(lv_obj_t *pParent,
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Record KB Ctrl" : "导播键盘控制"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrRecordKBCtrl[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
 	}
 
@@ -2894,7 +3133,7 @@ int32_t CreateKeyBoardCtrl(lv_obj_t *pParent,
 		pGroup->pPowerCtrl = pObjTmp;
 
 		pLab = lv_label_create(pParent, NULL);
-		lv_label_set_text(pLab, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Power" : "电源"));
+		lv_label_set_text(pLab, CHS_TO_UTF8(pStrPower[SAFE_LANGUAGEID]));
 		lv_obj_align(pLab, pGroup->pPowerCtrl, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
 		if (pGlobalGroup != NULL)
@@ -2976,7 +3215,7 @@ int32_t CreatePCKeyBoardCtrl(lv_obj_t *pParent,
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "PC KB Ctrl" : "PC键盘控制"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrPCKBCtrl[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
 	}
 
@@ -2994,7 +3233,7 @@ int32_t CreatePCKeyBoardCtrl(lv_obj_t *pParent,
 		pGroup->pPowerCtrl = pObjTmp;
 
 		pLab = lv_label_create(pParent, NULL);
-		lv_label_set_text(pLab, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Power" : "电源"));
+		lv_label_set_text(pLab, CHS_TO_UTF8(pStrPower[SAFE_LANGUAGEID]));
 		lv_obj_align(pLab, pGroup->pPowerCtrl, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
 		if (pGlobalGroup != NULL)
@@ -3077,7 +3316,7 @@ lv_res_t ActionScreenProtectTimeCB(lv_obj_t *pObj)
 
 	SendScreenProtectTimeCmd(pGroup->u8CurTimeIndex);
 
-	printf("set the screen protect time %s\n", c_pScreenProtectTime[g_emLanguageID % _Language_Reserved][pGroup->u8CurTimeIndex]);
+	printf("set the screen protect time %s\n", c_pScreenProtectTime[SAFE_LANGUAGEID][pGroup->u8CurTimeIndex]);
 
 	return LV_RES_OK;
 }
@@ -3091,7 +3330,7 @@ lv_res_t ActionScreenProtectModeCB(lv_obj_t *pObj)
 
 	SendScreenProtectModeCmd(pGroup->u8CurModeIndex);
 
-	printf("set the screen protect mode %s\n", c_pScreenProtectMode[g_emLanguageID % _Language_Reserved][pGroup->u8CurModeIndex]);
+	printf("set the screen protect mode %s\n", c_pScreenProtectMode[SAFE_LANGUAGEID][pGroup->u8CurModeIndex]);
 
 	return LV_RES_OK;
 }
@@ -3111,7 +3350,7 @@ int32_t CreateScreenProtectCtrl(lv_obj_t *pParent,
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "Screen Protect" : "屏幕保护"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrScreenProtect[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos);
 	}
 
@@ -3126,7 +3365,7 @@ int32_t CreateScreenProtectCtrl(lv_obj_t *pParent,
 			{
 				strcat(c8Str, "\n");
 			}
-			strcat(c8Str, c_pScreenProtectTime[g_emLanguageID % _Language_Reserved][i]);
+			strcat(c8Str, c_pScreenProtectTime[SAFE_LANGUAGEID][i]);
 		}
 
 		
@@ -3166,7 +3405,7 @@ int32_t CreateScreenProtectCtrl(lv_obj_t *pParent,
 			{
 				strcat(c8Str, "\n");
 			}
-			strcat(c8Str, c_pScreenProtectMode[g_emLanguageID % _Language_Reserved][i]);
+			strcat(c8Str, c_pScreenProtectMode[SAFE_LANGUAGEID][i]);
 		}
 
 		pObjTmp = lv_ddlist_create(pParent, NULL);
@@ -3253,7 +3492,7 @@ int32_t CreateMIDIChannelCtrl(lv_obj_t *pParent,
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? "MIDI Channel" : "MIDI通道"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrMIDIChannel[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos + 10);
 	}
 
@@ -3325,8 +3564,7 @@ int32_t CreateLanguageCtrl(lv_obj_t *pParent,
 
 	{
 		pObjTmp = lv_label_create(pParent, NULL);
-		lv_label_set_text(pObjTmp, CHS_TO_UTF8(g_emLanguageID == _Language_English ? 
-			"Language" : "语言"));
+		lv_label_set_text(pObjTmp, CHS_TO_UTF8(pStrLanguage[SAFE_LANGUAGEID]));
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos + 10);
 	}
 
@@ -3344,7 +3582,7 @@ int32_t CreateLanguageCtrl(lv_obj_t *pParent,
 
 		//lv_ddlist_set_fix_height(pObjTmp, 200);
 
-		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8("中文\nEnglish"));
+		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(pStrLanguageArray[SAFE_LANGUAGEID]));
 
 		//lv_ddlist_set_anim_time(pObjTmp, 0);
 
@@ -3376,6 +3614,29 @@ err:
 	return -1;
 }
 
+int32_t CreateVersionInfo(lv_obj_t *pParent)
+{
+	lv_obj_t *pTmp = lv_label_create(pParent, NULL);
+	if (pTmp != NULL)
+	{
+		lv_coord_t w = lv_obj_get_width(pParent);
+		lv_coord_t h = lv_obj_get_height(pParent);
+		lv_theme_t *pTheme = lv_theme_get_current();
+		uint8_t u8FontH = 24;
+		if (pTheme != NULL)
+		{
+			u8FontH = lv_font_get_height(pTheme->bg->text.font);
+		}
+
+		lv_label_set_text(pTmp, c_pVersion);
+		lv_obj_align(pTmp, pParent, LV_ALIGN_IN_BOTTOM_RIGHT, 0 - u8FontH, 0 - u8FontH);
+	}
+
+	return 0;
+
+}
+
+
 int32_t RebuildScreenProtectCtrlValue(StScreenProtectCtrl *pGroup)
 {
 	lv_ddlist_set_selected(pGroup->pTimeCtrl, pGroup->u8CurTimeIndex);
@@ -3399,9 +3660,11 @@ int32_t RebuildLanguageCtrlValue(StLanguageCtrl *pGroup)
 
 int32_t CreateTableSystemSetCtrl(lv_obj_t *pParent, lv_group_t *pGroup)
 {
-	CreateLanguageCtrl(pParent, pGroup, 20, 200, &s_stLanguageCtrl);
-	CreateMIDIChannelCtrl(pParent, pGroup, 20, 130, &s_stMIDIChannelCtrl);
 	CreateScreenProtectCtrl(pParent, pGroup, 20, 20, &s_stScreenProtectCtrl);
+	CreateMIDIChannelCtrl(pParent, pGroup, 20, 130, &s_stMIDIChannelCtrl);
+	CreateLanguageCtrl(pParent, pGroup, 20, 200, &s_stLanguageCtrl);
+	CreateVersionInfo(pParent);
+
 	return 0;
 }
 
@@ -3738,12 +4001,19 @@ lv_res_t ActionTabPagePressRelease(struct _lv_obj_t * obj)
 		lv_obj_get_type(pChild, &stType);
 		printf("child has: %s\n", stType.type[0]);
 #endif
+		lv_obj_t *pNext = lv_obj_get_child(obj, pChild);
 		if (lv_obj_get_free_num(pChild) == _OBJ_TYPE_DDLIST)
 		{
 			lv_ddlist_close(pChild, true);
 		}
+		if (lv_obj_get_free_num(pChild) == _OBJ_TYPE_MBox)
+		{
+			lv_group_remove_obj(pChild);
 
-		pChild = lv_obj_get_child(obj, pChild);
+			lv_obj_del(pChild);
+		}
+
+		pChild = pNext;
 	};
 
 	
@@ -3801,9 +4071,12 @@ int32_t DestroyTableView(void)
 int32_t CreateTableInit(void)
 {
 	lv_theme_t * lv_theme_zen_init(uint16_t hue, lv_font_t *font);
+	lv_theme_t * lv_theme_mono_init(uint16_t hue, lv_font_t *font);
+	lv_theme_t * lv_theme_alien_init(uint16_t hue, lv_font_t *font);
 
 	//lv_font_add(&lv_font_symbol_20, &lv_font_chs_24);
 	s_pTheme = lv_theme_zen_init(120, &lv_font_chs_24);
+	//s_pTheme = lv_theme_mono_init(120, &lv_font_chs_24);
 	//s_pTheme = lv_theme_alien_init(120, &lv_font_chs_24);
 
 	if (s_pTheme == NULL)
@@ -3879,7 +4152,7 @@ int32_t CreateTableView(uint16_t u16InitTableIndex)
 	uint8_t i;
 	for (i = 0; i < _Tab_Reserved; i++)
 	{
-		pTab[i] = lv_tabview_add_tab(pTableView, CHS_TO_UTF8(c_pTableName[g_emLanguageID % _Language_Reserved][i]));
+		pTab[i] = lv_tabview_add_tab(pTableView, CHS_TO_UTF8(c_pTableName[SAFE_LANGUAGEID][i]));
 		lv_page_set_rel_action(pTab[i], ActionTabPagePressRelease);
 	}
 	for (i = 0; i < _Tab_Reserved; i++)

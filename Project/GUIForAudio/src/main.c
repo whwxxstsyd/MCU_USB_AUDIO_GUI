@@ -44,7 +44,7 @@
 
 void EnableWatchDog(void)
 {
-	/* IWDG timeout equal to 250 ms (the timeout may varies due to LSI frequency
+	/* IWDG timeout equal to 2500 ms (the timeout may varies due to LSI frequency
 	 dispersion) */
 	/* Enable write access to IWDG_PR and IWDG_RLR registers */
 	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
@@ -53,13 +53,13 @@ void EnableWatchDog(void)
 	IWDG_SetPrescaler(IWDG_Prescaler_32);
 
 	/* Set counter reload value to obtain 250ms IWDG TimeOut.
-	 Counter Reload Value = 250ms/IWDG counter clock period
+	 Counter Reload Value = 2500ms/IWDG counter clock period
 						  = 250ms / (LSI/32)
-						  = 0.25s / (LsiFreq/32)
-						  = LsiFreq/(32 * 4)
-						  = LsiFreq/128
+						  = 2.5s / (LsiFreq/32)
+						  = LsiFreq/(32 * 0.4)
+						  = LsiFreq/12.8
 	*/
-	IWDG_SetReload(40000/128);
+	IWDG_SetReload(40000/12.8);
 
 	/* Reload IWDG counter */
 	IWDG_ReloadCounter();
@@ -133,13 +133,13 @@ int main (void)
 		CreateTableView(~0);
 	}
 #endif	
-	//EnableWatchDog();
+	EnableWatchDog();
 
 
     while(1) 
 	{
 		{
-			//IWDG_ReloadCounter();
+			IWDG_ReloadCounter();
 		}
         /* Periodically call the lv_task handler.
          * It could be done in a timer interrupt or an OS task too.*/

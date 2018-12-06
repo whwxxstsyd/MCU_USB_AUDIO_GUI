@@ -325,6 +325,7 @@ typedef enum _tagEmLanguageID
 	_Language_Begin = 0,
 
 	_Language_CHS = _Language_Begin,
+	_Language_CHT,
 	_Language_English,
 
 	_Language_Reserved,
