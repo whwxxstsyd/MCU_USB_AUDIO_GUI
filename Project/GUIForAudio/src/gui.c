@@ -15,7 +15,7 @@
 extern const char *c_pVersion;
 
 #ifdef _WIN32
-const char *c_pVersion = "Version Info20181205"; 
+const char *c_pVersion = "Version Info20181207"; 
 #endif
 
 #ifndef _WIN32
@@ -385,6 +385,14 @@ const char *pStrChannel[_Language_Reserved] =
 	"CH %d",
 
 };
+const char *pStrPhantomPowerChannel[_Language_Reserved] =
+{
+	"通道%d-%d",
+	"通道%d-%d",
+	"CH %d-%d",
+
+};
+
 const char *pStrInputEnable[_Language_Reserved] =
 {
 	"输入使能",
@@ -2178,12 +2186,12 @@ int32_t CreatePhantomPowerCtrl(
 		{
 			char c8Str[32];
 			lv_obj_t *pLab;
-			sprintf(c8Str, pStrChannel[SAFE_LANGUAGEID], j + 1);
+			sprintf(c8Str, pStrPhantomPowerChannel[SAFE_LANGUAGEID], j * 2 + 1, j * 2 + 2);
 #if 1
 			pObjTmp = lv_sw_create(pParent, NULL);
 			lv_obj_set_size(pObjTmp, SW_WIDTH, SW_HTIGHT);
 			lv_slider_set_knob_radio(pObjTmp, KNOB_WIDTH, KNOB_HEIGHT);
-			lv_obj_set_pos(pObjTmp, u16XPos + j * 180, u16YPos + 50);
+			lv_obj_set_pos(pObjTmp, u16XPos/* + j * 180*/, u16YPos + 63 * j + 50);
 			pGroup->pCBArr[j] = pObjTmp;
 			if (pGlobalGroup != NULL)
 			{
@@ -3379,6 +3387,7 @@ int32_t CreateScreenProtectCtrl(lv_obj_t *pParent,
 		lv_obj_set_pos(pObjTmp, u16XPos, u16YPos + 40);
 
 		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(c8Str));
+		lv_obj_set_top(pObjTmp, true);
 
 		lv_label_set_align(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
 			LV_LABEL_ALIGN_CENTER);
@@ -3419,6 +3428,7 @@ int32_t CreateScreenProtectCtrl(lv_obj_t *pParent,
 
 
 		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(c8Str));
+		lv_obj_set_top(pObjTmp, true);
 
 		lv_label_set_align(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
 			LV_LABEL_ALIGN_CENTER);
@@ -3522,6 +3532,7 @@ int32_t CreateMIDIChannelCtrl(lv_obj_t *pParent,
 		lv_ddlist_set_fix_height(pObjTmp, 200);
 
 		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(c8Str));
+		lv_obj_set_top(pObjTmp, true);
 
 		lv_label_set_align(((lv_ddlist_ext_t *)lv_obj_get_ext_attr(pObjTmp))->label,
 			LV_LABEL_ALIGN_CENTER);
@@ -3583,6 +3594,7 @@ int32_t CreateLanguageCtrl(lv_obj_t *pParent,
 		//lv_ddlist_set_fix_height(pObjTmp, 200);
 
 		lv_ddlist_set_options(pObjTmp, CHS_TO_UTF8(pStrLanguageArray[SAFE_LANGUAGEID]));
+		lv_obj_set_top(pObjTmp, true);
 
 		//lv_ddlist_set_anim_time(pObjTmp, 0);
 
